@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package>
+  <name>dynamic_graph_manager</name>
+  <version>1.0.0</version>
+  <description>
+    This project implements a small example when using the dynamic graph
+  </description>
+  <author email="mnaveau@tue.mpg.de">Maximilien Naveau</author>
+  <maintainer email="mnaveau@tue.mpg.de">Maximilien Naveau</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend> pinocchio </build_depend>
+  <run_depend>   pinocchio </run_depend>
+  <build_depend> eigen </build_depend>
+  <run_depend>   eigen </run_depend>
+  <build_depend> sot-core </build_depend>
+  <run_depend>   sot-core </run_depend>
+  <build_depend> sot-dynamic-pinocchio </build_depend>
+  <run_depend>   sot-dynamic-pinocchio </run_depend>
+  <build_depend> dynamic-graph </build_depend>
+  <run_depend>   dynamic-graph </run_depend>
+  <build_depend> dynamic-graph-python </build_depend>
+  <run_depend>   dynamic-graph-python </run_depend>
+  <build_depend> dynamic-graph-bridge </build_depend>
+  <run_depend>   dynamic-graph-bridge </run_depend>
+  <build_depend> dynamic-graph-bridge_msgs </build_depend>
+  <run_depend>   dynamic-graph-bridge_msgs </run_depend>
+  <export>
+  </export>
+</package>
