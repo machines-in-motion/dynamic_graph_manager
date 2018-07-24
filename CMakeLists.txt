@@ -217,5 +217,17 @@ include_directories(
 ###############################
 #catkin_python_setup()
 
+########################################################
+# manage the creation of the libraries and executables #
+########################################################
 add_subdirectory(src)
+
+#########################
+# manage the unit tests #
+#########################
 add_subdirectory(tests)
+
+####################
+# manage the demos #
+####################
+add_subdirectory(demos)
