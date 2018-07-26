@@ -8,40 +8,26 @@
  *
  */
 
-#include "dynamic_graph_manager.hh"
+#include <dynamic_graph_manager/ros_init.hh>
+#include <dynamic_graph_manager/dynamic_graph_manager.hh>
 
-using namespace dynamicgraph;
+using namespace dynamic_graph;
 
 DynamicGraphManager::DynamicGraphManager()
 {
-    int argc = 1;
-    char* arg0 = strdup("dynamic_graph_bridge");
-    char* argv[] = {arg0, 0};
-    ros::init(argc, argv, "dynamic_graph_bridge");
-    free (arg0);
+  /** Get the node handle reference from the global variable */
+  ros::NodeHandle& ros_node_handle = ros_init();
 
-    ros_node_handle_.reset(new ros::NodeHandle(""));
+  /** Advertize the service to start and stop the dynamic graph */
+  ros_service_start_dg_ = ros_node_handle.advertiseService(
+                              "start_dynamic_graph",
+                              &DynamicGraphManager::start_dg,
+                              this);
+  ros_service_stop_dg_ = ros_node_handle.advertiseService(
+                             "stop_dynamic_graph",
+                             &DynamicGraphManager::stop_dg,
+                             this);
 
-    ros_service_start_dg_ = ros_node_handle_->advertiseService(
-                                "start_dynamic_graph",
-                                &SotLoaderBasic::start_dg,
-                                this);
-    ros_service_stop_dg_ = ros_node_handle_->advertiseService(
-                               "stop_dynamic_graph",
-                               &SotLoaderBasic::stop_dg,
-                               this);
-}
-
-bool SotLoaderBasic::start_dg(std_srvs::Empty::Request& ,
-                         std_srvs::Empty::Response& )
-{
-  dynamic_graph_stopped_=false;
-  return true;
-}
-
-bool SotLoaderBasic::stop_dg(std_srvs::Empty::Request& ,
-                         std_srvs::Empty::Response& )
-{
-  dynamic_graph_stopped_ = true;
-  return true;
+  /** Upon construction the graph is inactive*/
+  is_dynamic_graph_stopped_ = true;
 }

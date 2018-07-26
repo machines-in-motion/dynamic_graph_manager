@@ -1,17 +1,16 @@
 # see CMakeLists.txt for details
 
-PROJECT_NAME           = "estimator_athena"
+PROJECT_NAME           = "dynamic_graph_manager"
 OUTPUT_DIRECTORY       = doc
 JAVADOC_AUTOBRIEF      = YES
 TAB_SIZE               = 4
 EXTRACT_ALL            = NO
 EXTRACT_PRIVATE        = NO
 EXTRACT_STATIC         = YES
-INPUT                  = @PROJECT_SOURCE_DIR@/../template/src \
-                         @PROJECT_SOURCE_DIR@/../template/include \
-                         @PROJECT_SOURCE_DIR@/src \
+INPUT                  = @PROJECT_SOURCE_DIR@/src \
                          @PROJECT_SOURCE_DIR@/include
-FILE_PATTERNS          = *.h *.hpp *.hh
+FILE_PATTERNS          = *.h *.hpp *.hh *.cpp *.c *.cc
+EXCLUDE_PATTERNS       = */deprecated/*
 RECURSIVE              = YES
 GENERATE_LATEX         = NO
 GENERATE_TAGFILE       = @PROJECT_NAME@.tag

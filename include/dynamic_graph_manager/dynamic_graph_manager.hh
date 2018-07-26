@@ -1,10 +1,23 @@
 /**
- * \file dynamic_graph_manager.cpp
+ * \file dynamic_graph_manager.hh
  * \brief Extended Kalman Filter
  * \author Nick Rotella
  * \date 2018
  *
  * This file declares the DynamicGraphManager class.
+ * usage: see demos and unit tests and documentation
+ */
+
+#ifndef DYNAMIC_GRAPH_MANAGER_HH
+#define DYNAMIC_GRAPH_MANAGER_HH
+
+// ROS includes
+#include <ros/ros.h>
+#include "std_srvs/Empty.h"
+
+namespace dynamic_graph
+{
+/**
  * This class has for purpose to manage the different processes during run time.
  * The main tasks are:
  *   - [1] Creates the Dynamic Graph device, the python interpretor, and the
@@ -25,21 +38,10 @@
  *      - [8.2] gets the control values from the Device (which triggers the
  *              evaluation of  the  dynamic  graph)  and  copies  them  into
  *              the  shared std::map commands
- *
- *
- * Usage: see demo_simple_integrator
  */
-
-#ifndef DYNAMIC_GRAPH_MANAGER_HH
-#define DYNAMIC_GRAPH_MANAGER_HH
-
-# include <ros/ros.h>
-
-namespace dynamicgraph
-{
-
 class DynamicGraphManager
 {
+  /** Public methods */
 public:
 
   /**
@@ -47,25 +49,68 @@ public:
    */
   DynamicGraphManager();
 
-
-private:
   /**
-   * @brief ros_node_handle_ is used to advertize the diverse ROS services
+   * @brief get the status of the dynamic graph (is running or not)
+   * @return the flags is_dynamic_graph_stopped_ value
    */
-  std::unique_ptr<ros::NodeHandle> ros_node_handle_;
+  bool is_dynamic_graph_stopped()
+  {
+    return is_dynamic_graph_stopped_;
+  }
+
+  /** Private methods */
+private:
+
+  /**
+   * @brief start_dg is the callback method of the ROS service start dynamic
+   * graph
+   * @return True
+   */
+  bool start_dg(std_srvs::Empty::Request& ,
+                std_srvs::Empty::Response& )
+  {
+    is_dynamic_graph_stopped_ = false;
+    return true;
+  }
+
+  /**
+   * @brief stop_dg is the callback method of the ROS service stop dynamic
+   * graph
+   * @return
+   */
+  bool stop_dg(std_srvs::Empty::Request& ,
+               std_srvs::Empty::Response& )
+  {
+    is_dynamic_graph_stopped_ = true;
+    return true;
+  }
+
+  /** Private attributes */
+private:
   /**
    * @brief ros_service_start_dg_ allows to start the dynamic graph on call.
    * It simply sets a flags that is used to wait the user call.
    */
-  ros::ServiceServer ros_service_start_dg_; /*!< State dimension */
+  ros::ServiceServer ros_service_start_dg_;
   /**
    * @brief ros_service_stop_dg_ allows to stop the dynamic graph on call.
    * It simply sets a flags that stop the main real time the control loop.
    */
-  ros::ServiceServer ros_service_stop_dg_; /*!< State dimension */
-
+  ros::ServiceServer ros_service_stop_dg_;
+  /**
+   * @brief is_dynamic_graph_stopped_ is the flag reflecting the state of the
+   * dynamic graph.
+   *  - TRUE the Dynamic Graph is NOT running.
+   *  - FALSE the Dynamic Graph IS running.
+   */
+  bool is_dynamic_graph_stopped_;
+  /**
+   * @brief interpreter_ is a pyhton
+   */
+  boost::shared_ptr<dynamic_graph::Interpreter> interpreter_;
 
 };
 
-}
+} // namespace dynamic_graph
+
 #endif // DYNAMIC_GRAPH_MANAGER_HH
