@@ -17,46 +17,122 @@ namespace dynamic_graph
   class RosPythonInterpreter
   {
   public:
-
+    /**
+     * @brief run_python_command_callback_t define a boost::function to be used as
+     * callback to the ros::service.
+     *
+     * The first argument of "runCommandCallback"
+     * (const std::string & command) is bound to
+     * (dynamic_graph_manager::RunCommand::Request).
+     * And the second argument (std::string &result) is bound to
+     * (dynamic_graph_manager::RunCommand::Response)
+     */
     typedef boost::function<
       bool (dynamic_graph_manager::RunCommand::Request&,
             dynamic_graph_manager::RunCommand::Response&)>
-      runCommandCallback_t;
+      run_python_command_callback_t;
 
+    /**
+     * @brief run_python_file_callback_t define a boost::function to be used as
+     * callback to the ros::service.
+     *
+     * The first argument of "runPythonFileCallback"
+     * (std::string ifilename) is bound to
+     * (dynamic_graph_manager::RunCommand::Request).
+     * And a fake second argument is simulated in
+     * (dynamic_graph_manager::RunCommand::Response)
+     */
     typedef boost::function<
       bool (dynamic_graph_manager::RunPythonFile::Request&,
             dynamic_graph_manager::RunPythonFile::Response&)>
-      runPythonFileCallback_t;
+      run_python_file_callback_t;
 
-    explicit RosPythonInterpreter (ros::NodeHandle& nodeHandle);
+    /**
+     * @brief RosPythonInterpreter is the unique constructor of the class
+     * @param node_handle is the ros::nodeHandle used to advertize the
+     *        ros::services
+     */
+    explicit RosPythonInterpreter (ros::NodeHandle& node_handle);
+
+    /**
+      * @brief ~RosPythonInterpreter is the default destructor of the class
+      */
     ~RosPythonInterpreter (){}
 
-    /// \brief Method to start python interpreter and deal with messages.
-    /// \param Command string to execute, result, stdout, stderr strings.
-    void runCommand(const std::string & command, std::string &result,
+    /**
+     * @brief run_python_command used the python interpreter to execute the input command
+     * @param[in] command is the user input string command.
+     * @param[out] result is the numerical result of the operation done.
+     * @param[out] out is the string representation of the results.
+     * @param[out] err is the output error string from python.
+     */
+    void run_python_command(const std::string & command, std::string &result,
             std::string &out, std::string &err);
 
-    /// \brief Method to parse python scripts.
-    /// \param Input file name to parse.
-    void runPythonFile(std::string ifilename);
+    /**
+     * @brief run_python_file executes the input scripts in the python interpreter
+     * @param ifilename is the path to the script to execute
+     */
+    void run_python_file(const std::string ifilename);
 
-    /// Initialize service run_command
-    void startRosService ();
+    /**
+     * @brief start_ros_service advertize the "run_python_command" and "run_pyhton_scripts"
+     *        ros services
+     */
+    void start_ros_service ();
 
   protected:
-    /// \brief Run a Python command and return result, stderr and stdout.
+    /**
+     * @brief runCommandCallback is the "run_python_command" ros service callback
+     *        function.
+     * @param req is the request. it is defined as a string in the
+     *        RunCommand.msg
+     * @param res is the request. it is defined as a string in the
+     *        RunCommand.msg
+     * @return true
+     */
     bool runCommandCallback (dynamic_graph_manager::RunCommand::Request& req,
                              dynamic_graph_manager::RunCommand::Response& res);
 
-    /// \brief Run a Python file.
-    bool runPythonFileCallback (dynamic_graph_manager::RunPythonFile::Request& req,
-                                dynamic_graph_manager::RunPythonFile::Response& res);
+    /**
+     * @brief runCommandCallback is the "run_pyhton_script" ros service callback
+     *        function.
+     * @param req is the request. it is defined as a string in the
+     *        RunCommand.msg
+     * @param res is the request. it is defined as a string in the
+     *        RunCommand.msg
+     * @return true
+     */
+    bool runPythonFileCallback (
+        dynamic_graph_manager::RunPythonFile::Request& req,
+        dynamic_graph_manager::RunPythonFile::Response& res);
 
   private:
+    /**
+     * @brief interpreter_ is the python interpreter itself
+     */
     dynamicgraph::python::Interpreter interpreter_;
-    ros::NodeHandle& nodeHandle_;
-    ros::ServiceServer runCommandSrv_;
-    ros::ServiceServer runPythonFileSrv_;
+    /**
+     * @brief ros_node_handle_ is reference to the ros::NodeHandle used to advertize
+     * the ros::services
+     */
+    ros::NodeHandle& ros_node_handle_;
+    /**
+     * @brief run_python_command_srv_ is the "run_python_command" ros::service c++ object
+     *
+     * This kind of ros object require *NOT* to be destroyed. otherwize the
+     * ros::service is cancelled. This is the reason why this object is an
+     * attribute of the class
+     */
+    ros::ServiceServer run_python_command_srv_;
+    /**
+     * @brief run_python_file_srv_ is the "run_pyhton_script" ros::service c++ object
+     *
+     * This kind of ros object require *NOT* to be destroyed. otherwize the
+     * ros::service is cancelled. This is the reason why this object is an
+     * attribute of the class
+     */
+    ros::ServiceServer run_python_file_srv_;
   };
 } // end of namespace dynamicgraph.
 

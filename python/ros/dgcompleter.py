@@ -47,7 +47,7 @@ class DGCompleter:
 
         Completer([client]) -> completer instance.
 
-        Client is a ROS proxy to dynamic_graph run_command service.
+        Client is a ROS proxy to dynamic_graph run_python_command service.
 
         Completer instances should be used as the completion mechanism of
         readline via the set_completer() call:

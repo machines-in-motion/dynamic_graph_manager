@@ -4,26 +4,26 @@ namespace dynamic_graph
 {
   static const int queueSize = 5;
 
-  RosPythonInterpreter::RosPythonInterpreter (ros::NodeHandle& nodeHandle)
+  RosPythonInterpreter::RosPythonInterpreter (ros::NodeHandle& node_handle)
     : interpreter_ (),
-      nodeHandle_ (nodeHandle),
-      runCommandSrv_ (),
-      runPythonFileSrv_ ()
+      ros_node_handle_ (node_handle),
+      run_python_command_srv_ (),
+      run_python_file_srv_ ()
   {
   }
 
   void RosPythonInterpreter::
-  startRosService ()
+  start_ros_service ()
   {
-    runCommandCallback_t runCommandCb =
+    run_python_command_callback_t runCommandCb =
       boost::bind (&RosPythonInterpreter::runCommandCallback, this, _1, _2);
-    runCommandSrv_ =
-      nodeHandle_.advertiseService ("run_command", runCommandCb);
+    run_python_command_srv_ =
+      ros_node_handle_.advertiseService ("run_python_command", runCommandCb);
 
-    runPythonFileCallback_t runPythonFileCb =
+    run_python_file_callback_t runPythonFileCb =
       boost::bind (&RosPythonInterpreter::runPythonFileCallback, this, _1, _2);
-    runPythonFileSrv_ =
-      nodeHandle_.advertiseService ("run_script", runPythonFileCb);
+    run_python_file_srv_ =
+      ros_node_handle_.advertiseService ("run_pyhton_script", runPythonFileCb);
   }
 
   bool
@@ -44,11 +44,12 @@ namespace dynamic_graph
       dynamic_graph_manager::RunPythonFile::Response& res)
   {
     interpreter_.runPythonFile(req.input);
-    res.result = "File parsed"; // FIX: It is just an echo, is there a way to have a feedback?
+    // FIX: It is just an echo, is there a way to have a feedback?
+    res.result = "File parsed";
     return true;
   }
 
-  void RosPythonInterpreter::runCommand
+  void RosPythonInterpreter::run_python_command
   (const std::string & command,
    std::string &result,
    std::string &out,
@@ -57,7 +58,7 @@ namespace dynamic_graph
     interpreter_.python(command, result, out, err);
   }
 
-  void RosPythonInterpreter::runPythonFile( std::string ifilename ){
+  void RosPythonInterpreter::run_python_file(const std::string ifilename ){
       interpreter_.runPythonFile(ifilename);
   }
 

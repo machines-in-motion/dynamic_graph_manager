@@ -21,9 +21,9 @@ namespace dynamic_graph
 /**
  * This class has for purpose to manage the different processes during run time.
  * The main tasks are:
- *   - [1] Creates the Dynamic Graph device, the python interpretor, and the
+ *   - [1] Creates the Dynamic Graph device, the python interpreter, and the
  *         Drivers
- *   - [2] Ask the python interpretor to advertize its ROS services
+ *   - [2] Ask the python interpreter to advertize its ROS services
  *   - [3] Ask the drivers to initialize the communucation with the hardware
  *   - [4] Loads a yaml/urdf config file.
  *   - [5] Advertize the ROS services start/stop dynamic graph
@@ -89,6 +89,11 @@ private:
   /** Private attributes */
 private:
   /**
+   * @brief ros_node_handle_ is reference to the ros::NodeHandle used to advertize
+   * the ros::services
+   */
+  ros::NodeHandle& ros_node_handle_;
+  /**
    * @brief ros_service_start_dg_ allows to start the dynamic graph on call.
    * It simply sets a flags that is used to wait the user call.
    */
@@ -106,9 +111,9 @@ private:
    */
   bool is_dynamic_graph_stopped_;
   /**
-   * @brief interpreter_ is a pyhton
+   * @brief interpreter_ is a ROS wrapper around a python interpreter
    */
-  boost::shared_ptr<dynamic_graph::RosPythonInterpreter> interpreter_;
+  dynamic_graph::RosPythonInterpreter ros_python_interpreter_;
 
 };
 

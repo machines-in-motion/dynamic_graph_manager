@@ -46,6 +46,11 @@ ros::NodeHandle& ros_init ();
  */
 ros::AsyncSpinner& ros_spinner ();
 
+/**
+ * @brief ros_shutdown shuts down ros and stop the ros spinner
+ */
+void ros_shutdown ();
+
 } // end of namespace dynamic_graph.
 
 #endif //! ROS_INIT_HH
