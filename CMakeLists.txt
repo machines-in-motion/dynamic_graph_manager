@@ -34,7 +34,8 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 # Search for dependencies. #
 ############################
-find_package(PkgConfig REQUIRED)
+include(cmake/python.cmake)
+FIND_PYTHON()
 set(CATKIN_PKGS ${CATKIN_PKGS}
     message_generation
     roscpp
@@ -43,7 +44,6 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
 )
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
-
 #add_required_dependency("roscpp")
 ##add_required_dependency("pinocchio >= 1.2.9")
 #add_required_dependency("dynamic-graph >= 3.0.0")
@@ -63,7 +63,7 @@ find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${catkin_INCLUDE_DIRS}
-#    ${PYTHON_INCLUDE_PATH}
+    ${PYTHON_INCLUDE_PATH}
 #    ${Eigen_INCLUDE_DIRS}
 )
 
@@ -93,14 +93,6 @@ catkin_python_setup()
 #####################################################################
 generate_messages(DEPENDENCIES std_msgs)
 
-###########################################
-## export the package as a catkin package #
-###########################################
-catkin_package(
- INCLUDE_DIRS include
- CATKIN_DEPENDS ${CATKIN_PKGS}
-)
-
 ########################################################
 # manage the creation of the libraries and executables #
 ########################################################
@@ -115,6 +107,15 @@ add_subdirectory(tests)
 # manage the demos #
 ####################
 add_subdirectory(demos)
+
+###########################################
+## export the package as a catkin package #
+###########################################
+catkin_package(
+  LIBRARIES ${EXPORTED_LIBRAIRIES}
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS ${CATKIN_PKGS}
+)
 
 ###########################
 ## building documentation #

@@ -7,7 +7,13 @@ set(DYNAMIC_GRAPH_MANAGER_SRC
     ros_init.cpp
     ros_interpreter.cpp
 )
-ADD_LIBRARY(dynamic_graph_manager SHARED ${DYNAMIC_GRAPH_MANAGER_SRC})
+
+message(FATAL_ERROR "${catkin_LIBRARIES}")
+
+add_library(dynamic_graph_manager SHARED ${DYNAMIC_GRAPH_MANAGER_SRC})
+target_link_libraries(dynamic_graph_manager ${catkin_LIBRARIES})
+set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dynamic_graph_manager
+    PARENT_SCOPE)
 
 #SET(DEVICE_NAME dg-simple-robot-device)
 #ADD_LIBRARY(${DEVICE_NAME} SHARED

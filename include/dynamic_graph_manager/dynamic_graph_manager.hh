@@ -13,7 +13,8 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include "std_srvs/Empty.h"
+#include <std_srvs/Empty.h>
+#include <dynamic_graph_manager/ros_interpreter.hh>
 
 namespace dynamic_graph
 {
@@ -107,7 +108,7 @@ private:
   /**
    * @brief interpreter_ is a pyhton
    */
-  boost::shared_ptr<dynamic_graph::Interpreter> interpreter_;
+  boost::shared_ptr<dynamic_graph::RosPythonInterpreter> interpreter_;
 
 };
 

@@ -19,9 +19,10 @@
 <!-- It is a C++ pacakge depending on ROS -->
   <build_depend> roscpp </build_depend>
   <run_depend>   roscpp </run_depend>
-<!-- Dynamic Graph dependencies -->
+<!-- Dynamic Graph dependency -->
   <build_depend> dynamic_graph </build_depend>
   <run_depend>   dynamic_graph </run_depend>
+<!-- Dynamic Graph python bindings and python interpretor -->
   <build_depend> dynamic_graph_python </build_depend>
   <run_depend>   dynamic_graph_python </run_depend>
 
