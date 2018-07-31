@@ -57,7 +57,7 @@ namespace dynamic_graph
     /**
       * @brief ~RosPythonInterpreter is the default destructor of the class
       */
-    ~RosPythonInterpreter (){}
+    ~RosPythonInterpreter ();
 
     /**
      * @brief run_python_command used the python interpreter to execute the input command
@@ -76,7 +76,7 @@ namespace dynamic_graph
     void run_python_file(const std::string ifilename);
 
     /**
-     * @brief start_ros_service advertize the "run_python_command" and "run_pyhton_scripts"
+     * @brief start_ros_service advertize the "run_python_command" and "run_python_scripts"
      *        ros services
      */
     void start_ros_service ();
@@ -95,7 +95,7 @@ namespace dynamic_graph
                              dynamic_graph_manager::RunCommand::Response& res);
 
     /**
-     * @brief runCommandCallback is the "run_pyhton_script" ros service callback
+     * @brief runCommandCallback is the "run_python_script" ros service callback
      *        function.
      * @param req is the request. it is defined as a string in the
      *        RunCommand.msg
@@ -126,7 +126,7 @@ namespace dynamic_graph
      */
     ros::ServiceServer run_python_command_srv_;
     /**
-     * @brief run_python_file_srv_ is the "run_pyhton_script" ros::service c++ object
+     * @brief run_python_file_srv_ is the "run_python_script" ros::service c++ object
      *
      * This kind of ros object require *NOT* to be destroyed. otherwize the
      * ros::service is cancelled. This is the reason why this object is an

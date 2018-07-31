@@ -11,6 +11,9 @@
 #ifndef DYNAMIC_GRAPH_MANAGER_HH
 #define DYNAMIC_GRAPH_MANAGER_HH
 
+// used to spawn the real time thread
+#include <thread>
+
 // ROS includes
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
@@ -42,13 +45,27 @@ namespace dynamic_graph
  */
 class DynamicGraphManager
 {
-  /** Public methods */
+  /*******************
+   *  Public methods *
+   *******************/
 public:
 
   /**
    * @brief DynamicGraphManager, constructor of the class
    */
   DynamicGraphManager();
+
+  /**
+   * @brief initialize this function has for pusrpose to (re)-initialize
+   * everything
+   */
+  void initialize();
+
+  /**
+   * @brief start_real_time_loop, spawn the real time threads for the dynamic
+   * graph and for the hardware communication
+   */
+  void start_real_time_loops();
 
   /**
    * @brief get the status of the dynamic graph (is running or not)
@@ -59,7 +76,9 @@ public:
     return is_dynamic_graph_stopped_;
   }
 
-  /** Private methods */
+  /********************
+   *  Private methods *
+   ********************/
 private:
 
   /**
@@ -86,7 +105,37 @@ private:
     return true;
   }
 
-  /** Private attributes */
+  /**
+   * @brief wait_start_dynamic_graph put the thread to sleep until the user
+   * start the dynamic graph
+   * @return True: dynamic graph started before the watch dog expires,
+   *         False: otherwize
+   */
+  void wait_start_dynamic_graph();
+
+  /**
+   * @brief read_param reads a yaml file that contains all the parameters of the
+   * dynamic_graph_manager
+   * @return True: the parameters are successfully read.
+   *         False: otherwize
+   */
+  void read_param();
+
+  /**
+   * @brief dynamic_graph_real_time_loop is the method used to execute the
+   * dynamic graph
+   */
+  void dynamic_graph_real_time_loop();
+
+  /**
+   * @brief hardware_communication_real_time_loop is the method that communicate
+   * with the hardware and send the commands (torque, position, current, ...)
+   */
+  void hardware_communication_real_time_loop();
+
+  /***********************
+   *  Private attributes *
+   ***********************/
 private:
   /**
    * @brief ros_node_handle_ is reference to the ros::NodeHandle used to advertize
@@ -114,7 +163,29 @@ private:
    * @brief interpreter_ is a ROS wrapper around a python interpreter
    */
   dynamic_graph::RosPythonInterpreter ros_python_interpreter_;
+  /**
+   * @brief dynamic_grap_thread_ is the real time thread that runs the dynamic
+   * graph.
+   */
+  std::unique_ptr<std::thread> thread_dynamic_graph_;
+  /**
+   * @brief hardware_communication_thread_ is the real thread that communicate
+   * with the hardware.
+   */
+  std::unique_ptr<std::thread> thread_hardware_communication_;
 
+  /***********************
+   *  Pool of parameters *
+   ***********************/
+
+  /**
+   * @brief dt_dg_ is the running period of the dynamic_graph loop
+   */
+  double dt_dg_;
+  /**
+   * @brief dt_ctrl_ is the running period of the hardware communication loop
+   */
+  double dt_ctrl_;
 };
 
 } // namespace dynamic_graph

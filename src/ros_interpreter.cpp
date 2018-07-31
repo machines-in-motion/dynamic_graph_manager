@@ -12,6 +12,12 @@ namespace dynamic_graph
   {
   }
 
+  RosPythonInterpreter::~RosPythonInterpreter()
+  {
+    run_python_command_srv_.shutdown();
+    run_python_file_srv_.shutdown();
+  }
+
   void RosPythonInterpreter::
   start_ros_service ()
   {
@@ -23,7 +29,7 @@ namespace dynamic_graph
     run_python_file_callback_t runPythonFileCb =
       boost::bind (&RosPythonInterpreter::runPythonFileCallback, this, _1, _2);
     run_python_file_srv_ =
-      ros_node_handle_.advertiseService ("run_pyhton_script", runPythonFileCb);
+      ros_node_handle_.advertiseService ("run_python_script", runPythonFileCb);
   }
 
   bool
