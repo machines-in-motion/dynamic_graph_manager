@@ -25,7 +25,9 @@
 <!-- Dynamic Graph python bindings and python interpreter -->
   <build_depend> dynamic_graph_python </build_depend>
   <run_depend>   dynamic_graph_python </run_depend>
-
+<!-- Dynamic Graph python bindings and python interpreter -->
+  <build_depend> yaml_cpp </build_depend>
+  <run_depend>   yaml_cpp </run_depend>
 <!--  <build_depend> pinocchio </build_depend>
   <run_depend>   pinocchio </run_depend>
   <build_depend> eigen </build_depend>

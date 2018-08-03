@@ -1,20 +1,3 @@
-##################################################################################
-# Add custom (non compiling) targets so non cpp files show up in QT_CREATOR IDE. #
-##################################################################################
-set(USE_QTCREATOR_${PROJECT_NAME} OFF CACHE BOOL
-    "Set to ON if you want QtCreator to display all files in the project tree")
-if(USE_QTCREATOR_${PROJECT_NAME})
-    file(GLOB_RECURSE EXTRA_FILES
-        *.h *.hh *.hpp *.py
-        *.cf  *.yaml *.txt *.xml
-        start *.launch *.urdf CATKIN_IGNORE *.in
-        *.srv *.msg
-    )
-    list(FILTER EXTRA_FILES EXCLUDE REGEX "build")
-    add_custom_target(${PROJECT_NAME}_OTHER_FILES ALL WORKING_DIRECTORY
-        ${PROJECT_SOURCE_DIR} SOURCES ${EXTRA_FILES})
-endif()
-
 ######################
 # set up the project #
 ######################
@@ -35,12 +18,15 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 # Search for dependencies. #
 ############################
 include(cmake/python.cmake)
+include(cmake/boost.cmake)
 FIND_PYTHON()
+SEARCH_FOR_BOOST()
 set(CATKIN_PKGS ${CATKIN_PKGS}
     message_generation
     roscpp
     dynamic_graph
     dynamic_graph_python
+    yaml_cpp
 )
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
@@ -64,6 +50,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${catkin_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_PATH}
+    ${Boost_INCLUDE_DIR}
 #    ${Eigen_INCLUDE_DIRS}
 )
 

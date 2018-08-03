@@ -14,6 +14,13 @@
 // used to spawn the real time thread
 #include <thread>
 
+// used to deal with shared memory
+#include <boost/interprocess/managed_shared_memory.hpp>
+namespace bipc = boost::interprocess;
+
+// get the yaml configuration
+#include <yaml-cpp/yaml.h>
+
 // ROS includes
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
@@ -21,6 +28,13 @@
 
 namespace dynamic_graph
 {
+
+/**
+ * \brief SHARED_MEMORY_NAME is the name used by boost to retrieve the shared
+ * memory
+ */
+#define SHARED_MEMORY_NAME "DGM_Shared_memory"
+
 /**
  * This class has for purpose to manage the different processes during run time.
  * The main tasks are:
@@ -56,16 +70,53 @@ public:
   DynamicGraphManager();
 
   /**
-   * @brief initialize this function has for pusrpose to (re)-initialize
-   * everything
+   * @brief initialize the basic variables
    */
-  void initialize();
+  void initialize(YAML::Node param);
 
   /**
-   * @brief start_real_time_loop, spawn the real time threads for the dynamic
-   * graph and for the hardware communication
+   * @brief run() splits the process in the dynamic_graph process and the
+   * hadware_communication process. It initialize them and run them. WARNING
+   * this a blocking function
    */
-  void start_real_time_loops();
+  void run();
+
+  /**
+   * @brief wait_start_dynamic_graph put the current thread to sleep until the
+   * user start the dynamic graph
+   * @return True: dynamic graph started before the watch dog expires,
+   *         False: otherwize
+   */
+  void wait_start_dynamic_graph();
+
+  /**
+   * @brief initialize_dynamic_graph_process instanciates all variables related
+   * to the dynamic_graph and user interface.
+   */
+  void initialize_dynamic_graph_process();
+
+  /**
+   * @brief run_dynamic_graph_process spawns the real time thread and becomes
+   * a ros spinner (thread in charge of the ros::service callbacks)
+   */
+  void run_dynamic_graph_process();
+
+  /**
+   * @brief initialize_hardware_communication_process instanciate all variables
+   * related to the hardware communication. In addition it spawns the real
+   * time thread.
+   */
+  void initialize_hardware_communication_process();
+
+  /**
+   * @brief run_hardware_communication_process spawns the real time thread and
+   * goes to sleep undefinitely
+   */
+  void run_hardware_communication_process();
+
+  /************************
+   * gettters and setters *
+   ************************/
 
   /**
    * @brief get the status of the dynamic graph (is running or not)
@@ -76,9 +127,6 @@ public:
     return is_dynamic_graph_stopped_;
   }
 
-  /********************
-   *  Private methods *
-   ********************/
 private:
 
   /**
@@ -106,20 +154,10 @@ private:
   }
 
   /**
-   * @brief wait_start_dynamic_graph put the thread to sleep until the user
-   * start the dynamic graph
-   * @return True: dynamic graph started before the watch dog expires,
-   *         False: otherwize
+   * @brief start_ros_service is the method that advertize the different ros
+   * services
    */
-  void wait_start_dynamic_graph();
-
-  /**
-   * @brief read_param reads a yaml file that contains all the parameters of the
-   * dynamic_graph_manager
-   * @return True: the parameters are successfully read.
-   *         False: otherwize
-   */
-  void read_param();
+  void start_ros_service(ros::NodeHandle& ros_node_handle);
 
   /**
    * @brief dynamic_graph_real_time_loop is the method used to execute the
@@ -138,20 +176,19 @@ private:
    ***********************/
 private:
   /**
-   * @brief ros_node_handle_ is reference to the ros::NodeHandle used to advertize
-   * the ros::services
-   */
-  ros::NodeHandle& ros_node_handle_;
-  /**
    * @brief ros_service_start_dg_ allows to start the dynamic graph on call.
-   * It simply sets a flags that is used to wait the user call.
+   * It simply sets a flags that is used to wait the user call. Only used in
+   * the dynamic_graph process.
    */
   ros::ServiceServer ros_service_start_dg_;
+
   /**
    * @brief ros_service_stop_dg_ allows to stop the dynamic graph on call.
    * It simply sets a flags that stop the main real time the control loop.
+   * Only used in the dynamic_graph process.
    */
   ros::ServiceServer ros_service_stop_dg_;
+
   /**
    * @brief is_dynamic_graph_stopped_ is the flag reflecting the state of the
    * dynamic graph.
@@ -159,33 +196,42 @@ private:
    *  - FALSE the Dynamic Graph IS running.
    */
   bool is_dynamic_graph_stopped_;
+
   /**
-   * @brief interpreter_ is a ROS wrapper around a python interpreter
+   * @brief ros_python_interpreter_ptr_ is a ROS wrapper around a python
+   * interpreter.
    */
-  dynamic_graph::RosPythonInterpreter ros_python_interpreter_;
+  std::unique_ptr<dynamic_graph::RosPythonInterpreter> ros_python_interpreter_;
+
   /**
-   * @brief dynamic_grap_thread_ is the real time thread that runs the dynamic
+   * @brief thread_dynamic_graph_ is the real time thread that runs the dynamic
    * graph.
    */
   std::unique_ptr<std::thread> thread_dynamic_graph_;
+
   /**
-   * @brief hardware_communication_thread_ is the real thread that communicate
+   * @brief thread_hardware_communication_ is the real thread that communicate
    * with the hardware.
    */
   std::unique_ptr<std::thread> thread_hardware_communication_;
+
 
   /***********************
    *  Pool of parameters *
    ***********************/
 
-  /**
-   * @brief dt_dg_ is the running period of the dynamic_graph loop
-   */
-  double dt_dg_;
-  /**
-   * @brief dt_ctrl_ is the running period of the hardware communication loop
-   */
-  double dt_ctrl_;
+  YAML::Node params_;
+
+  /***********************************
+   * management of the shared memory *
+   * *********************************/
+
+  //Remove shared memory on construction and destruction
+  struct shm_remove
+  {
+     shm_remove() {  bipc::shared_memory_object::remove(SHARED_MEMORY_NAME); }
+     ~shm_remove(){  bipc::shared_memory_object::remove(SHARED_MEMORY_NAME); }
+  } shared_memory_remover;
 };
 
 } // namespace dynamic_graph

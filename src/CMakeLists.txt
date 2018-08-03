@@ -8,7 +8,10 @@ set(DYNAMIC_GRAPH_MANAGER_SRC
     ros_interpreter.cpp
 )
 add_library(dynamic_graph_manager SHARED ${DYNAMIC_GRAPH_MANAGER_SRC})
-target_link_libraries(dynamic_graph_manager ${catkin_LIBRARIES})
+target_link_libraries(dynamic_graph_manager
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
 set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dynamic_graph_manager
     PARENT_SCOPE)
 
