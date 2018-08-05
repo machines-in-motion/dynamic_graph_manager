@@ -1,10 +1,12 @@
 /**
  * \file dynamic_graph_manager.hh
- * \brief Extended Kalman Filter
- * \author Nick Rotella
+ * \brief The Control Manager
+ * \author Maximilien Naveau
  * \date 2018
  *
  * This file declares the DynamicGraphManager class.
+ * This code manages the different threads and processes in order to use the
+ * DynamicGrpah.
  * usage: see demos and unit tests and documentation
  */
 

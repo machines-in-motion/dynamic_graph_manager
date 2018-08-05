@@ -1,3 +1,13 @@
+/**
+ * \file ros_interpreter.hh
+ * \brief the user interface
+ * \author Maximilien Naveau
+ * \date 2018
+ *
+ * This file declares a ros bridge on top of Python interpretor. It is used
+ * an asynchronuous communcation between the user and the controller.
+ */
+
 #ifndef DYNAMIC_GRAPH_BRIDGE_INTERPRETER_HH
 #define DYNAMIC_GRAPH_BRIDGE_INTERPRETER_HH
 

@@ -1,6 +1,10 @@
 /**
- * @file test_dynamic_graph_manager.cpp
- * unit tests for the dynamic graph manager class.
+ * \file main.cpp
+ * \brief DynamicGraphManager unit tests
+ * \author Maximilien Naveau
+ * \date 2018
+ *
+ * This file implements a suit of unit tests for the DynamicGraphManager class.
  * @see https://git-amd.tuebingen.mpg.de/amd-clmc/ci_example/wikis/catkin:-how-to-implement-unit-tests
  */
 

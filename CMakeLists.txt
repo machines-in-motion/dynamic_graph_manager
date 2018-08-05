@@ -1,3 +1,20 @@
+###############################################
+# Add custom (non compiling) targets          #
+# so non cpp files show up in QT_CREATOR IDE. #
+###############################################
+set(USE_QTCREATOR_${PROJECT_NAME} OFF CACHE BOOL
+    "Set to ON if you want QtCreator to display all files in the project tree")
+if(USE_QTCREATOR_${PROJECT_NAME})
+    file(GLOB_RECURSE EXTRA_FILES
+        ../*.h ../*.hh ../*.hpp
+        ../*.cf  ../*.yaml ../*.txt ../*.xml
+        ../start ../*.launch ../*.urdf ../CATKIN_IGNORE ../*.in
+    )
+    list(FILTER EXTRA_FILES EXCLUDE REGEX "build")
+    add_custom_target(${PROJECT_NAME}_OTHER_FILES ALL WORKING_DIRECTORY
+        ${PROJECT_SOURCE_DIR} SOURCES ${EXTRA_FILES})
+endif()
+
 ######################
 # set up the project #
 ######################
@@ -19,8 +36,10 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 include(cmake/python.cmake)
 include(cmake/boost.cmake)
-FIND_PYTHON()
+include(cmake/eigen.cmake)
+SEARCH_FOR_PYTHON()
 SEARCH_FOR_BOOST()
+SEARCH_FOR_EIGEN()
 set(CATKIN_PKGS ${CATKIN_PKGS}
     message_generation
     roscpp
@@ -30,18 +49,6 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
 )
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
-#add_required_dependency("roscpp")
-##add_required_dependency("pinocchio >= 1.2.9")
-#add_required_dependency("dynamic-graph >= 3.0.0")
-#add_required_dependency("dynamic-graph-python")
-##add_required_dependency("sot-core")
-##add_required_dependency("sot-dynamic-pinocchio >= 3.0.0")
-##add_required_dependency("dynamic_graph_bridge_msgs")
-##add_required_dependency("dynamic_graph_bridge >= 3.0.0")
-#SET(BOOST_COMPONENTS filesystem system thread)
-#SEARCH_FOR_BOOST()
-#SEARCH_FOR_EIGEN()
-#FINDPYTHON()
 
 ######################################################
 # define the include directory of all ${CATKIN_PKGS} #
@@ -51,7 +58,7 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_PATH}
     ${Boost_INCLUDE_DIR}
-#    ${Eigen_INCLUDE_DIRS}
+    ${Eigen_INCLUDE_DIRS}
 )
 
 #########################################

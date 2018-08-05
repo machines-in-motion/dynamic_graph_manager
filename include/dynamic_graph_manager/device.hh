@@ -1,162 +1,185 @@
-/*
- * Copyright 2010,
- * Florent Lamiraux
+/**
+ * \file device.hh
+ * \brief The robot entity
+ * \author Maximilien Naveau
+ * \date 2018
  *
- * CNRS
- *
- * This file is part of sot-core.
- * sot-core is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
- * sot-core is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.  You should
- * have received a copy of the GNU Lesser General Public License along
- * with sot-core.  If not, see <http://www.gnu.org/licenses/>.
+ * This file declares the input and output of the DynamicGraph
  */
 
-#ifndef SOT_DEVICE_HH
-#define SOT_DEVICE_HH
+#ifndef DEVICE_HH
+#define DEVICE_HH
 
-/* --------------------------------------------------------------------- */
-/* --- INCLUDE --------------------------------------------------------- */
-/* --------------------------------------------------------------------- */
-
-/* -- MaaL --- */
 #include <dynamic-graph/linear-algebra.h>
-namespace dg = dynamicgraph;
-/* SOT */
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/all-signals.h>
-#include "sot/core/periodic-call.hh"
-#include <sot/core/matrix-geometry.hh>
-#include "sot/core/api.hh"
 
-namespace dynamicgraph {
-  namespace sot {
+/* short cut of the namespace */
+namespace dg = dynamicgraph;
 
-    /// Define the type of input expected by the robot
-    enum ControlInput
-    {
-      CONTROL_INPUT_NO_INTEGRATION=0,
-      CONTROL_INPUT_ONE_INTEGRATION=1,
-      CONTROL_INPUT_TWO_INTEGRATION=2,
-      CONTROL_INPUT_SIZE=3
-    };
+#include "dynamic_graph_manager/periodic-call.hh"
+#include <dynamic_graph_manager/matrix-geometry.hh>
 
-    const std::string ControlInput_s[] =
-    {
-      "noInteg", "oneInteg", "twoInteg"
-    };
+namespace dynamic_graph {
 
-    /* --------------------------------------------------------------------- */
-    /* --- CLASS ----------------------------------------------------------- */
-    /* --------------------------------------------------------------------- */
+  class Device: public dynamicgraph::Entity
+  {
+  public:
 
-    class SOT_CORE_EXPORT Device
-        :public Entity
-    {
-    public:
-      static const std::string CLASS_NAME;
-      virtual const std::string& getClassName(void) const {
-        return CLASS_NAME;
-      }
-      
-      enum ForceSignalSource
-      {
-        FORCE_SIGNAL_RLEG,
-        FORCE_SIGNAL_LLEG,
-        FORCE_SIGNAL_RARM,
-        FORCE_SIGNAL_LARM
-      };
-      
-    protected:
-      dg::Vector state_;
-      dg::Vector velocity_;
-      bool vel_controlInit_;
-      dg::Vector vel_control_;
-      ControlInput controlInputType_;
-      bool withForceSignals[4];
-      PeriodicCall periodicCallBefore_;
-      PeriodicCall periodicCallAfter_;
-    public:
-      
-      /* --- CONSTRUCTION --- */
-      Device(const std::string& name);
-      /* --- DESTRUCTION --- */
-      virtual ~Device();
-      
-      virtual void setStateSize(const unsigned int& size);
-      virtual void setState(const dg::Vector& st);
-      void setVelocitySize(const unsigned int& size);
-      virtual void setVelocity(const dg::Vector & vel);
-      virtual void setSecondOrderIntegration();
-      virtual void setNoIntegration();
-      virtual void setControlInputType(const std::string& cit);
-      virtual void increment(const double & dt = 5e-2);
-      
-    public: /* --- DISPLAY --- */
-      virtual void display(std::ostream& os) const;
-      SOT_CORE_EXPORT friend std::ostream&
-      operator<<(std::ostream& os,const Device& r) {
-        r.display(os); return os;
-      }
+    static const std::string CLASS_NAME;
 
-    public: /* --- SIGNALS --- */
+    /**
+     * @brief getClassName why create an accessor of a public variable?
+     * @return the name of the device class
+     */
+    virtual const std::string& getClassName(void) const {
+      return CLASS_NAME;
+    }
 
-      dynamicgraph::SignalPtr<dg::Vector,int> controlSIN;
-      dynamicgraph::SignalPtr<dg::Vector,int> attitudeSIN;
-      dynamicgraph::SignalPtr<dg::Vector,int> zmpSIN;
+  public:
 
-      dynamicgraph::Signal<dg::Vector,int> stateSOUT;
-      /// This corresponds to the real encoders values and take into
-      /// account the stabilization step. Therefore, this usually
-      /// does *not* match the state control input signal.
-      ///
-      dynamicgraph::Signal<dg::Vector, int> robotState_;
-      dynamicgraph::Signal<dg::Vector, int> robotVelocity_;
-      dynamicgraph::Signal<dg::Vector,int> velocitySOUT;
-      dynamicgraph::Signal<MatrixRotation,int> attitudeSOUT;
-      dynamicgraph::Signal<dg::Vector,int>* forcesSOUT[4];
+    /**
+     * @brief Device is the constructor. The name allow the DynamicGraph to
+     * identify the entity
+     * @param name is the entity name
+     */
+    Device(const std::string& name);
+    /**
+     * @brief ~Device is a default destructor that might overloaded
+     */
+    virtual ~Device();
 
-      dynamicgraph::Signal<dg::Vector,int> pseudoTorqueSOUT;
-      dynamicgraph::Signal<dg::Vector,int> previousControlSOUT;
+    /**
+     * @brief increment
+     * @param dt
+     */
+    virtual void increment(const double & dt = 5e-2);
 
-      /*! \brief The current state of the robot from the command viewpoint. */
-      dynamicgraph::Signal<dg::Vector,int> motorcontrolSOUT;
-      /*! \brief The ZMP reference send by the previous controller. */
-      dynamicgraph::Signal<dg::Vector,int> ZMPPreviousControllerSOUT;
+    /**
+     * @brief display
+     * @param os
+     */
+    virtual void display(std::ostream& os) const;
 
-    public: /* --- COMMANDS --- */
-      void commandLine(const std::string&, std::istringstream&,
-                       std::ostream&){}
-    protected:
-      /// Compute roll pitch yaw angles of freeflyer joint.
-      void integrateRollPitchYaw(dg::Vector& state, const dg::Vector& control,
-                                 double dt);
-      /// Store Position of free flyer joint
-      MatrixHomogeneous ffPose_;
-      /// Compute the new position, from the current control.
-      virtual void integrate( const double & dt );
-    protected:
-      /// Get freeflyer pose
-      const MatrixHomogeneous& freeFlyerPose() const;
-    public:
-      virtual void setRoot( const dg::Matrix & root );
+    /**
+     * @brief operator <<
+     * @param os
+     * @param r
+     * @return
+     */
+    friend std::ostream& operator<<(std::ostream& os,const Device& r) {
+      r.display(os);
+      return os;
+    }
+
+    /*********************************
+     * INPUT SIGNALS / SENSOR VALUES *
+     *********************************/
+
+    /**
+     * @brief accelerometers_in_ is the list of signals that feed the dynamic
+     * graph with the robot different accelerometers data.
+     */
+    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > accelerometers_in_;
+
+    /**
+     * @brief gyroscopes_in_ is the list of signals that feed the dynamic
+     * graph with the robot different gyroscopes data.
+     */
+    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > gyroscopes_in_;
+
+    /**
+     * @brief wrenchs_in_ is the list of signals that feed the dynamic
+     * graph with the robot different 6d force sensors data.
+     */
+    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > wrenchs_in_;
+
+    /**
+     * @brief joint_pos_in_ feeds the dynamic graph with the joint positions.
+     */
+    dynamicgraph::SignalPtr<dg::Vector,int> joint_pos_in_;
+
+    /**
+     * @brief joint_vel_in_ feeds the dynamic graph with the joint velocities.
+     */
+    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > joint_vel_in_;
+
+    /**
+     * @brief joint_torques_in_ feeds the dynamic graph with the joint
+     * torques.
+     */
+    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > joint_torques_in_;
+
+    /**
+     * @brief frames_pos_in_ is a list of frame pos as input. The composition
+     * of this vector is [x, y, z, q0, q1, q2, q3], i.e. a 3D pose vector
+     * and a quaternion
+     */
+    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > frames_pos_in_;
+
+    /**********************************
+     * OUTPUT SIGNALS / DESIRED VALUE *
+     **********************************/
+
+    /**
+     * @brief motor_control_out_ is the output motor control for each joint.
+     * Feeding this signal *IS MANDATORY* otherwize the process will crash.
+     */
+    dynamicgraph::Signal<dg::Vector,int> motor_control_out_;
+
+    /**
+     * @brief previous_motor_control_out_ is the last output motor control for
+     * each joint. Feeding this signal *IS NOT* mandatory.
+     */
+    dynamicgraph::Signal<dg::Vector,int> previous_motor_control_out_;
+
+    /**
+     * @brief robot_state_ is the output state in generalized coodinates.
+     * This signal is not requiered but helpful.
+     */
+    dynamicgraph::Signal<dg::Vector, int> robot_state_;
+
+    /**
+     * @brief robot_velocity_ is the output velocity in generalized coodinates.
+     * This signal is not requiered but helpful.
+     */
+    dynamicgraph::Signal<dg::Vector, int> robot_velocity_;
+
+    /**
+     * @brief wrenchs_out_ is the list of the output 6d wrench data.
+     */
+    std::vector<dynamicgraph::Signal<dg::Vector,int> > wrenchs_out_;
+
+  public:
+    /************
+     * COMMANDS *
+     ************/
+    /**
+     * @brief commandLine I am not sure about this...
+     * (was not virtual originally)
+     */
+    virtual void commandLine(const std::string&, std::istringstream&,
+                     std::ostream&){}
+
+  protected:
+    /**
+     * @brief periodic_call_before_ handle the asynchronous command call on the
+     * device between getting the sensor data and sending the commands
+     */
+    PeriodicCall periodic_call_before_;
+
+    /**
+     * @brief periodic_call_after_ handle the asynchronous command call on the
+     * device between getting the sensor data and sending the commands
+     */
+    PeriodicCall periodic_call_after_;
+
+  };
+
+} // namespace dynamic_graph
 
 
-      virtual void setRoot( const MatrixHomogeneous & worldMwaist );
-    private:
-      // Intermediate variable to avoid dynamic allocation
-      dg::Vector forceZero6;
-    };
-  } // namespace sot
-} // namespace dynamicgraph
-
-
-#endif /* #ifndef SOT_DEVICE_HH */
+#endif /* #ifndef DEVICE_HH */
 
 
 

@@ -1,3 +1,13 @@
+/**
+ * \file ros_interpreter.cpp
+ * \brief the user interface
+ * \author Maximilien Naveau
+ * \date 2018
+ *
+ * This file implements a ros bridge on top of Python interpretor. It is used
+ * an asynchronuous communcation between the user and the controller.
+ */
+
 #include <dynamic_graph_manager/ros_interpreter.hh>
 
 namespace dynamic_graph

@@ -19,7 +19,7 @@ ENDFUNCTION(NORMALIZE_PATH)
 #
 # Define a macro that correctly look for python between 2.7 and 3
 #
-MACRO(FIND_PYTHON)
+MACRO(SEARCH_FOR_PYTHON)
 
 FIND_PACKAGE(PythonInterp ${ARGN})
 IF (NOT ${PYTHONINTERP_FOUND} STREQUAL TRUE)

@@ -4,8 +4,18 @@
 
 set(DYNAMIC_GRAPH_MANAGER_SRC
     dynamic_graph_manager.cpp
+    device.cpp
+    periodic-call.cpp
     ros_init.cpp
     ros_interpreter.cpp
+
+    exception/exception-abstract.cpp
+    exception/exception-factory.cpp
+    exception/exception-signal.cpp
+    exception/exception-tools.cpp
+    exception/exception-dynamic.cpp
+    exception/exception-feature.cpp
+    exception/exception-task.cpp
 )
 add_library(dynamic_graph_manager SHARED ${DYNAMIC_GRAPH_MANAGER_SRC})
 target_link_libraries(dynamic_graph_manager

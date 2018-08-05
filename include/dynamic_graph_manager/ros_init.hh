@@ -1,3 +1,13 @@
+/**
+ * \file ros_init.hh
+ * \brief a ROS singleton
+ * \author Maximilien Naveau
+ * \date 2018
+ *
+ * This file declares a ROS global singleton object. It is used to initialize
+ * ROS and get a node handle specific to the DynamicGraphManager class.
+ */
+
 #ifndef ROS_INIT_HH
 #define ROS_INIT_HH
 

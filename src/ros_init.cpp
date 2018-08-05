@@ -1,3 +1,13 @@
+/**
+ * \file ros_init.cpp
+ * \brief a ROS singleton
+ * \author Maximilien Naveau
+ * \date 2018
+ *
+ * This file implements a ROS global singleton object. It is used to initialize
+ * ROS and get a node handle specific to the DynamicGraphManager class.
+ */
+
 #include <dynamic_graph_manager/ros_init.hh>
 
 namespace dynamic_graph

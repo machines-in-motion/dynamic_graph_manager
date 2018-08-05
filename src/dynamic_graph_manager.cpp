@@ -1,7 +1,7 @@
 /**
  * \file dynamic_graph_manager.cpp
- * \brief Extended Kalman Filter
- * \author Nick Rotella
+ * \brief The Control Manager
+ * \author Maximilien Naveau
  * \date 2018
  *
  * Implementation of the DynamicGraphManager class
