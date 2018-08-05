@@ -278,7 +278,6 @@ TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph_fork)
     dgm.wait_start_dynamic_graph();
     ASSERT_TRUE(!dgm.is_dynamic_graph_stopped());
     // std::cout << "Child process stopped..." << std::endl;
-    usleep(5000000);
     exit(0);
   }
   else if(pid > 0) // Parent process
@@ -291,8 +290,8 @@ TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph_fork)
     ros::ServiceClient start_dynamic_graph_client =
         n.serviceClient<std_srvs::Empty>(
           "/dynamic_graph_manager/start_dynamic_graph");
+    usleep(500);
     ASSERT_TRUE(start_dynamic_graph_client.waitForExistence());
-    ASSERT_TRUE(start_dynamic_graph_client.isValid());
     ASSERT_TRUE(start_dynamic_graph_client.call(srv));
     ROS_INFO("The start_dynamic_graph service has been called successfully");
     wait(nullptr);
