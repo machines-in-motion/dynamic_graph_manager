@@ -7,232 +7,158 @@
  * This file implements the input and output of the DynamicGraph
  */
 
-/* --------------------------------------------------------------------- */
-/* --- INCLUDE --------------------------------------------------------- */
-/* --------------------------------------------------------------------- */
-
 #include <Eigen/Geometry>
+
+#include <yaml-cpp/yaml_eigen.h>
+
 #include <dynamic-graph/factory.h>
 #include <dynamic-graph/all-commands.h>
 #include <dynamic-graph/linear-algebra.h>
+#include <dynamic-graph/debug.h>
 
 #include <dynamic_graph_manager/device.hh>
-#include <dynamic_graph_manager/debug/debug.hh>
 
 using namespace std;
 using namespace dynamic_graph;
 
+/**
+ * @brief str2int used in the switch case, it allows to convert in compile time
+ * strings to int
+ * @param str is the string to convert
+ * @param h is the index of the string to start with
+ * @return an integer that correspond to the string
+ */
+constexpr unsigned int str2int(const char* str, int h = 0)
+{
+  return !str[h] ?
+        5381 : (str2int(str, h+1) * 33) ^ static_cast<unsigned int>(str[h]);
+}
+
 const std::string dynamic_graph::Device::CLASS_NAME = "Device";
 
-Device::
-~Device( )
+Device::Device(const std::string& input_name, YAML::Node params):
+  // Call the mother class constructor
+  Entity(input_name),
+  params_(params)
 {
-  for( unsigned int i=0; i<4; ++i ) {
-    delete forcesSOUT[i];
-  }
-}
+  /**********************************************
+   * create maps for signals and vector<double> *
+   **********************************************/
+  parse_yaml_file(params_);
 
-Device::
-Device( const std::string& n )
-  :Entity(n)
-  ,state_(6)
-  ,robotState_("Device(" + n + ")::output(vector)::robotState")
-  ,robotVelocity_("Device(" + n + ")::output(vector)::robotVelocity")
-  ,vel_controlInit_(false)
-  ,controlInputType_(CONTROL_INPUT_ONE_INTEGRATION)
-  ,controlSIN( NULL,"Device("+n+")::input(double)::control" )
-  //,attitudeSIN(NULL,"Device::input(matrixRot)::attitudeIN")
-  ,attitudeSIN(NULL,"Device::input(vector3)::attitudeIN")
-  ,zmpSIN(NULL,"Device::input(vector3)::zmp")
-  ,stateSOUT( "Device("+n+")::output(vector)::state" )
-  ,velocitySOUT( "Device("+n+")::output(vector)::velocity"  )
-  ,attitudeSOUT( "Device("+n+")::output(matrixRot)::attitude" )
-  ,pseudoTorqueSOUT( "Device::output(vector)::ptorque" )
-  ,previousControlSOUT( "Device("+n+")::output(vector)::previousControl" )
-  ,motorcontrolSOUT( "Device("+n+")::output(vector)::motorcontrol" )
-  ,ZMPPreviousControllerSOUT( "Device("+n+")::output(vector)::zmppreviouscontroller" ), ffPose_(),
-    forceZero6 (6)
-{
-  forceZero6.fill (0);
-  /* --- SIGNALS --- */
-  for( int i=0;i<4;++i ){ withForceSignals[i] = false; }
-  forcesSOUT[0] =
-      new Signal<Vector, int>("OpenHRP::output(vector6)::forceRLEG");
-  forcesSOUT[1] =
-      new Signal<Vector, int>("OpenHRP::output(vector6)::forceLLEG");
-  forcesSOUT[2] =
-      new Signal<Vector, int>("OpenHRP::output(vector6)::forceRARM");
-  forcesSOUT[3] =
-      new Signal<Vector, int>("OpenHRP::output(vector6)::forceLARM");
-
-  signalRegistration( controlSIN<<stateSOUT<<robotState_<<robotVelocity_
-                      <<velocitySOUT<<attitudeSOUT
-                      <<attitudeSIN<<zmpSIN <<*forcesSOUT[0]<<*forcesSOUT[1]
-                      <<*forcesSOUT[2]<<*forcesSOUT[3] <<previousControlSOUT
-                      <<pseudoTorqueSOUT << motorcontrolSOUT << ZMPPreviousControllerSOUT );
-  state_.fill(.0); stateSOUT.setConstant( state_ );
-
-  velocity_.resize(state_.size()); velocity_.setZero();
-  velocitySOUT.setConstant( velocity_ );
-
-  /* --- Commands --- */
+  /******************************
+   * registering sensor signals *
+   ******************************/
+  for (DeviceOutSignalMap::iterator sig_it = sensors_out_.begin();
+       sig_it != sensors_out_.end(); ++sig_it)
   {
-    std::string docstring;
-    /* Command setStateSize. */
-    docstring =
-        "\n"
-        "    Set size of state vector\n"
-        "\n";
-    addCommand("resize",
-               new command::Setter<Device, unsigned int>
-               (*this, &Device::setStateSize, docstring));
-    docstring =
-        "\n"
-        "    Set state vector value\n"
-        "\n";
-    addCommand("set",
-               new command::Setter<Device, Vector>
-               (*this, &Device::setState, docstring));
+    signalRegistration(*(sig_it->second));
+  }
 
-    docstring =
-        "\n"
-        "    Set velocity vector value\n"
-        "\n";
-    addCommand("setVelocity",
-               new command::Setter<Device, Vector>
-               (*this, &Device::setVelocity, docstring));
+  /*******************************
+   * registering control signals *
+   *******************************/
+  for (DeviceInSignalMap::iterator sig_it = motor_controls_in_.begin();
+       sig_it != motor_controls_in_.end(); ++sig_it)
+  {
+    signalRegistration(*(sig_it->second));
+  }
 
-    void(Device::*setRootPtr)(const Matrix&) = &Device::setRoot;
-    docstring
-        = command::docCommandVoid1("Set the root position.",
-                                   "matrix homogeneous");
-    addCommand("setRoot",
-               command::makeCommandVoid1(*this,setRootPtr,
-                                         docstring));
+  /***********************************************************
+   * Handle commands and signals called in a synchronous way *
+   ***********************************************************/
+  periodic_call_before_.addSpecificCommands(*this, commandMap, "before.");
+  periodic_call_after_.addSpecificCommands(*this, commandMap, "after.");
+}
 
-    /* Second Order Integration set. */
-    docstring =
-        "\n"
-        "    Set the position calculous starting from  \n"
-        "    acceleration measure instead of velocity \n"
-        "\n";
-
-    addCommand("setSecondOrderIntegration",
-               command::makeCommandVoid0(*this,&Device::setSecondOrderIntegration,
-                                         docstring));
-
-    /* SET of control input type. */
-    docstring =
-        "\n"
-        "    Set the type of control input which can be  \n"
-        "    acceleration, velocity, or position\n"
-        "\n";
-
-    addCommand("setControlInputType",
-               new command::Setter<Device,string>
-               (*this, &Device::setControlInputType, docstring));
-
-    // Handle commands and signals called in a synchronous way.
-    periodic_call_before_.addSpecificCommands(*this, commandMap, "before.");
-    periodic_call_after_.addSpecificCommands(*this, commandMap, "after.");
-
+Device::~Device()
+{
+  // destruct the sensor signals
+  for(DeviceOutSignalMap::iterator it = sensors_out_.begin() ;
+      it != sensors_out_.end() ; ++it)
+  {
+    if(it->second != nullptr)
+    {
+      delete it->second;
+      it->second = nullptr;
+    }
+  }
+  // destruct the motor controls signals
+  for(DeviceInSignalMap::iterator it = motor_controls_in_.begin() ;
+      it != motor_controls_in_.end() ; ++it)
+  {
+    if(it->second != nullptr)
+    {
+      delete it->second;
+      it->second = nullptr;
+    }
   }
 }
 
-void Device::
-setStateSize( const unsigned int& size )
+void Device::parse_yaml_file(const YAML::Node& sensors_and_controls)
 {
-  state_.resize(size); state_.fill( .0 );
-  stateSOUT .setConstant( state_ );
-  previousControlSOUT.setConstant( state_ );
-  pseudoTorqueSOUT.setConstant( state_ );
-  motorcontrolSOUT .setConstant( state_ );
+  const YAML::Node& sensors = sensors_and_controls["sensors"];
+  const YAML::Node& controls = sensors_and_controls["controls"];
 
-  Device::setVelocitySize(size);
+  std::string hardware_name ("");
+  dg::Vector init_value (1);
+  unsigned int size (0);
 
-  Vector zmp(3); zmp.fill( .0 );
-  ZMPPreviousControllerSOUT .setConstant( zmp );
-}
-
-void Device::
-setVelocitySize( const unsigned int& size )
-{
-  velocity_.resize(size);
-  velocity_.fill(.0);
-  velocitySOUT.setConstant( velocity_ );
-}
-
-void Device::
-setState( const Vector& st )
-{
-  state_ = st;
-  stateSOUT .setConstant( state_ );
-  motorcontrolSOUT .setConstant( state_ );
-}
-
-void Device::
-setVelocity( const Vector& vel )
-{
-  velocity_ = vel;
-  velocitySOUT .setConstant( velocity_ );
-}
-
-void Device::
-setRoot( const Matrix & root )
-{
-  Eigen::Matrix4d _matrix4d(root);
-  MatrixHomogeneous _root(_matrix4d);
-  setRoot( _root );
-}
-
-void Device::
-setRoot( const MatrixHomogeneous & worldMwaist )
-{
-  VectorRollPitchYaw r = (worldMwaist.linear().eulerAngles(2,1,0)).reverse();
-  Vector q = state_;
-  q = worldMwaist.translation(); // abusive ... but working.
-  for( unsigned int i=0;i<3;++i ) q(i+3) = r(i);
-}
-
-void Device::
-setSecondOrderIntegration()
-{
-  controlInputType_ = CONTROL_INPUT_TWO_INTEGRATION;
-  velocity_.resize(state_.size());
-  velocity_.setZero();
-  velocitySOUT.setConstant( velocity_ );
-}
-
-void Device::
-setNoIntegration()
-{
-  controlInputType_ = CONTROL_INPUT_NO_INTEGRATION;
-  velocity_.resize(state_.size());
-  velocity_.setZero();
-  velocitySOUT.setConstant( velocity_ );
-}
-
-void Device::
-setControlInputType(const std::string& cit)
-{
-  for(int i=0; i<CONTROL_INPUT_SIZE; i++)
-    if(cit==ControlInput_s[i])
+  /*******************************
+   * We iterate over the sensors *
+   *******************************/
+  for (YAML::const_iterator sensor_it = sensors.begin();
+       sensor_it != sensors.end(); ++sensor_it)
+  {
     {
-      controlInputType_ = (ControlInput)i;
-      sotDEBUG(25)<<"Control input type: "<<ControlInput_s[i]<<endl;
-      return;
+      hardware_name = sensor_it->first.as<std::string>();
+      size = sensor_it->second["size"].as<unsigned int>();
+      init_value.resize(size);
+      init_value.setZero();
+      ostringstream sig_name;
+      sig_name << "Device(" << this->name << ")::"
+               << "output(vector" << size << "d)::"
+               << hardware_name ;
+      sensors_out_[hardware_name] = new DeviceOutSignal(sig_name.str());
+      sensors_map_[hardware_name] = std::vector<double>(size, 0.0);
     }
-  sotDEBUG(25)<<"Unrecognized control input type: "<<cit<<endl;
+  }
+
+  /********************************
+   * We iterate over the controls *
+   ********************************/
+  for (YAML::const_iterator control_it = controls.begin();
+       control_it != controls.end(); ++control_it)
+  {
+    {
+      hardware_name = control_it->first.as<std::string>();
+      size = control_it->second["size"].as<unsigned int>();
+      init_value.resize(size);
+      init_value.setZero();
+      ostringstream sig_name;
+      sig_name << "Device(" << this->name << ")::"
+               << "input(vector" << size << "d)::"
+               << hardware_name ;
+      motor_controls_in_[hardware_name] =
+          new DeviceInSignal(nullptr, sig_name.str());
+      motor_controls_map_[hardware_name] = std::vector<double>(size, 0.0);
+    }
+  }
 }
 
-void Device::
-increment( const double & dt )
+void Device::execute_graph()
 {
-  int time = stateSOUT.getTime();
-  sotDEBUG(25) << "Time : " << time << std::endl;
+  /*******************************************
+   * Get the time of the last sensor reading *
+   *******************************************/
+  assert(sensors_out_.size() != 0 && "There exist some sensors.");
+  int time = sensors_out_.begin()->second->getTime();
+  dgDEBUG(25) << "Time : " << time << std::endl;
 
-  // Run Synchronous commands and evaluate signals outside the main
-  // connected component of the graph.
+  /******************************************************************
+   * Run Synchronous commands and evaluate signals outside the main *
+   * connected component of the graph.                              *
+   ******************************************************************/
   try
   {
     periodic_call_before_.run(time+1);
@@ -256,36 +182,19 @@ increment( const double & dt )
         << " running periodical commands (before)" << std::endl;
   }
 
-
-  /* Force the recomputation of the control. */
-  controlSIN( time );
-  sotDEBUG(25) << "u" <<time<<" = " << controlSIN.accessCopy() << endl;
-
-  /* Integration of numerical values. This function is virtual. */
-  integrate( dt );
-  sotDEBUG(25) << "q" << time << " = " << state_ << endl;
-
-  /* Position the signals corresponding to sensors. */
-  stateSOUT .setConstant( state_ ); stateSOUT.setTime( time+1 );
-  //computation of the velocity signal
-  if( controlInputType_==CONTROL_INPUT_TWO_INTEGRATION )
+  /***********************************************************************
+   * Run the graph by accessing the values of the signals inside the map *
+   ***********************************************************************/
+  for(DeviceInSignalMap::const_iterator sig_in_it = motor_controls_in_.begin() ;
+      sig_in_it != motor_controls_in_.end() ; ++sig_in_it)
   {
-    velocitySOUT.setConstant( velocity_ );
-    velocitySOUT.setTime( time+1 );
+    (*(sig_in_it->second))( time );
   }
-  else if (controlInputType_==CONTROL_INPUT_ONE_INTEGRATION)
-  {
-    velocitySOUT.setConstant( controlSIN.accessCopy() );
-    velocitySOUT.setTime( time+1 );
-  }
-  for( int i=0;i<4;++i ){
-    if(  !withForceSignals[i] ) forcesSOUT[i]->setConstant(forceZero6);
-  }
-  Vector zmp(3); zmp.fill( .0 );
-  ZMPPreviousControllerSOUT .setConstant( zmp );
 
-  // Run Synchronous commands and evaluate signals outside the main
-  // connected component of the graph.
+  /******************************************************************
+   * Run Synchronous commands and evaluate signals outside the main *
+   * connected component of the graph.                              *
+   ******************************************************************/
   try
   {
     periodic_call_after_.run(time+1);
@@ -308,13 +217,6 @@ increment( const double & dt )
         << "unknown exception caught while"
         << " running periodical commands (after)" << std::endl;
   }
-
-
-  // Others signals.
-  motorcontrolSOUT .setConstant( state_ );
 }
 
-void Device::display ( std::ostream& os ) const
-{
-  os << name_ << ": " << state_ << std::endl;
-}
+

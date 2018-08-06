@@ -8,7 +8,6 @@ set(DYNAMIC_GRAPH_MANAGER_SRC
     periodic-call.cpp
     ros_init.cpp
     ros_interpreter.cpp
-
     exception/exception-abstract.cpp
     exception/exception-factory.cpp
     exception/exception-signal.cpp

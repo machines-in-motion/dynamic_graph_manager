@@ -25,9 +25,12 @@
 <!-- Dynamic Graph python bindings and python interpreter -->
   <build_depend> dynamic_graph_python </build_depend>
   <run_depend>   dynamic_graph_python </run_depend>
-<!-- Dynamic Graph python bindings and python interpreter -->
+<!-- Use YAML files to parameterize the DynamicGraph device  -->
   <build_depend> yaml_cpp </build_depend>
   <run_depend>   yaml_cpp </run_depend>
+<!-- This tools provides shared memory object in an encapsulated way -->
+  <build_depend> shared_memory </build_depend>
+  <run_depend>   shared_memory </run_depend>
 <!--  <build_depend> pinocchio </build_depend>
   <run_depend>   pinocchio </run_depend>
   <build_depend> eigen </build_depend>

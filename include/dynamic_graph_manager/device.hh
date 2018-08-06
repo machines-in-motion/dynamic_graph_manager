@@ -10,6 +10,8 @@
 #ifndef DEVICE_HH
 #define DEVICE_HH
 
+#include <yaml-cpp/yaml.h>
+
 #include <dynamic-graph/linear-algebra.h>
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/all-signals.h>
@@ -21,6 +23,11 @@ namespace dg = dynamicgraph;
 #include <dynamic_graph_manager/matrix-geometry.hh>
 
 namespace dynamic_graph {
+  typedef dynamicgraph::Signal<dg::Vector,int>  DeviceOutSignal;
+  typedef dynamicgraph::SignalPtr<dg::Vector,int>  DeviceInSignal;
+  typedef std::map<std::string, DeviceOutSignal* > DeviceOutSignalMap;
+  typedef std::map<std::string, DeviceInSignal* > DeviceInSignalMap;
+  typedef std::map<std::string, std::vector<double> > VectorDoubleMap;
 
   class Device: public dynamicgraph::Entity
   {
@@ -29,42 +36,71 @@ namespace dynamic_graph {
     static const std::string CLASS_NAME;
 
     /**
-     * @brief getClassName why create an accessor of a public variable?
+     * @brief getClassName is an overloaded fonction from the class Entity.
+     * It is used to access the class name and do
      * @return the name of the device class
      */
     virtual const std::string& getClassName(void) const {
       return CLASS_NAME;
     }
 
-  public:
-
     /**
      * @brief Device is the constructor. The name allow the DynamicGraph to
      * identify the entity
      * @param name is the entity name
      */
-    Device(const std::string& name);
+    Device(const std::string& input_name, YAML::Node params);
+
     /**
      * @brief ~Device is a default destructor that might overloaded
      */
     virtual ~Device();
 
     /**
-     * @brief increment
-     * @param dt
+     * @brief parse_yaml_file fill in the internal maps for sensors and controls.
      */
-    virtual void increment(const double & dt = 5e-2);
+    void parse_yaml_file(const YAML::Node& sensors_and_controls);
 
     /**
-     * @brief display
-     * @param os
+     * @brief get_sensor_from_map
+     * @param sensors
      */
-    virtual void display(std::ostream& os) const;
+    virtual void set_sensors_from_map(
+        const std::map<std::string, std::vector<double> >& sensors)=0;
 
     /**
-     * @brief operator <<
-     * @param os
-     * @param r
+     * @brief execute_graph is a fonction that execute the graph.
+     *
+     * In order it does:
+     *  - Execute a first set of synchrounous commands.
+     *  - Execute the graph.
+     *  - Execute a second set of synchronous commands.
+     *
+     */
+    virtual void execute_graph();
+
+    /**
+     * @brief set_control_to_map is a parser that feed the map "controls" with
+     * the output of the DynamicGraph.
+     * @param controls is the the map containing the controls.
+     */
+    virtual void get_controls_to_map(
+        std::map<std::string, std::vector<double> >& controls)=0;
+
+    /**
+     * @brief display print the name of the device and the current state.
+     * @param os is the output stream used to send the message.
+     */
+    virtual void display ( std::ostream& os ) const
+    {
+      os << this->name << std::endl;
+    }
+
+    /**
+     * @brief operator << uses the display method to print the some information
+     * about this object
+     * @param os is the output stream used to send the message
+     * @param r is the device object to print out
      * @return
      */
     friend std::ostream& operator<<(std::ostream& os,const Device& r) {
@@ -72,108 +108,58 @@ namespace dynamic_graph {
       return os;
     }
 
-    /*********************************
-     * INPUT SIGNALS / SENSOR VALUES *
-     *********************************/
+    /****************************************************************
+     * DEVICE OUPUT SIGNALS // INPUT OF THE GRAPH <=> SENSOR VALUES *
+     ****************************************************************/
 
     /**
-     * @brief accelerometers_in_ is the list of signals that feed the dynamic
-     * graph with the robot different accelerometers data.
+     * @brief sensors_in_ is a map of device output signals. They represent
+     * all the sensors belonging to the robot.
      */
-    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > accelerometers_in_;
+    DeviceOutSignalMap sensors_out_;
 
     /**
-     * @brief gyroscopes_in_ is the list of signals that feed the dynamic
-     * graph with the robot different gyroscopes data.
+      * @brief sensors_map_ is a map of vector<double>. They represent
+      * all the sensors belonging to the robot.
+      */
+    VectorDoubleMap sensors_map_;
+
+    /*******************************************************
+     * DEVICE INPUT SIGNALS // OUTPUT OF THE CONTROL GRAPH *
+     *******************************************************/
+
+    /**
+     * @brief motor_control_in_ is the output motor control for each joint.
+     * Feeding this signal *IS MANDATORY* otherwise accessing this data will
+     * make the process crash.
      */
-    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > gyroscopes_in_;
+    DeviceInSignalMap motor_controls_in_;
 
     /**
-     * @brief wrenchs_in_ is the list of signals that feed the dynamic
-     * graph with the robot different 6d force sensors data.
+     * @brief motor_controls_map_ is a map of vector<double>. They represent
+     * all the motor controls.
      */
-    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > wrenchs_in_;
+    VectorDoubleMap motor_controls_map_;
 
+  private:
     /**
-     * @brief joint_pos_in_ feeds the dynamic graph with the joint positions.
-     */
-    dynamicgraph::SignalPtr<dg::Vector,int> joint_pos_in_;
-
-    /**
-     * @brief joint_vel_in_ feeds the dynamic graph with the joint velocities.
-     */
-    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > joint_vel_in_;
-
-    /**
-     * @brief joint_torques_in_ feeds the dynamic graph with the joint
-     * torques.
-     */
-    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > joint_torques_in_;
-
-    /**
-     * @brief frames_pos_in_ is a list of frame pos as input. The composition
-     * of this vector is [x, y, z, q0, q1, q2, q3], i.e. a 3D pose vector
-     * and a quaternion
-     */
-    std::vector<dynamicgraph::SignalPtr<dg::Vector,int> > frames_pos_in_;
-
-    /**********************************
-     * OUTPUT SIGNALS / DESIRED VALUE *
-     **********************************/
-
-    /**
-     * @brief motor_control_out_ is the output motor control for each joint.
-     * Feeding this signal *IS MANDATORY* otherwize the process will crash.
-     */
-    dynamicgraph::Signal<dg::Vector,int> motor_control_out_;
-
-    /**
-     * @brief previous_motor_control_out_ is the last output motor control for
-     * each joint. Feeding this signal *IS NOT* mandatory.
-     */
-    dynamicgraph::Signal<dg::Vector,int> previous_motor_control_out_;
-
-    /**
-     * @brief robot_state_ is the output state in generalized coodinates.
-     * This signal is not requiered but helpful.
-     */
-    dynamicgraph::Signal<dg::Vector, int> robot_state_;
-
-    /**
-     * @brief robot_velocity_ is the output velocity in generalized coodinates.
-     * This signal is not requiered but helpful.
-     */
-    dynamicgraph::Signal<dg::Vector, int> robot_velocity_;
-
-    /**
-     * @brief wrenchs_out_ is the list of the output 6d wrench data.
-     */
-    std::vector<dynamicgraph::Signal<dg::Vector,int> > wrenchs_out_;
-
-  public:
-    /************
-     * COMMANDS *
-     ************/
-    /**
-     * @brief commandLine I am not sure about this...
-     * (was not virtual originally)
-     */
-    virtual void commandLine(const std::string&, std::istringstream&,
-                     std::ostream&){}
-
-  protected:
-    /**
-     * @brief periodic_call_before_ handle the asynchronous command call on the
-     * device between getting the sensor data and sending the commands
+     * @brief periodic_call_before_ handle the *synchronous* command call on the
+     * device between getting the sensor data and sending the commands.
+     * Typically used when one wants to evaluate a signal that is not plugged.
      */
     PeriodicCall periodic_call_before_;
 
     /**
-     * @brief periodic_call_after_ handle the asynchronous command call on the
-     * device between getting the sensor data and sending the commands
+     * @brief periodic_call_after_ handle the *synchronous* command call on the
+     * device between getting the sensor data and sending the commands.
+     * Typically used when one wants to evaluate a signal that is not plugged.
      */
     PeriodicCall periodic_call_after_;
 
+    /**
+     * @brief params is a YAML node that allow the creation of a modular device
+     */
+    YAML::Node params_;
   };
 
 } // namespace dynamic_graph

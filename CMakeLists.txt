@@ -46,6 +46,7 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     dynamic_graph
     dynamic_graph_python
     yaml_cpp
+    shared_memory
 )
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
