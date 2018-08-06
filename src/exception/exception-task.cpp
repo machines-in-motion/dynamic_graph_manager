@@ -18,12 +18,12 @@
  * with sot-core.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sot/core/exception-task.hh>
+#include <dynamic_graph_manager/exception/exception-task.hh>
 #include <stdarg.h>
 #include <cstdio>
 
 
-using namespace dynamicgraph::sot;
+using namespace dynamic_graph;
 
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */

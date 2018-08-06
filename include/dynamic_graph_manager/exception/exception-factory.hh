@@ -1,77 +1,62 @@
-/*
- * Copyright 2010,
- * François Bleibel,
- * Olivier Stasse,
- *
- * CNRS/AIST
- *
- * This file is part of sot-core.
- * sot-core is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
- * sot-core is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.  You should
- * have received a copy of the GNU Lesser General Public License along
- * with sot-core.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * \file exception-abstract.hh
+ * \brief An exception class that provides usefull information in case of bug
+ * catch.
+ * \author Maximilien Naveau
+ * \date 2018
  */
 
-#ifndef __SOT_EXCEPTION_FACTORY_H
-#define __SOT_EXCEPTION_FACTORY_H
+#ifndef EXCEPTION_FACTORY_HH
+#define EXCEPTION_FACTORY_HH
 
 /* --------------------------------------------------------------------- */
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
 
-#include <sot/core/exception-abstract.hh>
-#include "sot/core/api.hh"
+#include <dynamic_graph_manager/exception/exception-abstract.hh>
+
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamicgraph { namespace sot {
+namespace dynamic_graph {
 
-    /* \class ExceptionFactory
- */
-    class SOT_CORE_EXPORT ExceptionFactory
-        :public ExceptionAbstract
+  /**
+   * @brief The ExceptionFactory class
+   */
+  class ExceptionFactory: public ExceptionAbstract
+  {
+  public:
 
+    enum ErrorCodeEnum
     {
-    public:
-
-      enum ErrorCodeEnum
-      {
-        GENERIC = ExceptionAbstract::FACTORY
-        ,UNREFERED_OBJECT
-        ,UNREFERED_SIGNAL
-        ,UNREFERED_FUNCTION
-        ,DYNAMIC_LOADING
-        ,SIGNAL_CONFLICT
-        ,FUNCTION_CONFLICT
-        ,OBJECT_CONFLICT
-        ,SYNTAX_ERROR    // j' aime bien FATAL_ERROR aussi faut que je la case qq part...
-        ,READ_FILE
-      };
-
-      static const std::string EXCEPTION_NAME;
-      virtual const std::string& getExceptionName( void )const{ return ExceptionFactory::EXCEPTION_NAME; }
-
-      ExceptionFactory ( const ExceptionFactory::ErrorCodeEnum& errcode,
-                         const std::string & msg = "" );
-      ExceptionFactory ( const ExceptionFactory::ErrorCodeEnum& errcode,
-                         const std::string & msg,const char* format, ... );
-      virtual ~ExceptionFactory( void ) throw() {}
-
+      GENERIC = ExceptionAbstract::FACTORY
+      ,UNREFERED_OBJECT
+      ,UNREFERED_SIGNAL
+      ,UNREFERED_FUNCTION
+      ,DYNAMIC_LOADING
+      ,SIGNAL_CONFLICT
+      ,FUNCTION_CONFLICT
+      ,OBJECT_CONFLICT
+      ,SYNTAX_ERROR    // j' aime bien FATAL_ERROR aussi faut que je la case qq part...
+      ,READ_FILE
     };
 
+    static const std::string EXCEPTION_NAME;
+    virtual const std::string& getExceptionName( void )const{ return ExceptionFactory::EXCEPTION_NAME; }
 
-  } /* namespace sot */} /* namespace dynamicgraph */
+    ExceptionFactory ( const ExceptionFactory::ErrorCodeEnum& errcode,
+                       const std::string & msg = "" );
+    ExceptionFactory ( const ExceptionFactory::ErrorCodeEnum& errcode,
+                       const std::string & msg,const char* format, ... );
+    virtual ~ExceptionFactory( void ) throw() {}
+
+  };
+} /* namespace dynamicgraph */
 
 
-#endif /* #ifndef __SOT_EXCEPTION_FACTORY_H */
+#endif /* #ifndef EXCEPTION_FACTORY_HH */
 
 /*
  * Local variables:

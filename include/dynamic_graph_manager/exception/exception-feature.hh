@@ -1,71 +1,56 @@
-/*
- * Copyright 2010,
- * François Bleibel,
- * Olivier Stasse,
- *
- * CNRS/AIST
- *
- * This file is part of sot-core.
- * sot-core is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
- * sot-core is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.  You should
- * have received a copy of the GNU Lesser General Public License along
- * with sot-core.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * \file exception-feature.hh
+ * \brief An exception class that provides usefull information in case of bug
+ * catch
+ * \author Maximilien Naveau
+ * \date 2018
  */
 
-#ifndef __SOT_EXCEPTION_FEATURE_H
-#define __SOT_EXCEPTION_FEATURE_H
+#ifndef EXCEPTION_FEATURE_HH
+#define EXCEPTION_FEATURE_HH
 
 /* --------------------------------------------------------------------- */
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
 
-#include <sot/core/exception-abstract.hh>
-#include "sot/core/api.hh"
+#include <dynamic_graph_manager/exception/exception-abstract.hh>
+
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamicgraph { namespace sot {
+namespace dynamic_graph {
 
-    /* \class ExceptionFeature
+  /* \class ExceptionFeature
  */
-    class SOT_CORE_EXPORT ExceptionFeature
-        :public ExceptionAbstract
+  class ExceptionFeature
+      :public ExceptionAbstract
 
+  {
+  public:
+
+    enum ErrorCodeEnum
     {
-    public:
-
-      enum ErrorCodeEnum
-      {
-        GENERIC = ExceptionAbstract::FEATURE
-        ,BAD_INIT
-        ,UNCOMPATIBLE_SIZE
-      };
-
-      static const std::string EXCEPTION_NAME;
-      virtual const std::string& getExceptionName( void ) const { return ExceptionFeature::EXCEPTION_NAME; }
-
-      ExceptionFeature ( const ExceptionFeature::ErrorCodeEnum& errcode,
-                         const std::string & msg = "" );
-
-      ExceptionFeature ( const ExceptionFeature::ErrorCodeEnum& errcode,
-                         const std::string & msg,const char* format, ... );
-
-      virtual ~ExceptionFeature( void ) throw() {}
+      GENERIC = ExceptionAbstract::FEATURE
+      ,BAD_INIT
+      ,UNCOMPATIBLE_SIZE
     };
 
+    static const std::string EXCEPTION_NAME;
+    virtual const std::string& getExceptionName( void ) const { return ExceptionFeature::EXCEPTION_NAME; }
 
-  } /* namespace sot */} /* namespace dynamicgraph */
+    ExceptionFeature ( const ExceptionFeature::ErrorCodeEnum& errcode,
+                       const std::string & msg = "" );
 
+    ExceptionFeature ( const ExceptionFeature::ErrorCodeEnum& errcode,
+                       const std::string & msg,const char* format, ... );
 
-#endif /* #ifndef __SOT_EXCEPTION_FEATURE_H */
+    virtual ~ExceptionFeature( void ) throw() {}
+  };
+} /* namespace dynamicgraph */
+
+#endif /* #ifndef EXCEPTION_FEATURE_HH */
 
 /*
  * Local variables:

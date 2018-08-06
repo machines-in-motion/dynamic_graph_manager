@@ -1,77 +1,57 @@
-/*
- * Copyright 2010,
- * François Bleibel,
- * Olivier Stasse,
- *
- * CNRS/AIST
- *
- * This file is part of sot-core.
- * sot-core is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
- * sot-core is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.  You should
- * have received a copy of the GNU Lesser General Public License along
- * with sot-core.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * \file exception-signal.hh
+ * \brief An exception class that provides usefull information in case of bug
+ * catch.
+ * \author Maximilien Naveau
+ * \date 2018
  */
 
-#ifndef __SOT_SIGNAL_EXCEPTION_H
-#define __SOT_SIGNAL_EXCEPTION_H
+#ifndef SIGNAL_EXCEPTION_HH
+#define SIGNAL_EXCEPTION_HH
 
 /* --------------------------------------------------------------------- */
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
 
-#include <sot/core/exception-abstract.hh>
-#include "sot/core/api.hh"
+#include <dynamic_graph_manager/exception/exception-abstract.hh>
+
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamicgraph {
-  namespace sot {
+namespace dynamic_graph {
 
-    /* \class ExceptionSignal */
-    class SOT_CORE_EXPORT ExceptionSignal
-        :public ExceptionAbstract
-
+  /* \class ExceptionSignal */
+  class ExceptionSignal: public ExceptionAbstract
+  {
+  public:
+    enum ErrorCodeEnum
     {
-    public:
-      enum ErrorCodeEnum
-      {
-        GENERIC = ExceptionAbstract::SIGNAL
+      GENERIC = ExceptionAbstract::SIGNAL
 
-        ,READWRITE_LOCK
-        ,COPY_NOT_INITIALIZED
-        ,NOT_INITIALIZED
-        ,PLUG_IMPOSSIBLE
-        ,SET_IMPOSSIBLE
-        ,BAD_CAST
-      };
-
-      static const std::string EXCEPTION_NAME;
-      virtual const std::string& getExceptionName( void ) const { return EXCEPTION_NAME; }
-
-    public:
-
-      ExceptionSignal ( const ExceptionSignal::ErrorCodeEnum& errcode,
-                        const std::string & msg = "" );
-      ExceptionSignal( const ExceptionSignal::ErrorCodeEnum& errcode,
-                       const std::string & msg,const char* format, ... );
-      virtual ~ExceptionSignal( void ) throw() {}
-
-
+      ,READWRITE_LOCK
+      ,COPY_NOT_INITIALIZED
+      ,NOT_INITIALIZED
+      ,PLUG_IMPOSSIBLE
+      ,SET_IMPOSSIBLE
+      ,BAD_CAST
     };
 
+    static const std::string EXCEPTION_NAME;
+    virtual const std::string& getExceptionName( void ) const { return EXCEPTION_NAME; }
 
-  } /* namespace sot */} /* namespace dynamicgraph */
+  public:
 
+    ExceptionSignal ( const ExceptionSignal::ErrorCodeEnum& errcode,
+                      const std::string & msg = "" );
+    ExceptionSignal( const ExceptionSignal::ErrorCodeEnum& errcode,
+                     const std::string & msg,const char* format, ... );
+    virtual ~ExceptionSignal( void ) throw() {}
+  };
+} /* namespace dynamic_graph */
 
-#endif /* #ifndef __SOT_SIGNAL_EXCEPTION_H */
+#endif /* #ifndef SIGNAL_EXCEPTION_HH */
 
 /*
  * Local variables:

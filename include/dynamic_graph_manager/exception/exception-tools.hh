@@ -1,78 +1,59 @@
-/*
- * Copyright 2010,
- * François Bleibel,
- * Olivier Stasse,
- *
- * CNRS/AIST
- *
- * This file is part of sot-core.
- * sot-core is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
- * sot-core is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.  You should
- * have received a copy of the GNU Lesser General Public License along
- * with sot-core.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * \file exception-abstract.hh
+ * \brief An exception class that provides usefull information in case of bug
+ * catch.
+ * \author Maximilien Naveau
+ * \date 2018
  */
 
-#ifndef __SOT_TOOLS_EXCEPTION_H
-#define __SOT_TOOLS_EXCEPTION_H
+#ifndef TOOLS_EXCEPTION_HH
+#define TOOLS_EXCEPTION_HH
 
 /* --------------------------------------------------------------------- */
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
 
-#include <sot/core/exception-abstract.hh>
-#include "sot/core/api.hh"
+#include <dynamic_graph_manager/exception/exception-abstract.hh>
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamicgraph {
-  namespace sot {
+namespace dynamic_graph {
 
-    /* \class ExceptionTools
+  /* \class ExceptionTools
      */
-    class ExceptionTools
-        :public ExceptionAbstract
-
+  class ExceptionTools :public ExceptionAbstract
+  {
+  public:
+    enum ErrorCodeEnum
     {
-    public:
-      enum ErrorCodeEnum
-      {
-        GENERIC = ExceptionAbstract::TOOLS
+      GENERIC = ExceptionAbstract::TOOLS
 
-        ,CORBA
-        ,KALMAN_SIZE
-        ,PY_SHELL_PTR
-      };
-
-      static const std::string EXCEPTION_NAME;
-      virtual const std::string& getExceptionName() const {
-        return EXCEPTION_NAME;
-      }
-
-    public:
-
-      ExceptionTools ( const ExceptionTools::ErrorCodeEnum& errcode,
-                       const std::string & msg = "" );
-      ExceptionTools( const ExceptionTools::ErrorCodeEnum& errcode,
-                      const std::string & msg,const char* format, ... );
-      virtual ~ExceptionTools( void ) throw() {}
-
-
+      ,CORBA
+      ,KALMAN_SIZE
+      ,PY_SHELL_PTR
     };
 
-  } // namespace sot
+    static const std::string EXCEPTION_NAME;
+    virtual const std::string& getExceptionName() const {
+      return EXCEPTION_NAME;
+    }
+
+  public:
+
+    ExceptionTools ( const ExceptionTools::ErrorCodeEnum& errcode,
+                     const std::string & msg = "" );
+    ExceptionTools( const ExceptionTools::ErrorCodeEnum& errcode,
+                    const std::string & msg,const char* format, ... );
+    virtual ~ExceptionTools( void ) throw() {}
+  };
+
 } // namespace dynamicgraph
 
 
 
-#endif /* #ifndef __SOT_TOOLS_EXCEPTION_H */
+#endif /* #ifndef TOOLS_EXCEPTION_HH */
 
 /*
  * Local variables:

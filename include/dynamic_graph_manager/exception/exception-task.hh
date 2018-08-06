@@ -1,44 +1,28 @@
-/*
- * Copyright 2010,
- * François Bleibel,
- * Olivier Stasse,
- *
- * CNRS/AIST
- *
- * This file is part of sot-core.
- * sot-core is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
- * sot-core is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.  You should
- * have received a copy of the GNU Lesser General Public License along
- * with sot-core.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * \file exception-task.cpp
+ * \brief An exception class that provides usefull information in case of bug
+ * catch
+ * \author Maximilien Naveau
+ * \date 2018
  */
 
-#ifndef __SOT_EXCEPTION_TASK_H
-#define __SOT_EXCEPTION_TASK_H
+#ifndef EXCEPTION_TASK_HH
+#define EXCEPTION_TASK_HH
 
 /* --------------------------------------------------------------------- */
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
 
-#include <sot/core/exception-abstract.hh>
-#include "sot/core/api.hh"
+#include <dynamic_graph_manager/exception/exception-abstract.hh>
+
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamicgraph { namespace sot {
-
-    /* \class ExceptionTask
- */
-    class SOT_CORE_EXPORT ExceptionTask
-        :public ExceptionAbstract
-
+namespace dynamic_graph {
+    /** \brief ExceptionTask */
+    class ExceptionTask: public ExceptionAbstract
     {
     public:
 
@@ -62,10 +46,7 @@ namespace dynamicgraph { namespace sot {
       virtual ~ExceptionTask( void ) throw() {}
 
     };
-
-  } /* namespace sot */} /* namespace dynamicgraph */
-
-
+} /* namespace dynamicgraph */
 
 #endif /* #ifndef __SOT_EXCEPTION_TASK_H */
 
