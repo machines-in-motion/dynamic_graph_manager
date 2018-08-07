@@ -1,5 +1,5 @@
 /**
- * \file exception-task.cpp
+ * \file exception-task.hh
  * \brief An exception class that provides usefull information in case of bug
  * catch
  * \author Maximilien Naveau
@@ -48,10 +48,4 @@ namespace dynamic_graph {
     };
 } /* namespace dynamicgraph */
 
-#endif /* #ifndef __SOT_EXCEPTION_TASK_H */
-
-/*
- * Local variables:
- * c-basic-offset: 2
- * End:
- */
+#endif /* #ifndef EXCEPTION_TASK_HH */

@@ -1,5 +1,5 @@
 /**
- * \file exception-abstract.hh
+ * \file exception-tools.hh
  * \brief An exception class that provides usefull information in case of bug
  * catch.
  * \author Maximilien Naveau

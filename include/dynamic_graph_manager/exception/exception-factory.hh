@@ -1,5 +1,5 @@
 /**
- * \file exception-abstract.hh
+ * \file exception-factory.hh
  * \brief An exception class that provides usefull information in case of bug
  * catch.
  * \author Maximilien Naveau
@@ -53,7 +53,7 @@ namespace dynamic_graph {
     virtual ~ExceptionFactory( void ) throw() {}
 
   };
-} /* namespace dynamicgraph */
+} /* namespace dynamic_graph */
 
 
 #endif /* #ifndef EXCEPTION_FACTORY_HH */

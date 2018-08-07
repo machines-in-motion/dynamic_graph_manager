@@ -6,8 +6,8 @@
  * \date 2018
  */
 
-#ifndef DG_ABSTRACT_EXCEPTION_HH
-#define DG_ABSTRACT_EXCEPTION_HH
+#ifndef ABSTRACT_EXCEPTION_HH
+#define ABSTRACT_EXCEPTION_HH
 
 /* --------------------------------------------------------------------- */
 /* --- INCLUDE --------------------------------------------------------- */
@@ -131,7 +131,7 @@ namespace dynamic_graph {
 
 } /* namespace dynamic_graph */
 
-#endif /* #ifndef DG_ABSTRACT_EXCEPTION_HH */
+#endif /* #ifndef ABSTRACT_EXCEPTION_HH */
 
 /*
  * Local variables:
