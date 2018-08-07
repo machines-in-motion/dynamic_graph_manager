@@ -36,7 +36,7 @@ namespace dynamic_graph {
     static const std::string CLASS_NAME;
 
     /**
-     * @brief getClassName is an overloaded fonction from the class Entity.
+     * @brief getClassName is an overloaded function from the class Entity.
      * It is used to access the class name and do
      * @return the name of the device class
      */
