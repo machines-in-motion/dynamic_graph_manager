@@ -113,7 +113,7 @@ namespace dynamic_graph {
      ****************************************************************/
 
     /**
-     * @brief sensors_in_ is a map of device output signals. They represent
+     * @brief sensors_out_ is a map of device output signals. They represent
      * all the sensors belonging to the robot.
      */
     DeviceOutSignalMap sensors_out_;
