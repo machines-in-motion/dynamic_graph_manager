@@ -28,6 +28,7 @@ namespace dynamic_graph {
   typedef std::map<std::string, DeviceOutSignal* > DeviceOutSignalMap;
   typedef std::map<std::string, DeviceInSignal* > DeviceInSignalMap;
   typedef std::map<std::string, std::vector<double> > VectorDoubleMap;
+  typedef std::map<std::string, dg::Vector > VectorDGMap;
 
   class Device: public dynamicgraph::Entity
   {
@@ -65,8 +66,7 @@ namespace dynamic_graph {
      * @brief get_sensor_from_map
      * @param sensors
      */
-    virtual void set_sensors_from_map(
-        const std::map<std::string, std::vector<double> >& sensors)=0;
+    virtual void set_sensors_from_map(const VectorDoubleMap& sensors);
 
     /**
      * @brief execute_graph is a fonction that execute the graph.
@@ -84,8 +84,7 @@ namespace dynamic_graph {
      * the output of the DynamicGraph.
      * @param controls is the the map containing the controls.
      */
-    virtual void get_controls_to_map(
-        std::map<std::string, std::vector<double> >& controls)=0;
+    virtual void get_controls_to_map(VectorDoubleMap& motor_controls);
 
     /**
      * @brief display print the name of the device and the current state.
@@ -99,8 +98,8 @@ namespace dynamic_graph {
     /**
      * @brief operator << uses the display method to print the some information
      * about this object
-     * @param os is the output stream used to send the message
-     * @param r is the device object to print out
+     * @param[in/out] os is the output stream used to send the message
+     * @param[in] r is the device object to print out
      * @return
      */
     friend std::ostream& operator<<(std::ostream& os,const Device& r) {
@@ -119,10 +118,12 @@ namespace dynamic_graph {
     DeviceOutSignalMap sensors_out_;
 
     /**
-      * @brief sensors_map_ is a map of vector<double>. They represent
-      * all the sensors belonging to the robot.
+      * @brief sensors_map_ is a map of dg::Vector. They represent
+      * all the sensors data measured on the robot. It is a internal copy of the
+      * sensor data that is used for type conversion from std::vector<double>
+      * to dg::Vector
       */
-    VectorDoubleMap sensors_map_;
+    VectorDGMap sensors_map_;
 
     /*******************************************************
      * DEVICE INPUT SIGNALS // OUTPUT OF THE CONTROL GRAPH *
@@ -136,10 +137,12 @@ namespace dynamic_graph {
     DeviceInSignalMap motor_controls_in_;
 
     /**
-     * @brief motor_controls_map_ is a map of vector<double>. They represent
-     * all the motor controls.
+     * @brief motor_controls_map_ is a map of dg::Vector. They represent
+      * all the controls to be sent to the robot. It is a internal copy of the
+      * controls data that is used for type conversion from dg::Vector
+      * to std::vector<double>
      */
-    VectorDoubleMap motor_controls_map_;
+    VectorDGMap motor_controls_map_;
 
   private:
     /**

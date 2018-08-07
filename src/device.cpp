@@ -120,7 +120,8 @@ void Device::parse_yaml_file(const YAML::Node& sensors_and_controls)
                << "output(vector" << size << "d)::"
                << hardware_name ;
       sensors_out_[hardware_name] = new DeviceOutSignal(sig_name.str());
-      sensors_map_[hardware_name] = std::vector<double>(size, 0.0);
+      sensors_map_[hardware_name] = dg::Vector(size);
+      sensors_map_[hardware_name].setZero();
     }
   }
 
@@ -141,8 +142,34 @@ void Device::parse_yaml_file(const YAML::Node& sensors_and_controls)
                << hardware_name ;
       motor_controls_in_[hardware_name] =
           new DeviceInSignal(nullptr, sig_name.str());
-      motor_controls_map_[hardware_name] = std::vector<double>(size, 0.0);
+      motor_controls_map_[hardware_name] = dg::Vector(size);
+      motor_controls_map_[hardware_name].setZero();
     }
+  }
+}
+
+void Device::set_sensors_from_map(const VectorDoubleMap& sensors)
+{
+  // check that all map has the same size
+  assert(sensors.size() == sensors_map_.size() == sensors_out_.size() &&
+         "Device::set_sensors_from_map: All maps has to be the same size");
+  // we do a copy of the map while checking for sanity
+  for(VectorDoubleMap::const_iterator ext_sensor_it = sensors.begin();
+      ext_sensor_it != sensors.end(); ++ext_sensor_it)
+  {
+    assert(sensors_map_.count(ext_sensor_it->first) &&
+           "Device::set_sensors_from_map: All field in the input sensors map\
+            exists in the internal copy");
+    assert(static_cast<unsigned>(ext_sensor_it->second.size()) ==
+           sensors_map_[ext_sensor_it->first].size() &&
+           "Device::set_sensors_from_map: the vectors have the same size in the\
+            maps");
+    for(unsigned i=0 ; ext_sensor_it->second.size() ; ++i)
+    {
+      sensors_map_[ext_sensor_it->first](i) = ext_sensor_it->second[i];
+    }
+    sensors_out_[ext_sensor_it->first]->setConstant(
+          sensors_map_[ext_sensor_it->first]);
   }
 }
 
@@ -219,4 +246,31 @@ void Device::execute_graph()
   }
 }
 
+void Device::get_controls_to_map(VectorDoubleMap& motor_controls)
+{
+  // check that all map has the same size
+  assert(motor_controls.size() == motor_controls_map_.size() ==
+         motor_controls_in_.size() &&
+         "Device::get_controls_to_map: All maps has to be the same size");
+  // we do a copy of the map while checking for sanity
+  for(VectorDoubleMap::iterator ext_control_it = motor_controls.begin();
+      ext_control_it != motor_controls.end(); ++ext_control_it)
+  {
+    assert(motor_controls_map_.count(ext_control_it->first) &&
+           "Device::get_controls_to_map: All field in the input sensors map\
+            exists in the internal copy");
+    assert(static_cast<unsigned>(ext_control_it->second.size()) ==
+           motor_controls_map_[ext_control_it->first].size() &&
+           "Device::get_controls_to_map: the vectors have the same size in the\
+            maps");
+
+   motor_controls_map_[ext_control_it->first] =
+        motor_controls_in_[ext_control_it->first]->accessCopy();
+
+    for(unsigned i=0 ; ext_control_it->second.size() ; ++i)
+    {
+      ext_control_it->second[i] = motor_controls_map_[ext_control_it->first](i);
+    }
+  }
+}
 
