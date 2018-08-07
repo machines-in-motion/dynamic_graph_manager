@@ -11,6 +11,7 @@ set(TEST_CONFIG_PATH ${PROJECT_SOURCE_DIR}/tests/config/)
 catkin_add_gtest(test_dynamic_graph_manager
   main.cpp
   test_dynamic_graph_manager.cpp
+  test_device.cpp
 )
 # link the dependecies to it
 target_link_libraries(test_dynamic_graph_manager
@@ -21,5 +22,5 @@ target_link_libraries(test_dynamic_graph_manager
 )
 # add some preprocessor variable
 target_compile_definitions(test_dynamic_graph_manager PUBLIC
-  CONFIG_FOLDER="${TEST_CONFIG_PATH}"
+  TEST_CONFIG_FOLDER="${TEST_CONFIG_PATH}"
 )

@@ -93,6 +93,8 @@ Device::~Device()
       it->second = nullptr;
     }
   }
+
+  this->entityDeregistration();
 }
 
 void Device::parse_yaml_file(const YAML::Node& sensors_and_controls)

@@ -1,5 +1,5 @@
 /**
- * \file main.cpp
+ * \file test_dynamic_graph_manager.cpp
  * \brief DynamicGraphManager unit tests
  * \author Maximilien Naveau
  * \date 2018
@@ -118,7 +118,7 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter)
 
   // check the run_script service and the python interpreter
   dynamic_graph_manager::RunPythonFile run_file_msg;
-  run_file_msg.request.input = CONFIG_FOLDER + std::string("simple_add.py");
+  run_file_msg.request.input = TEST_CONFIG_FOLDER + std::string("simple_add.py");
   ros::ServiceClient run_script_client =
       node_handle.serviceClient<dynamic_graph_manager::RunPythonFile>(
         "/dynamic_graph_manager/run_python_script");
@@ -163,7 +163,7 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter_from_the_DGM)
 
   // check the run_script service and the python interpreter
   dynamic_graph_manager::RunPythonFile run_file_msg;
-  run_file_msg.request.input = CONFIG_FOLDER + std::string("simple_add.py");
+  run_file_msg.request.input = TEST_CONFIG_FOLDER + std::string("simple_add.py");
   ros::ServiceClient run_script_client =
       node_handle.serviceClient<dynamic_graph_manager::RunPythonFile>(
         "/dynamic_graph_manager/run_python_script");
@@ -226,7 +226,7 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
 
   // check the run_script service and the python interpreter
   dynamic_graph_manager::RunPythonFile run_file_msg;
-  run_file_msg.request.input = CONFIG_FOLDER + std::string("simple_add.py");
+  run_file_msg.request.input = TEST_CONFIG_FOLDER + std::string("simple_add.py");
   ros::ServiceClient run_script_client =
       node_handle.serviceClient<dynamic_graph_manager::RunPythonFile>(
         "/dynamic_graph_manager/run_python_script");
