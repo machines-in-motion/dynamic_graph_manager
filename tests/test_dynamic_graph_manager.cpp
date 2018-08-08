@@ -16,7 +16,11 @@
 /**
  * @brief The DISABLED_TestDynamicGraphManager class is used to disable test
  */
-class DISABLED_TestDynamicGraphManager : public ::testing::Test {};
+class DISABLED_TestDynamicGraphManager : public ::testing::Test
+{
+public:
+  YAML::Node params_;
+};
 
 /**
  * @brief The TestDynamicGraphManager class: test suit template for setting up
@@ -28,6 +32,8 @@ protected:
    * @brief SetUp, is executed before the unit tests
    */
   void SetUp() {
+    params_ = YAML::LoadFile(TEST_CONFIG_FOLDER +
+                             std::string("simple_robot.yaml"));
   }
 
   /**
@@ -41,8 +47,9 @@ protected:
       ros::shutdown();
     }
     assert(!ros::ok() && "ROS must be shut down now.");
-
   }
+
+  YAML::Node params_;
 };
 
 /**
@@ -57,7 +64,7 @@ TEST_F(TestDynamicGraphManager, test_start_stop_ros_services)
   // initialize ROS (not needed here as the dynamic graph manager does it)
 
   // Create a dynamic_graph_manager (DGM)
-  dynamic_graph::DynamicGraphManager dgm;
+  dynamic_graph::DynamicGraphManager dgm(params_);
 
   // initialize dgm
   dgm.initialize_dynamic_graph_process();
@@ -142,7 +149,7 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter_from_the_DGM)
   // initialize ROS (not needed here as the dynamic graph manager does it)
 
   // create the DGM
-  dynamic_graph::DynamicGraphManager dgm ;
+  dynamic_graph::DynamicGraphManager dgm(params_);
 
   // initialize dgm
   dgm.initialize_dynamic_graph_process();
@@ -187,7 +194,7 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
   // initialize ROS (not needed here as the dynamic graph manager does it)
 
   // create the DGM
-  dynamic_graph::DynamicGraphManager dgm ;
+  dynamic_graph::DynamicGraphManager dgm(params_);
 
   ASSERT_FALSE(ros::service::exists(
                  "/dynamic_graph_manager/start_dynamic_graph", false));
@@ -266,15 +273,16 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
 
 TEST_F(TestDynamicGraphManager, test_rt_threads)
 {
-  dynamic_graph::DynamicGraphManager dgm ;
+  dynamic_graph::DynamicGraphManager dgm(params_);
   dgm.initialize_dynamic_graph_process();
   dgm.run_dynamic_graph_process();
+  usleep(5000);
 }
 
 TEST_F(TestDynamicGraphManager, test_destructor)
 {
   {
-    dynamic_graph::DynamicGraphManager dgm ;
+    dynamic_graph::DynamicGraphManager dgm(params_);
   }
 }
 
@@ -289,7 +297,7 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_wait_start_dynamic_graph_fork)
   if(pid == 0) // Child process
   {
     // std::cout << "Child process started..." << std::endl;
-    dynamic_graph::DynamicGraphManager dgm ;
+    dynamic_graph::DynamicGraphManager dgm(params_);
     dgm.initialize_dynamic_graph_process();
     ASSERT_TRUE(ros::ok());
     // std::cout << "Child process waiting for the dg to start..." << std::endl;

@@ -13,9 +13,10 @@
 
 using namespace dynamic_graph;
 
-DynamicGraphManager::DynamicGraphManager()
+DynamicGraphManager::DynamicGraphManager(YAML::Node params)
 {
   // Upon construction the graph is inactive
+  params_ = params;
   is_dynamic_graph_stopped_=true;
 }
 
@@ -53,6 +54,8 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   ros_python_interpreter_.reset(
         new dynamic_graph::RosPythonInterpreter(ros_node_handle));
   start_ros_service(ros_node_handle);
+  device_.reset(new Device(params_["device"]["name"].as<std::string>(),
+      params_["device"]));
 }
 
 void DynamicGraphManager::run_dynamic_graph_process()
@@ -60,7 +63,6 @@ void DynamicGraphManager::run_dynamic_graph_process()
   // launch the real time thread and ros spin
   thread_hardware_communication_.reset(new std::thread(
         &DynamicGraphManager::dynamic_graph_real_time_loop, this));
-  thread_hardware_communication_->detach();
 }
 
 void DynamicGraphManager::initialize_hardware_communication_process()
@@ -73,7 +75,6 @@ void DynamicGraphManager::run_hardware_communication_process()
   // launch the real time thread
   thread_dynamic_graph_.reset(new std::thread(
         &DynamicGraphManager::hardware_communication_real_time_loop, this));
-  thread_dynamic_graph_->detach();
 }
 
 void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)

@@ -42,8 +42,9 @@ protected:
    */
   void SetUp() {
     dg_pool_.getInstance();
-    params_ = YAML::LoadFile(TEST_CONFIG_FOLDER +
+    YAML::Node params = YAML::LoadFile(TEST_CONFIG_FOLDER +
                             std::string("simple_robot.yaml"));
+    params_ = params["device"];
   }
 
   /**
@@ -93,6 +94,7 @@ TEST_F(TestDevice, test_destructor)
 TEST_F(TestDevice, test_parse_yaml_file)
 {
   Device device("simple_robot", params_);
+  device.parse_yaml_node(params_);
   const Device::SignalMap& sig_map = device.getSignalMap();
   ASSERT_EQ(sig_map.count("encoders"), 1);
   ASSERT_EQ(sig_map.count("imu_accelerometer"), 1);
@@ -112,6 +114,7 @@ TEST_F(TestDevice, test_set_sensors_from_map)
 {
   // create the device
   Device device("simple_robot", params_);
+  device.parse_yaml_node(params_);
 
   // prepare some randomness
   srand(static_cast<unsigned>(time(nullptr)));
@@ -190,6 +193,7 @@ TEST_F(TestDevice, test_execute_graph)
 {
   // create the device
   SimpleRobot device("simple_robot");
+  device.parse_yaml_node(params_);
 
   // setup the controls
   device.motor_controls_in_["torques"]->setConstant(dg::Vector::Random(5));
@@ -208,6 +212,7 @@ TEST_F(TestDevice, test_get_controls_to_map)
 {
   // create the device
   Device device("simple_robot", params_);
+  device.parse_yaml_node(params_);
 
   // prepare some randomness
   srand(static_cast<unsigned>(time(nullptr)));

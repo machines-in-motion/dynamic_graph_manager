@@ -17,8 +17,7 @@
 #include <thread>
 
 // used to deal with shared memory
-#include <boost/interprocess/managed_shared_memory.hpp>
-namespace bipc = boost::interprocess;
+#include <shared_memory/shared_memory.hpp>
 
 // get the yaml configuration
 #include <yaml-cpp/yaml.h>
@@ -28,14 +27,11 @@ namespace bipc = boost::interprocess;
 #include <std_srvs/Empty.h>
 #include <dynamic_graph_manager/ros_interpreter.hh>
 
+// the device of the dynamic-graph
+#include <dynamic_graph_manager/device.hh>
+
 namespace dynamic_graph
 {
-
-/**
- * \brief SHARED_MEMORY_NAME is the name used by boost to retrieve the shared
- * memory
- */
-#define SHARED_MEMORY_NAME "DGM_Shared_memory"
 
 /**
  * This class has for purpose to manage the different processes during run time.
@@ -69,7 +65,7 @@ public:
   /**
    * @brief DynamicGraphManager, constructor of the class
    */
-  DynamicGraphManager();
+  DynamicGraphManager(YAML::Node params);
 
   /**
    * @brief DynamicGraphManager, destructor of the class
@@ -222,22 +218,16 @@ private:
    */
   std::unique_ptr<std::thread> thread_hardware_communication_;
 
-  /***********************
-   *  Pool of parameters *
-   ***********************/
-
+  /**
+   * @brief params_ is the pool of paramters in a yaml tree
+   */
   YAML::Node params_;
 
-  /***********************************
-   * management of the shared memory *
-   * *********************************/
-
-  //Remove shared memory on construction and destruction
-  struct shm_remove
-  {
-     shm_remove() {  bipc::shared_memory_object::remove(SHARED_MEMORY_NAME); }
-     ~shm_remove(){  bipc::shared_memory_object::remove(SHARED_MEMORY_NAME); }
-  } shared_memory_remover;
+  /**
+   * @brief device_ is the DynamicGraph device that manages the computation of
+   * the graph.
+   */
+  std::unique_ptr<Device> device_;
 };
 
 } // namespace dynamic_graph
