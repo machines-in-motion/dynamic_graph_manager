@@ -72,6 +72,11 @@ public:
   DynamicGraphManager();
 
   /**
+   * @brief DynamicGraphManager, destructor of the class
+   */
+  ~DynamicGraphManager();
+
+  /**
    * @brief initialize the basic variables
    */
   void initialize(YAML::Node param);
@@ -216,7 +221,6 @@ private:
    * with the hardware.
    */
   std::unique_ptr<std::thread> thread_hardware_communication_;
-
 
   /***********************
    *  Pool of parameters *

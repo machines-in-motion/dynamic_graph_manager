@@ -1,0 +1,15 @@
+sensors:
+  encoders:
+    size: 5
+    joint_equipped: [1, 1, 1, 1, 1]
+  imu_accelerometer:
+    size: 3
+  imu_gyroscope:
+    size: 3
+  imu:
+    size: 6
+controls:
+  torques:
+    size: 5
+  positions:
+    size: 5

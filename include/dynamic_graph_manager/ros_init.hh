@@ -25,9 +25,9 @@ struct GlobalRos
   ~GlobalRos ()
   {
     if (async_spinner_)
-      async_spinner_->stop ();
+      async_spinner_->stop();
     if (node_handle_)
-      node_handle_->shutdown ();
+      node_handle_->shutdown();
   }
   /**
    * @brief nodeHandle_ is the global node handle used by all ROS objects

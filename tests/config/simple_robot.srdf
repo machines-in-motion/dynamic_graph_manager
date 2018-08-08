@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+
+   Simple Robot SRDF
+
+   This file defines semantics group of joints.
+
+   It is an alternative way of specifying semantics on the robot
+   structure.
+
+   It also provides:
+   - the half-sitting robot state (from dynamic-graph),
+   - and the list of sensors and their parameters
+
+  -->
+<robot name="simple_robot">
+
+  <sensors>
+    <encoders>
+      <group_state name="encoders" group="all">
+        <joint name="JOINT0" value="1" />
+        <joint name="JOINT1" value="1" />
+        <joint name="JOINT2" value="1" />
+        <joint name="JOINT3" value="1" />
+        <joint name="JOINT4" value="1" />
+      </group_state>
+    </encoders>
+    <imu_accelerometer>
+      <>
+    </imu_accelerometer>
+    <imu_gyroscope>
+
+    </imu_gyroscope>
+    <imu>
+
+    </imu>
+  </sensors>
+
+</robot>

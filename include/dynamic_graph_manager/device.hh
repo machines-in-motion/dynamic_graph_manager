@@ -23,10 +23,10 @@ namespace dg = dynamicgraph;
 #include <dynamic_graph_manager/matrix-geometry.hh>
 
 namespace dynamic_graph {
-  typedef dynamicgraph::Signal<dg::Vector,int>  DeviceOutSignal;
-  typedef dynamicgraph::SignalPtr<dg::Vector,int>  DeviceInSignal;
-  typedef std::map<std::string, DeviceOutSignal* > DeviceOutSignalMap;
-  typedef std::map<std::string, DeviceInSignal* > DeviceInSignalMap;
+  typedef dynamicgraph::Signal<dg::Vector,int>  OutSignal;
+  typedef dynamicgraph::SignalPtr<dg::Vector,int>  InSignal;
+  typedef std::map<std::string, OutSignal* > DeviceOutSignalMap;
+  typedef std::map<std::string, InSignal* > DeviceInSignalMap;
   typedef std::map<std::string, std::vector<double> > VectorDoubleMap;
   typedef std::map<std::string, dg::Vector > VectorDGMap;
 
@@ -48,9 +48,10 @@ namespace dynamic_graph {
     /**
      * @brief Device is the constructor. The name allow the DynamicGraph to
      * identify the entity
-     * @param name is the entity name
+     * @param input_name is the entity name
+     * @param params is the yaml file used to initialize the device
      */
-    Device(const std::string& input_name, YAML::Node params);
+    Device(const std::string& input_name, const YAML::Node& params);
 
     /**
      * @brief ~Device is a default destructor that might overloaded
@@ -60,7 +61,7 @@ namespace dynamic_graph {
     /**
      * @brief parse_yaml_file fill in the internal maps for sensors and controls.
      */
-    void parse_yaml_file(const YAML::Node& sensors_and_controls);
+    void parse_yaml_node(const YAML::Node& sensors_and_controls);
 
     /**
      * @brief get_sensor_from_map
@@ -85,27 +86,6 @@ namespace dynamic_graph {
      * @param controls is the the map containing the controls.
      */
     virtual void get_controls_to_map(VectorDoubleMap& motor_controls);
-
-    /**
-     * @brief display print the name of the device and the current state.
-     * @param os is the output stream used to send the message.
-     */
-    virtual void display ( std::ostream& os ) const
-    {
-      os << this->name << std::endl;
-    }
-
-    /**
-     * @brief operator << uses the display method to print the some information
-     * about this object
-     * @param[in/out] os is the output stream used to send the message
-     * @param[in] r is the device object to print out
-     * @return
-     */
-    friend std::ostream& operator<<(std::ostream& os,const Device& r) {
-      r.display(os);
-      return os;
-    }
 
     /****************************************************************
      * DEVICE OUPUT SIGNALS // INPUT OF THE GRAPH <=> SENSOR VALUES *
@@ -144,7 +124,7 @@ namespace dynamic_graph {
      */
     VectorDGMap motor_controls_map_;
 
-  private:
+  protected:
     /**
      * @brief periodic_call_before_ handle the *synchronous* command call on the
      * device between getting the sensor data and sending the commands.

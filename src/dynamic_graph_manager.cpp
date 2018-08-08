@@ -19,6 +19,12 @@ DynamicGraphManager::DynamicGraphManager()
   is_dynamic_graph_stopped_=true;
 }
 
+DynamicGraphManager::~DynamicGraphManager()
+{
+  ros_service_start_dg_.shutdown();
+  ros_service_stop_dg_.shutdown();
+}
+
 void DynamicGraphManager::initialize(YAML::Node param){
 
   // Upon initialization the graph is inactive

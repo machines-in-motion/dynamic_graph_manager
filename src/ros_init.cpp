@@ -20,7 +20,7 @@ namespace dynamic_graph
    * at will. It is usefull to reset the ros environment specifically for
    * unittesting.
    */
-  std::unique_ptr<GlobalRos> GLOBAL_ROS_VAR(nullptr);
+  static std::unique_ptr<GlobalRos> GLOBAL_ROS_VAR(nullptr);
 
   ros::NodeHandle& ros_init ()
   {
@@ -39,7 +39,7 @@ namespace dynamic_graph
       /** call ros::init */
       int argc = 1;
       char* arg0 = strdup("dynamic_graph_manager");
-      char* argv[] = {arg0, 0};
+      char* argv[] = {arg0, nullptr};
       ros::init(argc, argv, "dynamic_graph_manager");
       free (arg0);
 
@@ -74,5 +74,6 @@ namespace dynamic_graph
   void ros_shutdown ()
   {
     GLOBAL_ROS_VAR.reset(nullptr);
+    ros::shutdown();
   }
 } // end of namespace dynamic_graph.

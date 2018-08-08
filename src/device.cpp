@@ -36,7 +36,7 @@ constexpr unsigned int str2int(const char* str, int h = 0)
 
 const std::string dynamic_graph::Device::CLASS_NAME = "Device";
 
-Device::Device(const std::string& input_name, YAML::Node params):
+Device::Device(const std::string& input_name, const YAML::Node& params):
   // Call the mother class constructor
   Entity(input_name),
   params_(params)
@@ -44,7 +44,7 @@ Device::Device(const std::string& input_name, YAML::Node params):
   /**********************************************
    * create maps for signals and vector<double> *
    **********************************************/
-  parse_yaml_file(params_);
+  parse_yaml_node(params_);
 
   /******************************
    * registering sensor signals *
@@ -97,7 +97,7 @@ Device::~Device()
   this->entityDeregistration();
 }
 
-void Device::parse_yaml_file(const YAML::Node& sensors_and_controls)
+void Device::parse_yaml_node(const YAML::Node& sensors_and_controls)
 {
   const YAML::Node& sensors = sensors_and_controls["sensors"];
   const YAML::Node& controls = sensors_and_controls["controls"];
@@ -121,9 +121,10 @@ void Device::parse_yaml_file(const YAML::Node& sensors_and_controls)
       sig_name << "Device(" << this->name << ")::"
                << "output(vector" << size << "d)::"
                << hardware_name ;
-      sensors_out_[hardware_name] = new DeviceOutSignal(sig_name.str());
       sensors_map_[hardware_name] = dg::Vector(size);
       sensors_map_[hardware_name].setZero();
+      sensors_out_[hardware_name] = new OutSignal(sig_name.str());
+      sensors_out_[hardware_name]->setConstant(sensors_map_[hardware_name]);
     }
   }
 
@@ -142,10 +143,12 @@ void Device::parse_yaml_file(const YAML::Node& sensors_and_controls)
       sig_name << "Device(" << this->name << ")::"
                << "input(vector" << size << "d)::"
                << hardware_name ;
-      motor_controls_in_[hardware_name] =
-          new DeviceInSignal(nullptr, sig_name.str());
       motor_controls_map_[hardware_name] = dg::Vector(size);
       motor_controls_map_[hardware_name].setZero();
+      motor_controls_in_[hardware_name] =
+          new InSignal(nullptr, sig_name.str());
+      motor_controls_in_[hardware_name]->setConstant(
+            motor_controls_map_[hardware_name]);
     }
   }
 }
@@ -153,7 +156,8 @@ void Device::parse_yaml_file(const YAML::Node& sensors_and_controls)
 void Device::set_sensors_from_map(const VectorDoubleMap& sensors)
 {
   // check that all map has the same size
-  assert(sensors.size() == sensors_map_.size() == sensors_out_.size() &&
+  assert(sensors.size() == sensors_map_.size() &&
+         sensors_map_.size() == sensors_out_.size() &&
          "Device::set_sensors_from_map: All maps has to be the same size");
   // we do a copy of the map while checking for sanity
   for(VectorDoubleMap::const_iterator ext_sensor_it = sensors.begin();
@@ -166,7 +170,7 @@ void Device::set_sensors_from_map(const VectorDoubleMap& sensors)
            sensors_map_[ext_sensor_it->first].size() &&
            "Device::set_sensors_from_map: the vectors have the same size in the\
             maps");
-    for(unsigned i=0 ; ext_sensor_it->second.size() ; ++i)
+    for(unsigned i=0 ; i<ext_sensor_it->second.size() ; ++i)
     {
       sensors_map_[ext_sensor_it->first](i) = ext_sensor_it->second[i];
     }
@@ -251,8 +255,8 @@ void Device::execute_graph()
 void Device::get_controls_to_map(VectorDoubleMap& motor_controls)
 {
   // check that all map has the same size
-  assert(motor_controls.size() == motor_controls_map_.size() ==
-         motor_controls_in_.size() &&
+  assert(motor_controls.size() == motor_controls_map_.size() &&
+         motor_controls_map_.size() == motor_controls_in_.size() &&
          "Device::get_controls_to_map: All maps has to be the same size");
   // we do a copy of the map while checking for sanity
   for(VectorDoubleMap::iterator ext_control_it = motor_controls.begin();
@@ -269,7 +273,7 @@ void Device::get_controls_to_map(VectorDoubleMap& motor_controls)
    motor_controls_map_[ext_control_it->first] =
         motor_controls_in_[ext_control_it->first]->accessCopy();
 
-    for(unsigned i=0 ; ext_control_it->second.size() ; ++i)
+    for(unsigned i=0 ; i<ext_control_it->second.size() ; ++i)
     {
       ext_control_it->second[i] = motor_controls_map_[ext_control_it->first](i);
     }
