@@ -52,6 +52,112 @@ protected:
   YAML::Node params_;
 };
 
+
+TEST_F(TestDynamicGraphManager, test_constructor)
+{
+  ASSERT_NO_THROW(
+    dynamic_graph::DynamicGraphManager dgm;
+  );
+}
+
+TEST_F(TestDynamicGraphManager, test_destructor)
+{
+  ASSERT_NO_THROW(
+    {
+      dynamic_graph::DynamicGraphManager dgm;
+    }
+  );
+}
+
+TEST_F(TestDynamicGraphManager, test_initialize)
+{
+  ASSERT_NO_THROW(
+    {
+      dynamic_graph::DynamicGraphManager dgm;
+      dgm.initialize(params_);
+    }
+  );
+}
+
+TEST_F(TestDynamicGraphManager, test_run)
+{
+  dynamic_graph::DynamicGraphManager dgm;
+  dgm.initialize(params_);
+  dgm.run();
+  usleep(500000);
+  dgm.stop_dynamic_graph();
+  dgm.stop_hardware_communication();
+}
+
+/**
+ * @brief test_wait_start_dynamic_graph_fork unstable test.
+ */
+TEST_F(DISABLED_TestDynamicGraphManager, test_wait_start_dynamic_graph)
+{
+  ASSERT_TRUE(!ros::ok());
+  ros::shutdown();
+  pid_t pid = fork();
+  if(pid == 0) // Child process
+  {
+    // std::cout << "Child process started..." << std::endl;
+    dynamic_graph::DynamicGraphManager dgm;
+    dgm.initialize(params_);
+    dgm.initialize_dynamic_graph_process();
+    ASSERT_TRUE(ros::ok());
+    // std::cout << "Child process waiting for the dg to start..." << std::endl;
+    dgm.wait_start_dynamic_graph();
+    ASSERT_TRUE(!dgm.is_dynamic_graph_stopped());
+    // std::cout << "Child process stopped..." << std::endl;
+    exit(0);
+  }
+  else if(pid > 0) // Parent process
+  {
+    ASSERT_TRUE(!ros::ok());
+    ros::NodeHandle& n = dynamic_graph::ros_init();
+    ASSERT_TRUE(ros::ok());
+    // std::cout << "Parent process started..." << std::endl;
+    // create clients the start and stop dynamic graph service from the DGM
+    std_srvs::Empty srv;
+    // Check that the start dynamic graph service works as expected
+    ros::ServiceClient start_dynamic_graph_client =
+        n.serviceClient<std_srvs::Empty>(
+          "/dynamic_graph_manager/start_dynamic_graph");
+    ASSERT_TRUE(start_dynamic_graph_client.waitForExistence());
+    ASSERT_TRUE(start_dynamic_graph_client.exists());
+    ASSERT_TRUE(start_dynamic_graph_client.call(srv));
+    ROS_INFO("The start_dynamic_graph service has been called successfully");
+    wait(nullptr);
+  }
+  else
+  {
+    ASSERT_TRUE(false && "fork failed");
+  }
+}
+
+TEST_F(TestDynamicGraphManager, test_initialize_dynamic_graph_process)
+{
+
+}
+
+TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
+{
+  dynamic_graph::DynamicGraphManager dgm;
+  dgm.initialize(params_);
+  dgm.initialize_dynamic_graph_process();
+  dgm.run_dynamic_graph_process();
+  usleep(50000);
+}
+
+TEST_F(TestDynamicGraphManager, test_initialize_hardware_communication_process)
+{
+
+}
+
+TEST_F(TestDynamicGraphManager, test_run_hardware_communication_process)
+{
+
+}
+
 /**
  * @brief test_start_stop_ros_services, test the start/stop dynamic graph ROS
  * services
@@ -64,7 +170,8 @@ TEST_F(TestDynamicGraphManager, test_start_stop_ros_services)
   // initialize ROS (not needed here as the dynamic graph manager does it)
 
   // Create a dynamic_graph_manager (DGM)
-  dynamic_graph::DynamicGraphManager dgm(params_);
+  dynamic_graph::DynamicGraphManager dgm;
+  dgm.initialize(params_);
 
   // initialize dgm
   dgm.initialize_dynamic_graph_process();
@@ -149,7 +256,8 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter_from_the_DGM)
   // initialize ROS (not needed here as the dynamic graph manager does it)
 
   // create the DGM
-  dynamic_graph::DynamicGraphManager dgm(params_);
+  dynamic_graph::DynamicGraphManager dgm;
+  dgm.initialize(params_);
 
   // initialize dgm
   dgm.initialize_dynamic_graph_process();
@@ -194,7 +302,8 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
   // initialize ROS (not needed here as the dynamic graph manager does it)
 
   // create the DGM
-  dynamic_graph::DynamicGraphManager dgm(params_);
+  dynamic_graph::DynamicGraphManager dgm;
+  dgm.initialize(params_);
 
   ASSERT_FALSE(ros::service::exists(
                  "/dynamic_graph_manager/start_dynamic_graph", false));
@@ -271,81 +380,30 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
 
 }
 
-TEST_F(TestDynamicGraphManager, test_rt_threads)
-{
-  dynamic_graph::DynamicGraphManager dgm(params_);
-  dgm.initialize_dynamic_graph_process();
-  dgm.run_dynamic_graph_process();
-  usleep(50000);
-}
-
-TEST_F(TestDynamicGraphManager, test_destructor)
-{
-  {
-    dynamic_graph::DynamicGraphManager dgm(params_);
-  }
-}
-
-/**
- * @brief test_wait_start_dynamic_graph_fork unstable test.
- */
-TEST_F(DISABLED_TestDynamicGraphManager, test_wait_start_dynamic_graph_fork)
-{
-  ASSERT_TRUE(!ros::ok());
-  ros::shutdown();
-  pid_t pid = fork();
-  if(pid == 0) // Child process
-  {
-    // std::cout << "Child process started..." << std::endl;
-    dynamic_graph::DynamicGraphManager dgm(params_);
-    dgm.initialize_dynamic_graph_process();
-    ASSERT_TRUE(ros::ok());
-    // std::cout << "Child process waiting for the dg to start..." << std::endl;
-    dgm.wait_start_dynamic_graph();
-    ASSERT_TRUE(!dgm.is_dynamic_graph_stopped());
-    // std::cout << "Child process stopped..." << std::endl;
-    exit(0);
-  }
-  else if(pid > 0) // Parent process
-  {
-    ASSERT_TRUE(!ros::ok());
-    ros::NodeHandle& n = dynamic_graph::ros_init();
-    ASSERT_TRUE(ros::ok());
-    // std::cout << "Parent process started..." << std::endl;
-    // create clients the start and stop dynamic graph service from the DGM
-    std_srvs::Empty srv;
-    // Check that the start dynamic graph service works as expected
-    ros::ServiceClient start_dynamic_graph_client =
-        n.serviceClient<std_srvs::Empty>(
-          "/dynamic_graph_manager/start_dynamic_graph");
-    ASSERT_TRUE(start_dynamic_graph_client.waitForExistence());
-    ASSERT_TRUE(start_dynamic_graph_client.exists());
-    ASSERT_TRUE(start_dynamic_graph_client.call(srv));
-    ROS_INFO("The start_dynamic_graph service has been called successfully");
-    wait(nullptr);
-  }
-  else
-  {
-    ASSERT_TRUE(false && "fork failed");
-  }
-}
-
 TEST_F(TestDynamicGraphManager, test_segfault_fork)
 {
+  pid_t pid_child = 0;
+  pid_t pid_parent = 0;
   pid_t pid = fork();
   if(pid == 0) // Child process
   {
+    pid_child = getpid();
+    pid_parent = getppid();
+    std::cout << "child: pid_child=" << pid_child <<
+                 " ; pid_parent=" << pid_parent << std::endl;
     usleep(5000);
     exit(0);
   }
   else if (pid > 0)// Parent process
   {
+    pid_child = pid;
+    pid_parent = getpid();
+    std::cout << "parent: pid_child=" << pid_child <<
+                 " ; pid_parent=" << pid_parent << std::endl;
     bool child_death_detected=false;
-//    std::cout << "Parent process" << std::endl;
     int status;
     pid_t p;
-
-    p = waitpid(0, &status, WNOHANG);
+    p = waitpid(pid_child, &status, WNOHANG);
     if(p == 0)
     {
       child_death_detected = false;
@@ -361,7 +419,7 @@ TEST_F(TestDynamicGraphManager, test_segfault_fork)
     ASSERT_FALSE(child_death_detected);
 
     usleep(200000);
-    p = waitpid(0, &status, WNOHANG);
+    p = waitpid(pid_child, &status, WNOHANG);
 //    std::cout << "p=" << p << std::endl;
     if(p == 0)
     {
@@ -376,10 +434,10 @@ TEST_F(TestDynamicGraphManager, test_segfault_fork)
       ASSERT_TRUE(false && "waitpid failed");
     }
     ASSERT_TRUE(child_death_detected);
+    wait(nullptr);
   }
   else
   {
     ASSERT_TRUE(false && "fork failed");
   }
-  wait(nullptr);
 }

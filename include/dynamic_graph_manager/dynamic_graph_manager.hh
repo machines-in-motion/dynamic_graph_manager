@@ -15,6 +15,7 @@
 
 // used to spawn the real time thread
 #include <thread>
+#include <wait.h>
 
 // used to deal with shared memory
 #include <shared_memory/shared_memory.hpp>
@@ -53,7 +54,10 @@ namespace dynamic_graph
  *              to its output signals
  *      - [8.2] gets the control values from the Device (which triggers the
  *              evaluation of  the  dynamic  graph)  and  copies  them  into
- *              the  shared std::map commands
+ *              the shared std::map commands.
+ * In this class we heavily depend on std::unique pointers in order to
+ * initialize the DynamicGraph process and the hardware communication process
+ * independently.
  */
 class DynamicGraphManager
 {
@@ -65,7 +69,7 @@ public:
   /**
    * @brief DynamicGraphManager, constructor of the class
    */
-  DynamicGraphManager(YAML::Node params);
+  DynamicGraphManager();
 
   /**
    * @brief DynamicGraphManager, destructor of the class
@@ -122,10 +126,51 @@ public:
    ************************/
 
   /**
+   * @brief stop_dynamic_graph stop the DynamicGraph. ;)
+   */
+  void stop_dynamic_graph()
+  {
+    is_dynamic_graph_stopped_ = false;
+  }
+
+  /**
+   * @brief start_dynamic_graph start the DynamicGraph. ;)
+   */
+  void start_dynamic_graph()
+  {
+    is_dynamic_graph_stopped_ = true;
+  }
+
+  /**
    * @brief get the status of the dynamic graph (is running or not)
    * @return the flags is_dynamic_graph_stopped_ value
    */
   bool is_dynamic_graph_stopped()
+  {
+    return is_dynamic_graph_stopped_;
+  }
+
+  /**
+   * @brief stop_hardware_communication stops the hardware communication. ;)
+   */
+  void stop_hardware_communication()
+  {
+    is_dynamic_graph_stopped_ = false;
+  }
+
+  /**
+   * @brief start_hardware_communication starts the hardware communication. ;)
+   */
+  void start_hardware_communication()
+  {
+    is_dynamic_graph_stopped_ = true;
+  }
+
+  /**
+   * @brief get the status of the hardware communication (is running or not)
+   * @return the flags is_dynamic_graph_stopped_ value
+   */
+  bool is_hardware_communication_stopped()
   {
     return is_dynamic_graph_stopped_;
   }
@@ -174,6 +219,13 @@ private:
    */
   void hardware_communication_real_time_loop();
 
+  /**
+   * @brief has_dynamic_graph_process_died check if the process of the
+   * DynamicGraph has died or not.
+   * @return true if the DynamicGraph process died.
+   */
+  bool has_dynamic_graph_process_died();
+
   /***********************
    *  Private attributes *
    ***********************/
@@ -201,6 +253,14 @@ private:
   bool is_dynamic_graph_stopped_;
 
   /**
+   * @brief is_hardware_communication_stopped_ is the flag reflecting the state
+   * of the hardware communication thread.
+   *  - TRUE the hardware communication is NOT running.
+   *  - FALSE the hardware communication IS running.
+   */
+  bool is_hardware_communication_stopped_;
+
+  /**
    * @brief ros_python_interpreter_ptr_ is a ROS wrapper around a python
    * interpreter.
    */
@@ -217,6 +277,19 @@ private:
    * with the hardware.
    */
   std::unique_ptr<std::thread> thread_hardware_communication_;
+
+  /**
+   * @brief pid_dynamic_graph_process_ is the pid of the DynamicGraph process.
+   * It is initialized to 0 and set durning the DynamicGraphManager::run method
+   */
+  pid_t pid_dynamic_graph_process_;
+
+  /**
+   * @brief pid_hardware_communication_process_ is the pid of the hardware
+   * communication process. It is initialized to 0 and set durning the
+   * DynamicGraphManager::run method
+   */
+  pid_t pid_hardware_communication_process_;
 
   /**
    * @brief params_ is the pool of paramters in a yaml tree

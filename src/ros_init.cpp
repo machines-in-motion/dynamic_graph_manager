@@ -74,6 +74,9 @@ namespace dynamic_graph
   void ros_shutdown ()
   {
     GLOBAL_ROS_VAR.reset(nullptr);
-    ros::shutdown();
+    if(ros::ok())
+    {
+      ros::shutdown();
+    }
   }
 } // end of namespace dynamic_graph.

@@ -13,11 +13,13 @@
 
 using namespace dynamic_graph;
 
-DynamicGraphManager::DynamicGraphManager(YAML::Node params)
+DynamicGraphManager::DynamicGraphManager()
 {
   // Upon construction the graph is inactive
-  params_ = params;
-  is_dynamic_graph_stopped_=true;
+  params_.reset();
+  is_dynamic_graph_stopped_ = true;
+  pid_dynamic_graph_process_ = 0;
+  pid_hardware_communication_process_ = 0;
 }
 
 DynamicGraphManager::~DynamicGraphManager()
@@ -43,11 +45,28 @@ void DynamicGraphManager::initialize(YAML::Node param){
 
   // copy the yaml node for further use
   params_ = param ;
+
+  pid_dynamic_graph_process_ = 0;
+  pid_hardware_communication_process_ = 0;
 }
 
 void DynamicGraphManager::run()
 {
-  // do the fork and manage the outputs
+  pid_t child_pid = fork();
+  if(child_pid == 0) // child process
+  {
+    pid_dynamic_graph_process_ = getpid();
+    pid_hardware_communication_process_ = getppid();
+    exit(0);
+  }else if(child_pid > 0) // parent process
+  {
+    pid_dynamic_graph_process_ = child_pid;
+    pid_hardware_communication_process_ = getpid();
+  }else
+  {
+    throw(std::runtime_error("DynamicGraphManager::run(): the fork failed"));
+  }
+  wait(nullptr);
 }
 
 void DynamicGraphManager::wait_start_dynamic_graph()
@@ -120,4 +139,26 @@ void DynamicGraphManager::hardware_communication_real_time_loop()
   // read the command to the shared memory
   // send the command to the shared memory
   ros::waitForShutdown();
+}
+
+bool DynamicGraphManager::has_dynamic_graph_process_died()
+{
+  bool is_dg_proc_dead = false;
+  int status = 0;
+  pid_t p = 0;
+  p = waitpid(pid_dynamic_graph_process_, &status, WNOHANG);
+  if(p == 0)
+  {
+    is_dg_proc_dead = false;
+  }
+  else if(p > 0)
+  {
+    is_dg_proc_dead = true;
+  }
+  else
+  {
+    throw(std::runtime_error(std::string("DynamicGraphManager::") +
+      "has_dynamic_graph_process_died(): waitpid failed"));
+  }
+  return is_dg_proc_dead;
 }
