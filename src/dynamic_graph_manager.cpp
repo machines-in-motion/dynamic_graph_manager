@@ -18,6 +18,7 @@ DynamicGraphManager::DynamicGraphManager()
   // Upon construction the graph is inactive
   params_.reset();
   is_dynamic_graph_stopped_ = true;
+  is_dynamic_graph_stopped_ = true;
   pid_dynamic_graph_process_ = 0;
   pid_hardware_communication_process_ = 0;
 }
@@ -119,9 +120,16 @@ void DynamicGraphManager::run_dynamic_graph_process()
 
 void DynamicGraphManager::run_hardware_communication_process()
 {
+  ros_init();
   // launch the real time thread
   thread_hardware_communication_.reset(new std::thread(
         &DynamicGraphManager::hardware_communication_real_time_loop, this));
+  thread_hardware_communication_->join();
+  if(!is_hardware_communication_stopped_ && ros::ok())
+  {
+    throw(std::runtime_error("Hardware communication died unexpectedly"));
+    is_dynamic_graph_stopped_ = true;
+  }
 }
 
 void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
@@ -141,7 +149,6 @@ void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
 
 void DynamicGraphManager::dynamic_graph_real_time_loop()
 {
-  wait_start_dynamic_graph();
   VectorDoubleMap sensors_map, motor_controls_map;
   for(VectorDGMap::const_iterator it=device_->sensors_map_.begin() ;
       it!=device_->sensors_map_.end() ; ++it)
@@ -155,6 +162,7 @@ void DynamicGraphManager::dynamic_graph_real_time_loop()
     motor_controls_map[it->first] = std::vector<double>(
                               static_cast<unsigned>(it->second.size()), 0.0);
   }
+  wait_start_dynamic_graph();
 
   while(!is_dynamic_graph_stopped() && ros::ok())
   {
@@ -175,6 +183,7 @@ void DynamicGraphManager::dynamic_graph_real_time_loop()
 
 void DynamicGraphManager::hardware_communication_real_time_loop()
 {
+  is_dynamic_graph_stopped_ = false;
   // setup the maps from the yaml
   VectorDoubleMap sensors_map, motor_controls_map;
   const YAML::Node& sensors = params_["device"]["sensors"];
@@ -199,21 +208,25 @@ void DynamicGraphManager::hardware_communication_real_time_loop()
       motor_controls_map[hardware_name] = std::vector<double>(size, 0.0);
     }
   }
-  while(true)
+  try{
+    while(!is_hardware_communication_stopped_ && ros::ok())
+    {
+      // call the sensors
+      get_sensors_to_map(sensors_map);
+      // write the sensors to the shared memory
+      shared_memory::set("DynamicGraphManager", "sensors_map", sensors_map);
+
+      // sleep 1ms
+      usleep(1000);
+
+      // read the command to the shared memory
+      shared_memory::get("DynamicGraphManager", "motor_controls_map",
+                         motor_controls_map);
+
+      // send the command to the motors
+      set_motor_controls_from_map(motor_controls_map);
+    }
+  }catch(...)
   {
-    // call the sensors
-    get_sensors_to_map(sensors_map);
-    // write the sensors to the shared memory
-    shared_memory::set("DynamicGraphManager", "sensors_map", sensors_map);
-
-    // sleep 1ms
-    usleep(1000);
-
-    // read the command to the shared memory
-    shared_memory::get("DynamicGraphManager", "motor_controls_map",
-                       motor_controls_map);
-
-    // send the command to the motors
-    set_motor_controls_from_map(motor_controls_map);
   }
 }

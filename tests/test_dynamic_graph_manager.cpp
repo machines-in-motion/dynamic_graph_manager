@@ -136,7 +136,27 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_wait_start_dynamic_graph)
 
 TEST_F(TestDynamicGraphManager, test_initialize_dynamic_graph_process)
 {
+  dynamic_graph::DynamicGraphManager dgm;
+  dgm.initialize(params_);
+  dgm.initialize_dynamic_graph_process();
+  ros::NodeHandle& n = dynamic_graph::ros_init();
+  ros::ServiceClient start_dg =
+      n.serviceClient<std_srvs::Empty>(
+        "/dynamic_graph_manager/start_dynamic_graph");
+  ros::ServiceClient stop_dg =
+      n.serviceClient<std_srvs::Empty>(
+        "/dynamic_graph_manager/stop_dynamic_graph");
+  ros::ServiceClient run_py_cmd =
+      n.serviceClient<std_srvs::Empty>(
+        "/dynamic_graph_manager/run_python_command");
+  ros::ServiceClient run_py_script =
+      n.serviceClient<std_srvs::Empty>(
+        "/dynamic_graph_manager/run_python_script");
 
+  ASSERT_TRUE(start_dg.isValid());
+  ASSERT_TRUE(stop_dg.isValid());
+  ASSERT_TRUE(run_py_cmd.isValid());
+  ASSERT_TRUE(run_py_script.isValid());
 }
 
 TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
@@ -144,18 +164,26 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
   dynamic_graph::DynamicGraphManager dgm;
   dgm.initialize(params_);
   dgm.initialize_dynamic_graph_process();
-  dgm.run_dynamic_graph_process();
-  usleep(50000);
+  //dgm.run_dynamic_graph_process();
+
 }
 
 TEST_F(TestDynamicGraphManager, test_initialize_hardware_communication_process)
 {
-
+  dynamic_graph::DynamicGraphManager dgm;
+  dgm.initialize(params_);
+  ASSERT_ANY_THROW(
+    dgm.initialize_hardware_communication_process();
+  );
 }
 
 TEST_F(TestDynamicGraphManager, test_run_hardware_communication_process)
 {
-
+  dynamic_graph::DynamicGraphManager dgm;
+  dgm.initialize(params_);
+  ASSERT_ANY_THROW(
+    dgm.run_hardware_communication_process();
+  );
 }
 
 /**
