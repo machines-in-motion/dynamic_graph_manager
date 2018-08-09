@@ -24,6 +24,16 @@ DynamicGraphManager::~DynamicGraphManager()
 {
   ros_service_start_dg_.shutdown();
   ros_service_stop_dg_.shutdown();
+  ros_shutdown();
+  if(thread_dynamic_graph_ && thread_dynamic_graph_->joinable())
+  {
+    thread_dynamic_graph_->join();
+  }
+  if(thread_hardware_communication_ &&
+     thread_hardware_communication_->joinable())
+  {
+    thread_hardware_communication_->join();
+  }
 }
 
 void DynamicGraphManager::initialize(YAML::Node param){
@@ -61,7 +71,7 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
 void DynamicGraphManager::run_dynamic_graph_process()
 {
   // launch the real time thread and ros spin
-  thread_hardware_communication_.reset(new std::thread(
+  thread_dynamic_graph_.reset(new std::thread(
         &DynamicGraphManager::dynamic_graph_real_time_loop, this));
 }
 
@@ -73,7 +83,7 @@ void DynamicGraphManager::initialize_hardware_communication_process()
 void DynamicGraphManager::run_hardware_communication_process()
 {
   // launch the real time thread
-  thread_dynamic_graph_.reset(new std::thread(
+  thread_hardware_communication_.reset(new std::thread(
         &DynamicGraphManager::hardware_communication_real_time_loop, this));
 }
 
@@ -94,16 +104,20 @@ void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
 
 void DynamicGraphManager::dynamic_graph_real_time_loop()
 {
+  ros_init();
   // read the sensor from the shared memory
   // call the dynamic graph
   // write the command to the shared memory
+  ros::waitForShutdown();
 }
 
 void DynamicGraphManager::hardware_communication_real_time_loop()
 {
+  ros_init();
   // call the sensors
   // write the sensors to the shared memory
   // sleep
   // read the command to the shared memory
   // send the command to the shared memory
+  ros::waitForShutdown();
 }

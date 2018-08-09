@@ -276,7 +276,7 @@ TEST_F(TestDynamicGraphManager, test_rt_threads)
   dynamic_graph::DynamicGraphManager dgm(params_);
   dgm.initialize_dynamic_graph_process();
   dgm.run_dynamic_graph_process();
-  usleep(5000);
+  usleep(50000);
 }
 
 TEST_F(TestDynamicGraphManager, test_destructor)
