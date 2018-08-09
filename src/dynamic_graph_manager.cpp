@@ -62,6 +62,7 @@ void DynamicGraphManager::run()
   {
     pid_dynamic_graph_process_ = child_pid;
     pid_hardware_communication_process_ = getpid();
+    has_dynamic_graph_process_died();
   }else
   {
     throw(std::runtime_error("DynamicGraphManager::run(): the fork failed"));
@@ -75,6 +76,28 @@ void DynamicGraphManager::wait_start_dynamic_graph()
   {
     usleep(1000);
   }
+}
+
+bool DynamicGraphManager::has_dynamic_graph_process_died()
+{
+  bool is_dg_proc_dead = false;
+  int status = 0;
+  pid_t p = 0;
+  p = waitpid(pid_dynamic_graph_process_, &status, WNOHANG);
+  if(p == 0)
+  {
+    is_dg_proc_dead = false;
+  }
+  else if(p > 0)
+  {
+    is_dg_proc_dead = true;
+  }
+  else
+  {
+    throw(std::runtime_error(std::string("DynamicGraphManager::") +
+      "has_dynamic_graph_process_died(): waitpid failed"));
+  }
+  return is_dg_proc_dead;
 }
 
 void DynamicGraphManager::initialize_dynamic_graph_process()
@@ -92,11 +115,6 @@ void DynamicGraphManager::run_dynamic_graph_process()
   // launch the real time thread and ros spin
   thread_dynamic_graph_.reset(new std::thread(
         &DynamicGraphManager::dynamic_graph_real_time_loop, this));
-}
-
-void DynamicGraphManager::initialize_hardware_communication_process()
-{
-  // initialize the communication with the hardware
 }
 
 void DynamicGraphManager::run_hardware_communication_process()
@@ -123,42 +141,79 @@ void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
 
 void DynamicGraphManager::dynamic_graph_real_time_loop()
 {
-  ros_init();
-  // read the sensor from the shared memory
-  // call the dynamic graph
-  // write the command to the shared memory
+  wait_start_dynamic_graph();
+  VectorDoubleMap sensors_map, motor_controls_map;
+  for(VectorDGMap::const_iterator it=device_->sensors_map_.begin() ;
+      it!=device_->sensors_map_.end() ; ++it)
+  {
+    sensors_map[it->first] = std::vector<double>(
+                              static_cast<unsigned>(it->second.size()), 0.0);
+  }
+  for(VectorDGMap::const_iterator it=device_->motor_controls_map_.begin() ;
+      it!=device_->motor_controls_map_.end() ; ++it)
+  {
+    motor_controls_map[it->first] = std::vector<double>(
+                              static_cast<unsigned>(it->second.size()), 0.0);
+  }
+
+  while(!is_dynamic_graph_stopped() && ros::ok())
+  {
+    // read the sensor from the shared memory
+    shared_memory::get("DynamicGraphManager", "sensors_map", sensors_map);
+
+    // call the dynamic graph
+    device_->set_sensors_from_map(sensors_map);
+    device_->execute_graph();
+    device_->get_controls_to_map(motor_controls_map);
+
+    // write the command to the shared memory
+    shared_memory::set("DynamicGraphManager", "motor_controls_map",
+                       motor_controls_map);
+  }
   ros::waitForShutdown();
 }
 
 void DynamicGraphManager::hardware_communication_real_time_loop()
 {
-  ros_init();
-  // call the sensors
-  // write the sensors to the shared memory
-  // sleep
-  // read the command to the shared memory
-  // send the command to the shared memory
-  ros::waitForShutdown();
-}
+  // setup the maps from the yaml
+  VectorDoubleMap sensors_map, motor_controls_map;
+  const YAML::Node& sensors = params_["device"]["sensors"];
+  const YAML::Node& controls = params_["device"]["controls"];
+  std::string hardware_name ("");
+  unsigned int size (0);
+  for (YAML::const_iterator sensor_it = sensors.begin();
+       sensor_it != sensors.end(); ++sensor_it)
+  {
+    {
+      hardware_name = sensor_it->first.as<std::string>();
+      size = sensor_it->second["size"].as<unsigned int>();
+      sensors_map[hardware_name] = std::vector<double>(size, 0.0);
+    }
+  }
+  for (YAML::const_iterator control_it = controls.begin();
+       control_it != controls.end(); ++control_it)
+  {
+    {
+      hardware_name = control_it->first.as<std::string>();
+      size = control_it->second["size"].as<unsigned int>();
+      motor_controls_map[hardware_name] = std::vector<double>(size, 0.0);
+    }
+  }
+  while(true)
+  {
+    // call the sensors
+    get_sensors_to_map(sensors_map);
+    // write the sensors to the shared memory
+    shared_memory::set("DynamicGraphManager", "sensors_map", sensors_map);
 
-bool DynamicGraphManager::has_dynamic_graph_process_died()
-{
-  bool is_dg_proc_dead = false;
-  int status = 0;
-  pid_t p = 0;
-  p = waitpid(pid_dynamic_graph_process_, &status, WNOHANG);
-  if(p == 0)
-  {
-    is_dg_proc_dead = false;
+    // sleep 1ms
+    usleep(1000);
+
+    // read the command to the shared memory
+    shared_memory::get("DynamicGraphManager", "motor_controls_map",
+                       motor_controls_map);
+
+    // send the command to the motors
+    set_motor_controls_from_map(motor_controls_map);
   }
-  else if(p > 0)
-  {
-    is_dg_proc_dead = true;
-  }
-  else
-  {
-    throw(std::runtime_error(std::string("DynamicGraphManager::") +
-      "has_dynamic_graph_process_died(): waitpid failed"));
-  }
-  return is_dg_proc_dead;
 }

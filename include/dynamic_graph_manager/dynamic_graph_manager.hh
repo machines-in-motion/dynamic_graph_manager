@@ -109,17 +109,55 @@ public:
   void run_dynamic_graph_process();
 
   /**
-   * @brief initialize_hardware_communication_process instanciate all variables
-   * related to the hardware communication. In addition it spawns the real
-   * time thread.
-   */
-  void initialize_hardware_communication_process();
-
-  /**
    * @brief run_hardware_communication_process spawns the real time thread and
    * goes to sleep undefinitely
    */
   void run_hardware_communication_process();
+
+  /***************************
+   * method to be overloaded *
+   ***************************/
+
+  /**
+   * @brief initialize_hardware_communication_process instanciate all variables
+   * related to the hardware communication. In addition it spawns the real
+   * time thread. WARNING, this function needs to be overloaded using the actual
+   * drivers of the robot.
+   */
+  virtual void initialize_hardware_communication_process()
+  {
+    throw(std::runtime_error(
+          "DynamicGraphManager::initialize_hardware_communication_process():\n\
+           this method needs to be overloaded"));
+  }
+
+  /**
+   * @brief get_sensors_to_map is the fonction that get the motor command from
+   * a map and that uses the drivers to send these command to the robot.
+   * Each robot must have a different implementation of this function.
+   * WARNING, this function needs to be overloaded using the actual
+   * drivers of the robot.
+   */
+  virtual void get_sensors_to_map(const VectorDoubleMap)
+  {
+    throw(std::runtime_error(
+          "DynamicGraphManager::get_sensors_to_map():\n\
+           this method needs to be overloaded"));
+  }
+
+  /**
+   * @brief set_motor_controls_from_map is the fonction that get the motor command from
+   * a map and that uses the drivers to send these command to the robot.
+   * Each robot must have a different implementation of this function.
+   * WARNING, this function needs to be overloaded using the actual
+   * drivers of the robot.
+   */
+  virtual void set_motor_controls_from_map(VectorDoubleMap)
+  {
+    throw(std::runtime_error(
+          "DynamicGraphManager::set_motor_controls_from_map():\n\
+           this method needs to be overloaded"));
+  }
 
   /************************
    * gettters and setters *
