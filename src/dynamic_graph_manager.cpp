@@ -167,7 +167,7 @@ void DynamicGraphManager::dynamic_graph_real_time_loop()
   while(!is_dynamic_graph_stopped() && ros::ok())
   {
     // read the sensor from the shared memory
-    shared_memory::get("DynamicGraphManager", "sensors_map", sensors_map);
+//    shared_memory::get("DynamicGraphManager", "sensors_map", sensors_map);
 
     // call the dynamic graph
     device_->set_sensors_from_map(sensors_map);
@@ -175,8 +175,8 @@ void DynamicGraphManager::dynamic_graph_real_time_loop()
     device_->get_controls_to_map(motor_controls_map);
 
     // write the command to the shared memory
-    shared_memory::set("DynamicGraphManager", "motor_controls_map",
-                       motor_controls_map);
+//    shared_memory::set("DynamicGraphManager", "motor_controls_map",
+//                       motor_controls_map);
   }
   ros::waitForShutdown();
 }

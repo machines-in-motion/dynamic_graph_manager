@@ -9,6 +9,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <shared_memory/shared_memory.hpp>
 #include <dynamic_graph_manager/ros_init.hh>
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <ros/ros.h>
@@ -168,10 +169,80 @@ TEST_F(TestDynamicGraphManager, test_initialize_dynamic_graph_process)
 
 TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
 {
-  dynamic_graph::DynamicGraphManager dgm;
-  dgm.initialize(params_);
-  dgm.initialize_dynamic_graph_process();
-  //dgm.run_dynamic_graph_process();
+  ASSERT_TRUE(!ros::ok());
+  pid_t pid = fork();
+  if(pid == 0) // Child process
+  {
+    // std::cout << "Child process started..." << std::endl;
+    dynamic_graph::DynamicGraphManager dgm;
+    dgm.initialize(params_);
+    dgm.initialize_dynamic_graph_process();
+    dynamic_graph::VectorDoubleMap sensors_map;
+    for(dynamic_graph::VectorDGMap::const_iterator
+        it=dgm.device().sensors_map_.begin() ;
+        it!=dgm.device().sensors_map_.end() ; ++it)
+    {
+      sensors_map[it->first] = std::vector<double>(
+                                static_cast<unsigned>(it->second.size()), 1.0);
+    }
+    shared_memory::set("DynamicGraphManager", "sensors_map", sensors_map);
+    dgm.run_dynamic_graph_process();
+    dgm.wait_start_dynamic_graph();
+    while(!dgm.is_dynamic_graph_stopped())
+    {
+      usleep(5e+03);
+    }
+    exit(0);
+  }
+  else if(pid > 0) // Parent process
+  {
+    // Initialize ROS
+    ASSERT_TRUE(!ros::ok());
+    int argc = 1;
+    char* arg0 = strdup("test_dynamic_graph_manager");
+    char* argv[] = {arg0, nullptr};
+    ros::init(argc, argv, "test_dynamic_graph_manager");
+    free (arg0);
+    ros::NodeHandle n("test_dynamic_graph_manager");
+    ASSERT_TRUE(ros::ok());
+    // std::cout << "Parent process started..." << std::endl;
+
+    // start the dynamic graph
+    std_srvs::Empty srv;
+    ros::ServiceClient start_dynamic_graph_client =
+        n.serviceClient<std_srvs::Empty>(
+          "/dynamic_graph_manager/start_dynamic_graph");
+    ASSERT_TRUE(start_dynamic_graph_client.waitForExistence());
+    ASSERT_TRUE(start_dynamic_graph_client.exists());
+    while(!start_dynamic_graph_client.call(srv))
+    {
+      usleep(5e+03);
+    }
+    ROS_INFO("The start_dynamic_graph service has been called successfully");
+
+    // wait a bit
+    usleep(5e+06);
+
+    // stop the dynamic graph (evrything should be killed after this call)
+    ros::ServiceClient stop_dynamic_graph_client =
+        n.serviceClient<std_srvs::Empty>(
+          "/dynamic_graph_manager/stop_dynamic_graph");
+    ASSERT_TRUE(stop_dynamic_graph_client.waitForExistence());
+    ASSERT_TRUE(stop_dynamic_graph_client.exists());
+    while(!stop_dynamic_graph_client.call(srv))
+    {
+      usleep(5e+03);
+    }
+    ROS_INFO("The stop_dynamic_graph service has been called successfully");
+
+    // wait to avoid zombie processes
+    wait(nullptr);
+  }
+  else
+  {
+    ASSERT_TRUE(false && "fork failed");
+  }
+
 
 }
 

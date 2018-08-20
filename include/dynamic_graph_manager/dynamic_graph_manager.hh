@@ -126,9 +126,9 @@ public:
    */
   virtual void initialize_hardware_communication_process()
   {
-    throw(std::runtime_error(
-          "DynamicGraphManager::initialize_hardware_communication_process():\n\
-           this method needs to be overloaded"));
+    throw(std::runtime_error(std::string("DynamicGraphManager::") +
+                             "initialize_hardware_communication_process():\n" +
+                             "this method needs to be overloaded"));
   }
 
   /**
@@ -140,9 +140,9 @@ public:
    */
   virtual void get_sensors_to_map(const VectorDoubleMap)
   {
-    throw(std::runtime_error(
-          "DynamicGraphManager::get_sensors_to_map():\n\
-           this method needs to be overloaded"));
+    throw(std::runtime_error(std::string("DynamicGraphManager::") +
+                                         "get_sensors_to_map():\n" +
+                                         "this method needs to be overloaded"));
   }
 
   /**
@@ -154,9 +154,9 @@ public:
    */
   virtual void set_motor_controls_from_map(VectorDoubleMap)
   {
-    throw(std::runtime_error(
-          "DynamicGraphManager::set_motor_controls_from_map():\n\
-           this method needs to be overloaded"));
+    throw(std::runtime_error(std::string("DynamicGraphManager::") +
+                             "set_motor_controls_from_map():\n" +
+                             "this method needs to be overloaded"));
   }
 
   /************************
@@ -211,6 +211,18 @@ public:
   bool is_hardware_communication_stopped()
   {
     return is_dynamic_graph_stopped_;
+  }
+
+  /**
+   * @brief device is a getter method on the Device internal pointer
+   * @return a const reference to the device.
+   */
+  Device& device()
+  {
+    if(device_ != nullptr)
+      return *device_;
+    throw(std::runtime_error(std::string("DynamicGraphManager::device():Try") +
+                             "accessing a device that has not been created"));
   }
 
 private:
