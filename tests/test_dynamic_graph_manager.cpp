@@ -92,10 +92,9 @@ TEST_F(TestDynamicGraphManager, test_run)
 /**
  * @brief test_wait_start_dynamic_graph_fork unstable test.
  */
-TEST_F(DISABLED_TestDynamicGraphManager, test_wait_start_dynamic_graph)
+TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph)
 {
   ASSERT_TRUE(!ros::ok());
-  ros::shutdown();
   pid_t pid = fork();
   if(pid == 0) // Child process
   {
@@ -113,7 +112,12 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_wait_start_dynamic_graph)
   else if(pid > 0) // Parent process
   {
     ASSERT_TRUE(!ros::ok());
-    ros::NodeHandle& n = dynamic_graph::ros_init();
+    int argc = 1;
+    char* arg0 = strdup("test_dynamic_graph_manager");
+    char* argv[] = {arg0, nullptr};
+    ros::init(argc, argv, "test_dynamic_graph_manager");
+    free (arg0);
+    ros::NodeHandle n("test_dynamic_graph_manager");
     ASSERT_TRUE(ros::ok());
     // std::cout << "Parent process started..." << std::endl;
     // create clients the start and stop dynamic graph service from the DGM
@@ -124,7 +128,10 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_wait_start_dynamic_graph)
           "/dynamic_graph_manager/start_dynamic_graph");
     ASSERT_TRUE(start_dynamic_graph_client.waitForExistence());
     ASSERT_TRUE(start_dynamic_graph_client.exists());
-    ASSERT_TRUE(start_dynamic_graph_client.call(srv));
+    while(!start_dynamic_graph_client.call(srv))
+    {
+      usleep(500);
+    }
     ROS_INFO("The start_dynamic_graph service has been called successfully");
     wait(nullptr);
   }
@@ -408,7 +415,7 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
 
 }
 
-TEST_F(TestDynamicGraphManager, test_segfault_fork)
+TEST_F(TestDynamicGraphManager, test_exit_fork)
 {
   pid_t pid_child = 0;
   pid_t pid_parent = 0;
@@ -417,8 +424,8 @@ TEST_F(TestDynamicGraphManager, test_segfault_fork)
   {
     pid_child = getpid();
     pid_parent = getppid();
-    std::cout << "child: pid_child=" << pid_child <<
-                 " ; pid_parent=" << pid_parent << std::endl;
+//    std::cout << "child: pid_child=" << pid_child <<
+//                 " ; pid_parent=" << pid_parent << std::endl;
     usleep(5000);
     exit(0);
   }
@@ -426,8 +433,8 @@ TEST_F(TestDynamicGraphManager, test_segfault_fork)
   {
     pid_child = pid;
     pid_parent = getpid();
-    std::cout << "parent: pid_child=" << pid_child <<
-                 " ; pid_parent=" << pid_parent << std::endl;
+//    std::cout << "parent: pid_child=" << pid_child <<
+//                 " ; pid_parent=" << pid_parent << std::endl;
     bool child_death_detected=false;
     int status;
     pid_t p;
@@ -467,5 +474,40 @@ TEST_F(TestDynamicGraphManager, test_segfault_fork)
   else
   {
     ASSERT_TRUE(false && "fork failed");
+  }
+}
+
+TEST_F(TestDynamicGraphManager, test_on_map_and_pointers)
+{
+  typedef std::map<std::string, double*> map_data;
+  map_data data;
+  data["first"] = new double  (1.0);
+  data["second"] = new double (2.0);
+  data["third"] = new double  (3.0);
+  data["fourth"] = new double (4.0);
+  data["fifth"] = new double  (5.0);
+  for(map_data::iterator it=data.begin() ; it!=data.end() ; ++it)
+  {
+//    std::cout << data.size() << " ; "
+//              << it->first << " " << *(it->second)
+//              << std::endl;
+    double* d = it->second;
+    data.erase(it);
+    delete d;
+  }
+//  std::cout << "******" << std::endl;
+  data["first"] = new double  (1.0);
+  data["second"] = new double (2.0);
+  data["third"] = new double  (3.0);
+  data["fourth"] = new double (4.0);
+  data["fifth"] = new double  (5.0);
+  for(map_data::iterator it=data.begin() ; it!=data.end() ; it=data.begin())
+  {
+//    std::cout << data.size() << " ; "
+//              << it->first << " " << *(it->second)
+//              << std::endl;
+    double* d = it->second;
+    data.erase(it);
+    delete d;
   }
 }
