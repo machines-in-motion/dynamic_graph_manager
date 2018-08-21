@@ -28,7 +28,7 @@
 #include <std_srvs/Empty.h>
 #include <dynamic_graph_manager/ros_interpreter.hh>
 
-// some usefull tools like the yaml parsing
+// some useful tools like the yaml parsing
 #include <dynamic_graph_manager/tools.hh>
 
 // the device of the dynamic-graph

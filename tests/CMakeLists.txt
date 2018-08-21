@@ -18,7 +18,6 @@ target_link_libraries(test_dynamic_graph_manager
     dynamic_graph_manager
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
-    rt
 )
 # add some preprocessor variable
 target_compile_definitions(test_dynamic_graph_manager PUBLIC
