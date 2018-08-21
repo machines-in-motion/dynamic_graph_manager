@@ -177,21 +177,19 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     dynamic_graph::DynamicGraphManager dgm;
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
-    dynamic_graph::VectorDoubleMap sensors_map;
-    for(dynamic_graph::VectorDGMap::const_iterator
-        it=dgm.device().sensors_map_.begin() ;
-        it!=dgm.device().sensors_map_.end() ; ++it)
-    {
-      sensors_map[it->first] = std::vector<double>(
-                                static_cast<unsigned>(it->second.size()), 1.0);
-    }
+    dynamic_graph::VectorDGMap sensors_map = dgm.device().sensors_map_;
     shared_memory::set("DynamicGraphManager", "sensors_map", sensors_map);
     dgm.run_dynamic_graph_process();
+    std::cout << "Dynamic graph thread launched, wait for it to start"
+              << std::endl;
     dgm.wait_start_dynamic_graph();
+    std::cout << "Dynamic graph started" << std::endl;
     while(!dgm.is_dynamic_graph_stopped())
     {
+      std::cout << "Waiting for dynamic graph to stop" << std::endl;
       usleep(5e+03);
     }
+    std::cout << "Dynamic graph stopped" << std::endl;
     exit(0);
   }
   else if(pid > 0) // Parent process
@@ -221,7 +219,7 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     ROS_INFO("The start_dynamic_graph service has been called successfully");
 
     // wait a bit
-    usleep(5e+06);
+    usleep(1e+05);
 
     // stop the dynamic graph (evrything should be killed after this call)
     ros::ServiceClient stop_dynamic_graph_client =

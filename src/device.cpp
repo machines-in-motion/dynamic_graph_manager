@@ -44,7 +44,7 @@ Device::Device(const std::string& input_name, const YAML::Node& params):
   /**********************************************
    * create maps for signals and vector<double> *
    **********************************************/
-  parse_yaml_node(params_);
+  parse_yaml_node(params_, sensors_map_, motor_controls_map_);
 
   /******************************
    * registering sensor signals *
@@ -97,32 +97,24 @@ Device::~Device()
   this->entityDeregistration();
 }
 
-void Device::parse_yaml_node(const YAML::Node& sensors_and_controls)
+void Device::initialize_maps(const YAML::Node& sensors_and_controls)
 {
-  const YAML::Node& sensors = sensors_and_controls["sensors"];
-  const YAML::Node& controls = sensors_and_controls["controls"];
+  parse_yaml_node(sensors_and_controls, sensors_map_, motor_controls_map_);
 
   std::string hardware_name ("");
-  dg::Vector init_value (1);
-  unsigned int size (0);
 
   /*******************************
    * We iterate over the sensors *
    *******************************/
-  for (YAML::const_iterator sensor_it = sensors.begin();
-       sensor_it != sensors.end(); ++sensor_it)
+  for (VectorDGMap::const_iterator sensor_it = sensors_map_.begin();
+       sensor_it != sensors_map_.end(); ++sensor_it)
   {
     {
-      hardware_name = sensor_it->first.as<std::string>();
-      size = sensor_it->second["size"].as<unsigned int>();
-      init_value.resize(size);
-      init_value.setZero();
+      hardware_name = sensor_it->first;
       ostringstream sig_name;
       sig_name << "Device(" << this->name << ")::"
-               << "output(vector" << size << "d)::"
+               << "output(vector" << sensor_it->second.size() << "d)::"
                << hardware_name ;
-      sensors_map_[hardware_name] = dg::Vector(size);
-      sensors_map_[hardware_name].setZero();
       sensors_out_[hardware_name] = new OutSignal(sig_name.str());
       sensors_out_[hardware_name]->setConstant(sensors_map_[hardware_name]);
     }
@@ -131,20 +123,15 @@ void Device::parse_yaml_node(const YAML::Node& sensors_and_controls)
   /********************************
    * We iterate over the controls *
    ********************************/
-  for (YAML::const_iterator control_it = controls.begin();
-       control_it != controls.end(); ++control_it)
+  for (VectorDGMap::const_iterator control_it = motor_controls_map_.begin();
+       control_it != motor_controls_map_.end(); ++control_it)
   {
     {
-      hardware_name = control_it->first.as<std::string>();
-      size = control_it->second["size"].as<unsigned int>();
-      init_value.resize(size);
-      init_value.setZero();
+      hardware_name = control_it->first;
       ostringstream sig_name;
       sig_name << "Device(" << this->name << ")::"
-               << "input(vector" << size << "d)::"
+               << "input(vector" << control_it->second.size() << "d)::"
                << hardware_name ;
-      motor_controls_map_[hardware_name] = dg::Vector(size);
-      motor_controls_map_[hardware_name].setZero();
       motor_controls_in_[hardware_name] =
           new InSignal(nullptr, sig_name.str());
       motor_controls_in_[hardware_name]->setConstant(
@@ -153,14 +140,14 @@ void Device::parse_yaml_node(const YAML::Node& sensors_and_controls)
   }
 }
 
-void Device::set_sensors_from_map(const VectorDoubleMap& sensors)
+void Device::set_sensors_from_map(const VectorDGMap& sensors)
 {
   // check that all map has the same size
   assert(sensors.size() == sensors_map_.size() &&
          sensors_map_.size() == sensors_out_.size() &&
          "Device::set_sensors_from_map: All maps has to be the same size");
   // we do a copy of the map while checking for sanity
-  for(VectorDoubleMap::const_iterator ext_sensor_it = sensors.begin();
+  for(VectorDGMap::const_iterator ext_sensor_it = sensors.begin();
       ext_sensor_it != sensors.end(); ++ext_sensor_it)
   {
     assert(sensors_map_.count(ext_sensor_it->first) &&
@@ -170,12 +157,8 @@ void Device::set_sensors_from_map(const VectorDoubleMap& sensors)
            sensors_map_[ext_sensor_it->first].size() &&
            "Device::set_sensors_from_map: the vectors have the same size in the\
             maps");
-    for(unsigned i=0 ; i<ext_sensor_it->second.size() ; ++i)
-    {
-      sensors_map_[ext_sensor_it->first](i) = ext_sensor_it->second[i];
-    }
-    sensors_out_[ext_sensor_it->first]->setConstant(
-          sensors_map_[ext_sensor_it->first]);
+    sensors_map_[ext_sensor_it->first] = ext_sensor_it->second;
+    sensors_out_[ext_sensor_it->first]->setConstant(ext_sensor_it->second);
   }
 }
 
@@ -252,14 +235,14 @@ void Device::execute_graph()
   }
 }
 
-void Device::get_controls_to_map(VectorDoubleMap& motor_controls)
+void Device::get_controls_to_map(VectorDGMap& motor_controls)
 {
   // check that all map has the same size
   assert(motor_controls.size() == motor_controls_map_.size() &&
          motor_controls_map_.size() == motor_controls_in_.size() &&
          "Device::get_controls_to_map: All maps has to be the same size");
   // we do a copy of the map while checking for sanity
-  for(VectorDoubleMap::iterator ext_control_it = motor_controls.begin();
+  for(VectorDGMap::iterator ext_control_it = motor_controls.begin();
       ext_control_it != motor_controls.end(); ++ext_control_it)
   {
     assert(motor_controls_map_.count(ext_control_it->first) &&
@@ -272,11 +255,7 @@ void Device::get_controls_to_map(VectorDoubleMap& motor_controls)
 
    motor_controls_map_[ext_control_it->first] =
         motor_controls_in_[ext_control_it->first]->accessCopy();
-
-    for(unsigned i=0 ; i<ext_control_it->second.size() ; ++i)
-    {
-      ext_control_it->second[i] = motor_controls_map_[ext_control_it->first](i);
-    }
+   ext_control_it->second = motor_controls_map_[ext_control_it->first];
   }
 }
 

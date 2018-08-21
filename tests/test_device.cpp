@@ -94,7 +94,7 @@ TEST_F(TestDevice, test_destructor)
 TEST_F(TestDevice, test_parse_yaml_file)
 {
   Device device("simple_robot", params_);
-  device.parse_yaml_node(params_);
+  device.initialize_maps(params_);
   const Device::SignalMap& sig_map = device.getSignalMap();
   ASSERT_EQ(sig_map.count("encoders"), 1);
   ASSERT_EQ(sig_map.count("imu_accelerometer"), 1);
@@ -114,59 +114,31 @@ TEST_F(TestDevice, test_set_sensors_from_map)
 {
   // create the device
   Device device("simple_robot", params_);
-  device.parse_yaml_node(params_);
+  device.initialize_maps(params_);
 
   // prepare some randomness
   srand(static_cast<unsigned>(time(nullptr)));
   std::vector<double> rand_vec;
 
   // create the sensors map
-  VectorDoubleMap sensors;
+  VectorDGMap sensors;
 
   // fill in the sensor map
-  rand_vec.resize(5);
-  for(unsigned i=0 ; i< rand_vec.size() ; ++i)
-  {
-    rand_vec[i] = rand();
-  }
-  sensors["encoders"] = rand_vec;
-  Eigen::Map<dg::Vector> encoders(&sensors["encoders"][0], 5);
-  //
-  rand_vec.resize(3);
-  for(unsigned i=0 ; i< rand_vec.size() ; ++i)
-  {
-    rand_vec[i] = rand();
-  }
-  sensors["imu_accelerometer"] = rand_vec;
-  Eigen::Map<dg::Vector> imu_acc(&sensors["imu_accelerometer"][0], 3);
-  //
-  rand_vec.resize(3);
-  for(unsigned i=0 ; i< rand_vec.size() ; ++i)
-  {
-    rand_vec[i] = rand();
-  }
-  sensors["imu_gyroscope"] = rand_vec;
-  Eigen::Map<dg::Vector> imu_gyro(&sensors["imu_gyroscope"][0], 3);
-  //
-  rand_vec.resize(6);
-  for(unsigned i=0 ; i< rand_vec.size() ; ++i)
-  {
-    rand_vec[i] = rand();
-  }
-  sensors["imu"] = rand_vec;
-  Eigen::Map<dg::Vector> imu(&sensors["imu"][0], 6);
+  sensors["encoders"] = dg::Vector::Random(5);
+  sensors["imu_accelerometer"] = dg::Vector::Random(3);
+  sensors["imu_gyroscope"] = dg::Vector::Random(3);
+  sensors["imu"] = dg::Vector::Random(6);
 
   device.set_sensors_from_map(sensors);
 
-  ASSERT_TRUE(encoders.isApprox(
-                device.sensors_out_["encoders"]->accessCopy()));
-  ASSERT_TRUE(imu_acc.isApprox(
-                device.sensors_out_["imu_accelerometer"]->accessCopy()));
-  ASSERT_TRUE(imu_gyro.isApprox(
-                device.sensors_out_["imu_gyroscope"]->accessCopy()));
-  ASSERT_TRUE(imu.isApprox(
-                device.sensors_out_["imu"]->accessCopy()));
-
+  ASSERT_TRUE(sensors["encoders"].isApprox(
+        device.sensors_out_["encoders"]->accessCopy()));
+  ASSERT_TRUE(sensors["imu_accelerometer"].isApprox(
+        device.sensors_out_["imu_accelerometer"]->accessCopy()));
+  ASSERT_TRUE(sensors["imu_gyroscope"].isApprox(
+        device.sensors_out_["imu_gyroscope"]->accessCopy()));
+  ASSERT_TRUE(sensors["imu"].isApprox(
+        device.sensors_out_["imu"]->accessCopy()));
 }
 
 class SimpleRobot: public Device
@@ -193,7 +165,7 @@ TEST_F(TestDevice, test_execute_graph)
 {
   // create the device
   SimpleRobot device("simple_robot");
-  device.parse_yaml_node(params_);
+  device.initialize_maps(params_);
 
   // setup the controls
   device.motor_controls_in_["torques"]->setConstant(dg::Vector::Random(5));
@@ -212,14 +184,14 @@ TEST_F(TestDevice, test_get_controls_to_map)
 {
   // create the device
   Device device("simple_robot", params_);
-  device.parse_yaml_node(params_);
+  device.initialize_maps(params_);
 
   // prepare some randomness
   srand(static_cast<unsigned>(time(nullptr)));
   std::vector<double> rand_vec;
 
   // create the controls map
-  VectorDoubleMap motor_controls;
+  VectorDGMap motor_controls;
   motor_controls["torques"].resize(5, 0.0);
   motor_controls["positions"].resize(5, 0.0);
 

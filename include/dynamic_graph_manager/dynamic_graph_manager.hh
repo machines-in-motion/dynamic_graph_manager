@@ -28,6 +28,9 @@
 #include <std_srvs/Empty.h>
 #include <dynamic_graph_manager/ros_interpreter.hh>
 
+// some usefull tools like the yaml parsing
+#include <dynamic_graph_manager/tools.hh>
+
 // the device of the dynamic-graph
 #include <dynamic_graph_manager/device.hh>
 
@@ -138,7 +141,7 @@ public:
    * WARNING, this function needs to be overloaded using the actual
    * drivers of the robot.
    */
-  virtual void get_sensors_to_map(const VectorDoubleMap)
+  virtual void get_sensors_to_map(const VectorDGMap&)
   {
     throw(std::runtime_error(std::string("DynamicGraphManager::") +
                                          "get_sensors_to_map():\n" +
@@ -152,7 +155,7 @@ public:
    * WARNING, this function needs to be overloaded using the actual
    * drivers of the robot.
    */
-  virtual void set_motor_controls_from_map(VectorDoubleMap)
+  virtual void set_motor_controls_from_map(VectorDGMap&)
   {
     throw(std::runtime_error(std::string("DynamicGraphManager::") +
                              "set_motor_controls_from_map():\n" +

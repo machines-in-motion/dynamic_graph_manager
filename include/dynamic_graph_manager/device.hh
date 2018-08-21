@@ -16,19 +16,14 @@
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/all-signals.h>
 
-/* short cut of the namespace */
-namespace dg = dynamicgraph;
-
-#include "dynamic_graph_manager/periodic-call.hh"
-#include <dynamic_graph_manager/matrix-geometry.hh>
+#include <dynamic_graph_manager/periodic-call.hh>
+#include <dynamic_graph_manager/tools.hh>
 
 namespace dynamic_graph {
-  typedef dynamicgraph::Signal<dg::Vector,int>  OutSignal;
-  typedef dynamicgraph::SignalPtr<dg::Vector,int>  InSignal;
+  typedef dynamicgraph::Signal<dynamicgraph::Vector,int>  OutSignal;
+  typedef dynamicgraph::SignalPtr<dynamicgraph::Vector,int>  InSignal;
   typedef std::map<std::string, OutSignal* > DeviceOutSignalMap;
   typedef std::map<std::string, InSignal* > DeviceInSignalMap;
-  typedef std::map<std::string, std::vector<double> > VectorDoubleMap;
-  typedef std::map<std::string, dg::Vector > VectorDGMap;
 
   class Device: public dynamicgraph::Entity
   {
@@ -61,13 +56,13 @@ namespace dynamic_graph {
     /**
      * @brief parse_yaml_file fill in the internal maps for sensors and controls.
      */
-    void parse_yaml_node(const YAML::Node& sensors_and_controls);
+    void initialize_maps(const YAML::Node& sensors_and_controls);
 
     /**
      * @brief get_sensor_from_map
      * @param sensors
      */
-    virtual void set_sensors_from_map(const VectorDoubleMap& sensors);
+    virtual void set_sensors_from_map(const VectorDGMap& sensors);
 
     /**
      * @brief execute_graph is a fonction that execute the graph.
@@ -85,7 +80,7 @@ namespace dynamic_graph {
      * the output of the DynamicGraph.
      * @param controls is the the map containing the controls.
      */
-    virtual void get_controls_to_map(VectorDoubleMap& motor_controls);
+    virtual void get_controls_to_map(VectorDGMap& motor_controls);
 
     /****************************************************************
      * DEVICE OUPUT SIGNALS // INPUT OF THE GRAPH <=> SENSOR VALUES *
@@ -98,10 +93,10 @@ namespace dynamic_graph {
     DeviceOutSignalMap sensors_out_;
 
     /**
-      * @brief sensors_map_ is a map of dg::Vector. They represent
+      * @brief sensors_map_ is a map of dynamicgraph::Vector. They represent
       * all the sensors data measured on the robot. It is a internal copy of the
       * sensor data that is used for type conversion from std::vector<double>
-      * to dg::Vector
+      * to dynamicgraph::Vector
       */
     VectorDGMap sensors_map_;
 
@@ -117,9 +112,9 @@ namespace dynamic_graph {
     DeviceInSignalMap motor_controls_in_;
 
     /**
-     * @brief motor_controls_map_ is a map of dg::Vector. They represent
+     * @brief motor_controls_map_ is a map of dynamicgraph::Vector. They represent
       * all the controls to be sent to the robot. It is a internal copy of the
-      * controls data that is used for type conversion from dg::Vector
+      * controls data that is used for type conversion from dynamicgraph::Vector
       * to std::vector<double>
      */
     VectorDGMap motor_controls_map_;
