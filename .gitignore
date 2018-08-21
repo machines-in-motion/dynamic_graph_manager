@@ -4,3 +4,9 @@
 *build*
 
 *.user
+
+*deprecated*
+
+*config*
+
+*demos*
