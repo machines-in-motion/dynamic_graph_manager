@@ -85,7 +85,10 @@ void DynamicGraphManager::wait_stop_dynamic_graph()
   {
     usleep(1000);
   }
-  thread_dynamic_graph_->join();
+  if(thread_dynamic_graph_ && thread_dynamic_graph_->joinable())
+  {
+    thread_dynamic_graph_->join();
+  }
 }
 
 void DynamicGraphManager::wait_stop_hardware_communication()
@@ -94,7 +97,11 @@ void DynamicGraphManager::wait_stop_hardware_communication()
   {
     usleep(1000);
   }
-  thread_hardware_communication_->join();
+  if(thread_hardware_communication_ &&
+     thread_hardware_communication_->joinable())
+  {
+    thread_hardware_communication_->join();
+  }
 }
 
 

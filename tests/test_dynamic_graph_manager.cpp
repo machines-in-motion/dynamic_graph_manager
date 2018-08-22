@@ -267,7 +267,7 @@ public:
   void initialize_hardware_communication_process(){}
   void get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
-    std::cout << "get_sensors_to_map called by SimpleDGM" << std::endl;
+//    std::cout << "get_sensors_to_map called by SimpleDGM" << std::endl;
     map["encoders"].setRandom();
     map["imu_accelerometer"].setRandom();
     map["imu_gyroscope"].setRandom();
@@ -275,7 +275,7 @@ public:
   }
   void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
   {
-    std::cout << "set_motor_controls_from_map called by SimpleDGM" << std::endl;
+//    std::cout << "set_motor_controls_from_map called by SimpleDGM" << std::endl;
     ctrl_map = map;
   }
   dynamic_graph::VectorDGMap ctrl_map;
@@ -290,26 +290,24 @@ TEST_F(TestDynamicGraphManager, test_run_hardware_communication_process)
   ASSERT_TRUE(dgm.is_hardware_communication_stopped());
   ASSERT_FALSE(ros::ok());
   dgm.run_hardware_communication_process();
+  usleep(5000);
+  ASSERT_FALSE(dgm.is_hardware_communication_stopped());
   ASSERT_TRUE(ros::ok());
-  usleep(5000);
   dgm.stop_hardware_communication();
+  dgm.wait_stop_hardware_communication();
+  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+  //std::cout << "hardware communication stopped" << std::endl;
+
+  //std::cout << "hardware communication restarting ..." << std::endl;
+  dgm.run_hardware_communication_process();
   usleep(5000);
-
-  //  ASSERT_FALSE(dgm.is_hardware_communication_stopped());
-
-//  dgm.wait_stop_hardware_communication();
-//  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+  ASSERT_FALSE(dgm.is_hardware_communication_stopped());
+  ASSERT_TRUE(ros::ok());
+  dynamic_graph::ros_shutdown();
+  dgm.wait_stop_hardware_communication();
+  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+  ASSERT_FALSE(ros::ok());
   std::cout << "hardware communication stopped" << std::endl;
-
-//  std::cout << "hardware communication restarting ..." << std::endl;
-//  dgm.run_hardware_communication_process();
-//  usleep(5000);
-//  ASSERT_FALSE(!dgm.is_hardware_communication_stopped());
-//  dynamic_graph::ros_shutdown("hardware_communication");
-//  ASSERT_FALSE(ros::ok());
-//  dgm.wait_stop_hardware_communication();
-//  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
-//  std::cout << "hardware communication stopped" << std::endl;
 }
 
 /**
