@@ -44,7 +44,7 @@ Device::Device(const std::string& input_name, const YAML::Node& params):
   /**********************************************
    * create maps for signals and vector<double> *
    **********************************************/
-  parse_yaml_node(params_, sensors_map_, motor_controls_map_);
+  initialize_maps(params_);
 
   /******************************
    * registering sensor signals *
@@ -99,6 +99,9 @@ Device::~Device()
 
 void Device::initialize_maps(const YAML::Node& sensors_and_controls)
 {
+  /**************************************************************
+   * Parsing the YAML node and fill in the Eigen::VectosXd maps *
+   **************************************************************/
   parse_yaml_node(sensors_and_controls, sensors_map_, motor_controls_map_);
 
   std::string hardware_name ("");
@@ -106,6 +109,7 @@ void Device::initialize_maps(const YAML::Node& sensors_and_controls)
   /*******************************
    * We iterate over the sensors *
    *******************************/
+  sensors_out_.clear();
   for (VectorDGMap::const_iterator sensor_it = sensors_map_.begin();
        sensor_it != sensors_map_.end(); ++sensor_it)
   {

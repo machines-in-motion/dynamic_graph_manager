@@ -15,6 +15,7 @@
 
 namespace dynamic_graph
 {
+
 /**
  * @brief The GlobalRos struct is a structure that allows to gloabally handle
  * the ROS objects
@@ -47,17 +48,23 @@ struct GlobalRos
  * first call. It always returns a reference to the node hanlde.
  * @return the reference of GLOBAL_ROS_VAR.node_handle_.
  */
-ros::NodeHandle& ros_init ();
+ros::NodeHandle& ros_init (std::string node_name);
 
 /**
  * @brief ros_spinner return the async_spinner_. Call dynamic_graph ros_init if
  * ros has not been initialized
  * @return the reference of GLOBAL_ROS_VAR.async_spinner_.
  */
-ros::AsyncSpinner& ros_spinner ();
+ros::AsyncSpinner& ros_spinner (std::string node_name);
 
 /**
- * @brief ros_shutdown shuts down ros and stop the ros spinner
+ * @brief ros_shutdown shuts down ros and stop the ros spinner with the
+ * associate name
+ */
+void ros_shutdown (std::string node_name);
+
+/**
+ * @brief ros_shutdown shuts down ros and stop the ros spinners
  */
 void ros_shutdown ();
 

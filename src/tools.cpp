@@ -4,23 +4,23 @@
  * \author Maximilien Naveau
  * \date 2018
  *
- * Implementation of the DynamicGraphManager class
+ * Implementation of some tools like a yaml parser
  *
  */
 
 #include <dynamic_graph_manager/tools.hh>
 
-using namespace dynamic_graph;
 
-void parse_yaml_node(const YAML::Node& sensors_and_controls,
-                     VectorDGMap& out_sensors_map,
-                     VectorDGMap& out_motor_controls_map)
+void dynamic_graph::parse_yaml_node(
+    const YAML::Node& sensors_and_controls,
+    dynamic_graph::VectorDGMap& out_sensors_map,
+    dynamic_graph::VectorDGMap& out_motor_controls_map)
 {
   const YAML::Node& sensors = sensors_and_controls["sensors"];
   const YAML::Node& controls = sensors_and_controls["controls"];
   std::string hardware_name ("");
   dynamicgraph::Vector init_value (1);
-  unsigned int size (0);
+  int size (0);
 
   out_sensors_map.clear();
   out_motor_controls_map.clear();
@@ -32,7 +32,7 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
        sensor_it != sensors.end(); ++sensor_it)
   {
     hardware_name = sensor_it->first.as<std::string>();
-    size = sensor_it->second["size"].as<unsigned int>();
+    size = sensor_it->second["size"].as<int>();
     out_sensors_map[hardware_name] = dynamicgraph::Vector(size);
     out_sensors_map[hardware_name].setZero();
   }
@@ -44,7 +44,7 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
        control_it != controls.end(); ++control_it)
   {
     hardware_name = control_it->first.as<std::string>();
-    size = control_it->second["size"].as<unsigned int>();
+    size = control_it->second["size"].as<int>();
     out_motor_controls_map[hardware_name] = dynamicgraph::Vector(size);
     out_motor_controls_map[hardware_name].setZero();
   }

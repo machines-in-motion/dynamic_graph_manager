@@ -16,6 +16,7 @@
 // used to spawn the real time thread
 #include <thread>
 #include <wait.h>
+#include <atomic>
 
 // used to deal with shared memory
 #include <shared_memory/shared_memory.hpp>
@@ -77,7 +78,7 @@ public:
   /**
    * @brief DynamicGraphManager, destructor of the class
    */
-  ~DynamicGraphManager();
+  virtual ~DynamicGraphManager();
 
   /**
    * @brief initialize the basic variables
@@ -94,10 +95,20 @@ public:
   /**
    * @brief wait_start_dynamic_graph put the current thread to sleep until the
    * user start the dynamic graph
-   * @return True: dynamic graph started before the watch dog expires,
-   *         False: otherwize
    */
   void wait_start_dynamic_graph();
+
+  /**
+   * @brief wait_stop_dynamic_graph put the current thread to sleep until the
+   * user stop the dynamic graph
+   */
+  void wait_stop_dynamic_graph();
+
+  /**
+   * @brief wait_stop_hardware_communication put the current thread to sleep
+   * until the user stop the hardware communication.
+   */
+  void wait_stop_hardware_communication();
 
   /**
    * @brief initialize_dynamic_graph_process instanciates all variables related
@@ -130,7 +141,7 @@ public:
   virtual void initialize_hardware_communication_process()
   {
     throw(std::runtime_error(std::string("DynamicGraphManager::") +
-                             "initialize_hardware_communication_process():\n" +
+                             "initialize_hardware_communication_process(): " +
                              "this method needs to be overloaded"));
   }
 
@@ -141,10 +152,10 @@ public:
    * WARNING, this function needs to be overloaded using the actual
    * drivers of the robot.
    */
-  virtual void get_sensors_to_map(const VectorDGMap&)
+  virtual void get_sensors_to_map(VectorDGMap&)
   {
     throw(std::runtime_error(std::string("DynamicGraphManager::") +
-                                         "get_sensors_to_map():\n" +
+                                         "get_sensors_to_map(VectorDGMap&): " +
                                          "this method needs to be overloaded"));
   }
 
@@ -155,10 +166,10 @@ public:
    * WARNING, this function needs to be overloaded using the actual
    * drivers of the robot.
    */
-  virtual void set_motor_controls_from_map(VectorDGMap&)
+  virtual void set_motor_controls_from_map(const VectorDGMap&)
   {
     throw(std::runtime_error(std::string("DynamicGraphManager::") +
-                             "set_motor_controls_from_map():\n" +
+                             "set_motor_controls_from_map(const VectorDGMap&): " +
                              "this method needs to be overloaded"));
   }
 
@@ -171,7 +182,7 @@ public:
    */
   void stop_dynamic_graph()
   {
-    is_dynamic_graph_stopped_ = false;
+    is_dynamic_graph_stopped_ = true;
   }
 
   /**
@@ -179,7 +190,7 @@ public:
    */
   void start_dynamic_graph()
   {
-    is_dynamic_graph_stopped_ = true;
+    is_dynamic_graph_stopped_ = false;
   }
 
   /**
@@ -196,7 +207,7 @@ public:
    */
   void stop_hardware_communication()
   {
-    is_dynamic_graph_stopped_ = false;
+    is_hardware_communication_stopped_ = true;
   }
 
   /**
@@ -204,20 +215,20 @@ public:
    */
   void start_hardware_communication()
   {
-    is_dynamic_graph_stopped_ = true;
+    is_hardware_communication_stopped_ = false;
   }
 
   /**
-   * @brief get the status of the hardware communication (is running or not)
-   * @return the flags is_dynamic_graph_stopped_ value
+   * @brief get the status of the hardware communication (is running or not).
+   * @return the flags is_dynamic_graph_stopped_ value.
    */
   bool is_hardware_communication_stopped()
   {
-    return is_dynamic_graph_stopped_;
+    return is_hardware_communication_stopped_;
   }
 
   /**
-   * @brief device is a getter method on the Device internal pointer
+   * @brief device is a getter method on the Device internal pointer.
    * @return a const reference to the device.
    */
   Device& device()
@@ -232,11 +243,11 @@ private:
 
   /**
    * @brief start_dg is the callback method of the ROS service start dynamic
-   * graph
-   * @return True
+   * graph.
+   * @return true.
    */
-  bool start_dg(std_srvs::Empty::Request& ,
-                std_srvs::Empty::Response& )
+  bool start_dynamic_graph(std_srvs::Empty::Request& ,
+                           std_srvs::Empty::Response& )
   {
     is_dynamic_graph_stopped_ = false;
     return true;
@@ -247,8 +258,8 @@ private:
    * graph
    * @return
    */
-  bool stop_dg(std_srvs::Empty::Request& ,
-               std_srvs::Empty::Response& )
+  bool stop_dynamic_graph(std_srvs::Empty::Request& ,
+                          std_srvs::Empty::Response& )
   {
     is_dynamic_graph_stopped_ = true;
     return true;
@@ -302,16 +313,18 @@ private:
    * dynamic graph.
    *  - TRUE the Dynamic Graph is NOT running.
    *  - FALSE the Dynamic Graph IS running.
+   * The type "atomic" is here to make sure that this variable is thread safe
    */
-  bool is_dynamic_graph_stopped_;
+  std::atomic<bool> is_dynamic_graph_stopped_;
 
   /**
    * @brief is_hardware_communication_stopped_ is the flag reflecting the state
    * of the hardware communication thread.
    *  - TRUE the hardware communication is NOT running.
    *  - FALSE the hardware communication IS running.
+   * The type "atomic" is here to make sure that this variable is thread safe
    */
-  bool is_hardware_communication_stopped_;
+  std::atomic<bool> is_hardware_communication_stopped_;
 
   /**
    * @brief ros_python_interpreter_ptr_ is a ROS wrapper around a python

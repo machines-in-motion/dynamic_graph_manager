@@ -19,61 +19,76 @@ namespace dynamic_graph
    * The use of the std::unique_ptr allows to delete the object and re-create
    * at will. It is usefull to reset the ros environment specifically for
    * unittesting.
+   *
+   * If the node handle does not exist we call the global method ros::init.
+   * This method has for purpose to initialize the ROS environment. The
+   * creation of ROS object is permitted only after the call of this function.
+   * After ros::init being called we create the node hanlde which allows in
+   * turn to advertize the ROS services, or create topics (data pipe).
+   *
    */
-  static std::unique_ptr<GlobalRos> GLOBAL_ROS_VAR(nullptr);
+  static std::map<std::string, std::unique_ptr<GlobalRos> > GLOBAL_ROS_VAR;
 
-  ros::NodeHandle& ros_init ()
+  ros::NodeHandle& ros_init (std::string node_name)
   {
-    if (GLOBAL_ROS_VAR == nullptr)
+    if (GLOBAL_ROS_VAR[node_name] == nullptr)
     {
-      GLOBAL_ROS_VAR.reset(new GlobalRos());
+      GLOBAL_ROS_VAR[node_name].reset(new GlobalRos());
     }
-    /** If the node handle does not exist we call the global method ros::init.
-     * This method has for purpose to initialize the ROS environment. The
-     * creation of ROS object is permitted only after the call of this function.
-     * After ros::init being called we create the node hanlde which allows in
-     * turn to advertize the ROS services, or create topics (data pipe).
-     */
-    if (!GLOBAL_ROS_VAR->node_handle_)
+    if (!GLOBAL_ROS_VAR[node_name]->node_handle_)
     {
       /** call ros::init */
       int argc = 1;
-      char* arg0 = strdup("dynamic_graph_manager");
+      char* arg0 = strdup(node_name.c_str());
       char* argv[] = {arg0, nullptr};
-      ros::init(argc, argv, "dynamic_graph_manager");
+      ros::init(argc, argv, node_name);
       free (arg0);
 
       /** ros::NodeHandle instanciation */
-      GLOBAL_ROS_VAR->node_handle_ = boost::make_shared<ros::NodeHandle>
-                                    ("dynamic_graph_manager");
+      GLOBAL_ROS_VAR[node_name]->node_handle_ =
+          boost::make_shared<ros::NodeHandle>(node_name);
     }
     /** If spinner is not created we create it. Here we can safely assume that
      * ros::init was called before.
      *
      */
-    if (!GLOBAL_ROS_VAR->async_spinner_)
+    if (!GLOBAL_ROS_VAR[node_name]->async_spinner_)
     {
       /** create the spinner */
-      GLOBAL_ROS_VAR->async_spinner_ = boost::make_shared<ros::AsyncSpinner> (4);
+      GLOBAL_ROS_VAR[node_name]->async_spinner_ =
+          boost::make_shared<ros::AsyncSpinner> (4);
       /** run the spinner in a different thread */
-      GLOBAL_ROS_VAR->async_spinner_->start ();
+      GLOBAL_ROS_VAR[node_name]->async_spinner_->start ();
     }
     /** Return a reference to the node handle so any function can use it */
-    return *GLOBAL_ROS_VAR->node_handle_;
+    return *GLOBAL_ROS_VAR[node_name]->node_handle_;
   }
 
-  ros::AsyncSpinner& ros_spinner ()
-  {
-    if (!GLOBAL_ROS_VAR->async_spinner_)
+  ros::AsyncSpinner& ros_spinner (std::string node_name)
+  {   
+    if (!GLOBAL_ROS_VAR[node_name]->async_spinner_)
     {
-      dynamic_graph::ros_init();
+      dynamic_graph::ros_init(node_name);
     }
-    return *GLOBAL_ROS_VAR->async_spinner_;
+    return *GLOBAL_ROS_VAR[node_name]->async_spinner_;
+  }
+
+  void ros_shutdown (std::string node_name)
+  {
+    GLOBAL_ROS_VAR[node_name].reset(nullptr);
+    if(ros::ok())
+    {
+      ros::shutdown();
+    }
   }
 
   void ros_shutdown ()
   {
-    GLOBAL_ROS_VAR.reset(nullptr);
+    for(std::map<std::string, std::unique_ptr<GlobalRos> >::iterator
+        it=GLOBAL_ROS_VAR.begin() ; it!=GLOBAL_ROS_VAR.end() ; ++it)
+    {
+      it->second.reset(nullptr);
+    }
     if(ros::ok())
     {
       ros::shutdown();

@@ -41,10 +41,11 @@ protected:
    * @brief TearDown, is executed after teh unit tests
    */
   void TearDown() {
+    dynamic_graph::ros_shutdown("dynamic_graph");
+    dynamic_graph::ros_shutdown("hardware_communication");
+    usleep(5000);
     if(ros::ok())
     {
-      dynamic_graph::ros_shutdown();
-      usleep(500000);
       ros::shutdown();
     }
     assert(!ros::ok() && "ROS must be shut down now.");
@@ -80,7 +81,7 @@ TEST_F(TestDynamicGraphManager, test_initialize)
   );
 }
 
-TEST_F(TestDynamicGraphManager, test_run)
+TEST_F(DISABLED_TestDynamicGraphManager, test_run)
 {
   dynamic_graph::DynamicGraphManager dgm;
   dgm.initialize(params_);
@@ -126,7 +127,7 @@ TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph)
     // Check that the start dynamic graph service works as expected
     ros::ServiceClient start_dynamic_graph_client =
         n.serviceClient<std_srvs::Empty>(
-          "/dynamic_graph_manager/start_dynamic_graph");
+          "/dynamic_graph/start_dynamic_graph");
     ASSERT_TRUE(start_dynamic_graph_client.waitForExistence());
     ASSERT_TRUE(start_dynamic_graph_client.exists());
     while(!start_dynamic_graph_client.call(srv))
@@ -147,19 +148,19 @@ TEST_F(TestDynamicGraphManager, test_initialize_dynamic_graph_process)
   dynamic_graph::DynamicGraphManager dgm;
   dgm.initialize(params_);
   dgm.initialize_dynamic_graph_process();
-  ros::NodeHandle& n = dynamic_graph::ros_init();
+  ros::NodeHandle& n = dynamic_graph::ros_init("dynamic_graph");
   ros::ServiceClient start_dg =
       n.serviceClient<std_srvs::Empty>(
-        "/dynamic_graph_manager/start_dynamic_graph");
+        "/dynamic_graph/start_dynamic_graph");
   ros::ServiceClient stop_dg =
       n.serviceClient<std_srvs::Empty>(
-        "/dynamic_graph_manager/stop_dynamic_graph");
+        "/dynamic_graph/stop_dynamic_graph");
   ros::ServiceClient run_py_cmd =
       n.serviceClient<std_srvs::Empty>(
-        "/dynamic_graph_manager/run_python_command");
+        "/dynamic_graph/run_python_command");
   ros::ServiceClient run_py_script =
       n.serviceClient<std_srvs::Empty>(
-        "/dynamic_graph_manager/run_python_script");
+        "/dynamic_graph/run_python_script");
 
   ASSERT_TRUE(start_dg.isValid());
   ASSERT_TRUE(stop_dg.isValid());
@@ -173,23 +174,30 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
   pid_t pid = fork();
   if(pid == 0) // Child process
   {
-    // std::cout << "Child process started..." << std::endl;
     dynamic_graph::DynamicGraphManager dgm;
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
+
     dynamic_graph::VectorDGMap sensors_map = dgm.device().sensors_map_;
     shared_memory::set("DynamicGraphManager", "sensors_map", sensors_map);
     dgm.run_dynamic_graph_process();
-    std::cout << "Dynamic graph thread launched, wait for it to start"
-              << std::endl;
+//    std::cout << "Dynamic graph thread launched, wait for it to start"
+//              << std::endl;
     dgm.wait_start_dynamic_graph();
-    std::cout << "Dynamic graph started" << std::endl;
+//    std::cout << "Dynamic graph started" << std::endl;
+
+//    std::cout << "Waiting for dynamic graph to stop..." << std::endl;
+    int time = 0;
     while(!dgm.is_dynamic_graph_stopped())
     {
-      std::cout << "Waiting for dynamic graph to stop" << std::endl;
-      usleep(5e+03);
+//      ++time;
+//      if(time % 1000 == 0)
+//      {
+//        std::cout << "still waiting" << std::endl;
+//      }
+      usleep(5000);
     }
-    std::cout << "Dynamic graph stopped" << std::endl;
+//    std::cout << "Dynamic graph stopped" << std::endl;
     exit(0);
   }
   else if(pid > 0) // Parent process
@@ -209,29 +217,29 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     std_srvs::Empty srv;
     ros::ServiceClient start_dynamic_graph_client =
         n.serviceClient<std_srvs::Empty>(
-          "/dynamic_graph_manager/start_dynamic_graph");
+          "/dynamic_graph/start_dynamic_graph");
     ASSERT_TRUE(start_dynamic_graph_client.waitForExistence());
     ASSERT_TRUE(start_dynamic_graph_client.exists());
     while(!start_dynamic_graph_client.call(srv))
     {
-      usleep(5e+03);
+      usleep(5000);
     }
-    ROS_INFO("The start_dynamic_graph service has been called successfully");
+//    ROS_INFO("The start_dynamic_graph service has been called successfully");
 
     // wait a bit
-    usleep(1e+05);
+    usleep(5000);
 
     // stop the dynamic graph (evrything should be killed after this call)
     ros::ServiceClient stop_dynamic_graph_client =
         n.serviceClient<std_srvs::Empty>(
-          "/dynamic_graph_manager/stop_dynamic_graph");
+          "/dynamic_graph/stop_dynamic_graph");
     ASSERT_TRUE(stop_dynamic_graph_client.waitForExistence());
     ASSERT_TRUE(stop_dynamic_graph_client.exists());
     while(!stop_dynamic_graph_client.call(srv))
     {
-      usleep(5e+03);
+      usleep(5000);
     }
-    ROS_INFO("The stop_dynamic_graph service has been called successfully");
+//    ROS_INFO("The stop_dynamic_graph service has been called successfully");
 
     // wait to avoid zombie processes
     wait(nullptr);
@@ -240,26 +248,68 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
   {
     ASSERT_TRUE(false && "fork failed");
   }
-
-
 }
 
 TEST_F(TestDynamicGraphManager, test_initialize_hardware_communication_process)
 {
   dynamic_graph::DynamicGraphManager dgm;
   dgm.initialize(params_);
-  ASSERT_ANY_THROW(
-    dgm.initialize_hardware_communication_process();
+  ASSERT_THROW(
+        dgm.initialize_hardware_communication_process(), std::runtime_error
   );
 }
 
+class SimpleDGM : public dynamic_graph::DynamicGraphManager
+{
+public:
+  SimpleDGM(): dynamic_graph::DynamicGraphManager(){}
+  ~SimpleDGM(){}
+  void initialize_hardware_communication_process(){}
+  void get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  {
+    std::cout << "get_sensors_to_map called by SimpleDGM" << std::endl;
+    map["encoders"].setRandom();
+    map["imu_accelerometer"].setRandom();
+    map["imu_gyroscope"].setRandom();
+    map["imu"].setRandom();
+  }
+  void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
+  {
+    std::cout << "set_motor_controls_from_map called by SimpleDGM" << std::endl;
+    ctrl_map = map;
+  }
+  dynamic_graph::VectorDGMap ctrl_map;
+};
+
 TEST_F(TestDynamicGraphManager, test_run_hardware_communication_process)
 {
-  dynamic_graph::DynamicGraphManager dgm;
+  SimpleDGM dgm;
   dgm.initialize(params_);
-  ASSERT_ANY_THROW(
-    dgm.run_hardware_communication_process();
-  );
+
+  dgm.initialize_hardware_communication_process();
+  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+  ASSERT_FALSE(ros::ok());
+  dgm.run_hardware_communication_process();
+  ASSERT_TRUE(ros::ok());
+  usleep(5000);
+  dgm.stop_hardware_communication();
+  usleep(5000);
+
+  //  ASSERT_FALSE(dgm.is_hardware_communication_stopped());
+
+//  dgm.wait_stop_hardware_communication();
+//  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+  std::cout << "hardware communication stopped" << std::endl;
+
+//  std::cout << "hardware communication restarting ..." << std::endl;
+//  dgm.run_hardware_communication_process();
+//  usleep(5000);
+//  ASSERT_FALSE(!dgm.is_hardware_communication_stopped());
+//  dynamic_graph::ros_shutdown("hardware_communication");
+//  ASSERT_FALSE(ros::ok());
+//  dgm.wait_stop_hardware_communication();
+//  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+//  std::cout << "hardware communication stopped" << std::endl;
 }
 
 /**
@@ -291,7 +341,7 @@ TEST_F(TestDynamicGraphManager, test_start_stop_ros_services)
   // Check that the start dynamic graph service works as expected
   ros::ServiceClient start_dynamic_graph_client =
       n.serviceClient<std_srvs::Empty>(
-        "/dynamic_graph_manager/start_dynamic_graph");
+        "/dynamic_graph/start_dynamic_graph");
   ASSERT_TRUE(start_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(start_dynamic_graph_client.call(srv));
   ASSERT_TRUE(!dgm.is_dynamic_graph_stopped());
@@ -300,7 +350,7 @@ TEST_F(TestDynamicGraphManager, test_start_stop_ros_services)
   // Check that the stop dynamic graph service works as expected
   ros::ServiceClient stop_dynamic_graph_client =
       n.serviceClient<std_srvs::Empty>(
-        "/dynamic_graph_manager/stop_dynamic_graph");
+        "/dynamic_graph/stop_dynamic_graph");
   ASSERT_TRUE(stop_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(stop_dynamic_graph_client.call(srv));
   ASSERT_TRUE(dgm.is_dynamic_graph_stopped());
@@ -312,8 +362,8 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter)
   // verify that ros is not active
   ASSERT_TRUE(!ros::ok());
 
-  // initialize ROS, create an asynachronous spinner and get a node handle
-  ros::NodeHandle& node_handle = dynamic_graph::ros_init ();
+  // initialize ROS, create an asynchronous spinner and get a node handle
+  ros::NodeHandle& node_handle = dynamic_graph::ros_init ("dynamic_graph");
 
   // Check that ros is active
   ASSERT_TRUE(ros::ok());
@@ -329,7 +379,7 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter)
   run_com_msg.request.input = "1 + 1";
   ros::ServiceClient run_python_command_client =
       node_handle.serviceClient<dynamic_graph_manager::RunCommand>(
-        "/dynamic_graph_manager/run_python_command");
+        "/dynamic_graph/run_python_command");
   ASSERT_TRUE(run_python_command_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_python_command_client.call(run_com_msg));
   ASSERT_EQ(run_com_msg.response.result, "2");
@@ -340,7 +390,7 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter)
   run_file_msg.request.input = TEST_CONFIG_FOLDER + std::string("simple_add.py");
   ros::ServiceClient run_script_client =
       node_handle.serviceClient<dynamic_graph_manager::RunPythonFile>(
-        "/dynamic_graph_manager/run_python_script");
+        "/dynamic_graph/run_python_script");
   ASSERT_TRUE(run_script_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_script_client.call(run_file_msg));
   ASSERT_EQ(run_file_msg.response.result, "File parsed");
@@ -357,13 +407,11 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter_from_the_DGM)
   // verify that ros is not active
   ASSERT_TRUE(!ros::ok());
 
-  // initialize ROS (not needed here as the dynamic graph manager does it)
-
   // create the DGM
   dynamic_graph::DynamicGraphManager dgm;
   dgm.initialize(params_);
 
-  // initialize dgm
+  // initialize dynamic graphe and ROS
   dgm.initialize_dynamic_graph_process();
 
   // Check that ros is active
@@ -375,7 +423,7 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter_from_the_DGM)
   run_com_msg.request.input = "1 + 1";
   ros::ServiceClient run_python_command_client =
       node_handle.serviceClient<dynamic_graph_manager::RunCommand>(
-        "/dynamic_graph_manager/run_python_command");
+        "/dynamic_graph/run_python_command");
   ASSERT_TRUE(run_python_command_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_python_command_client.call(run_com_msg));
   ASSERT_EQ(run_com_msg.response.result, "2");
@@ -386,7 +434,7 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter_from_the_DGM)
   run_file_msg.request.input = TEST_CONFIG_FOLDER + std::string("simple_add.py");
   ros::ServiceClient run_script_client =
       node_handle.serviceClient<dynamic_graph_manager::RunPythonFile>(
-        "/dynamic_graph_manager/run_python_script");
+        "/dynamic_graph/run_python_script");
   ASSERT_TRUE(run_script_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_script_client.call(run_file_msg));
   ASSERT_EQ(run_file_msg.response.result, "File parsed");
@@ -410,25 +458,25 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
   dgm.initialize(params_);
 
   ASSERT_FALSE(ros::service::exists(
-                 "/dynamic_graph_manager/start_dynamic_graph", false));
+                 "/dynamic_graph/start_dynamic_graph", false));
   ASSERT_FALSE(ros::service::exists(
-                 "/dynamic_graph_manager/stop_dynamic_graph", false));
+                 "/dynamic_graph/stop_dynamic_graph", false));
   ASSERT_FALSE(ros::service::exists(
-                 "/dynamic_graph_manager/run_python_command", false));
+                 "/dynamic_graph/run_python_command", false));
   ASSERT_FALSE(ros::service::exists(
-                 "/dynamic_graph_manager/run_python_script", false));
+                 "/dynamic_graph/run_python_script", false));
 
   // initialize dgm
   dgm.initialize_dynamic_graph_process();
 
   ASSERT_TRUE(ros::service::exists(
-                 "/dynamic_graph_manager/start_dynamic_graph", false));
+                 "/dynamic_graph/start_dynamic_graph", false));
   ASSERT_TRUE(ros::service::exists(
-                 "/dynamic_graph_manager/stop_dynamic_graph", false));
+                 "/dynamic_graph/stop_dynamic_graph", false));
   ASSERT_TRUE(ros::service::exists(
-                 "/dynamic_graph_manager/run_python_command", false));
+                 "/dynamic_graph/run_python_command", false));
   ASSERT_TRUE(ros::service::exists(
-                 "/dynamic_graph_manager/run_python_script", false));
+                 "/dynamic_graph/run_python_script", false));
 
   // Check that ros is active
   ASSERT_TRUE(ros::ok());
@@ -439,7 +487,7 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
   run_com_msg.request.input = "1 + 1";
   ros::ServiceClient run_python_command_client =
       node_handle.serviceClient<dynamic_graph_manager::RunCommand>(
-        "/dynamic_graph_manager/run_python_command");
+        "/dynamic_graph/run_python_command");
   ASSERT_TRUE(run_python_command_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_python_command_client.call(run_com_msg));
   ASSERT_EQ(run_com_msg.response.result, "2");
@@ -450,7 +498,7 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
   run_file_msg.request.input = TEST_CONFIG_FOLDER + std::string("simple_add.py");
   ros::ServiceClient run_script_client =
       node_handle.serviceClient<dynamic_graph_manager::RunPythonFile>(
-        "/dynamic_graph_manager/run_python_script");
+        "/dynamic_graph/run_python_script");
   ASSERT_TRUE(run_script_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_script_client.call(run_file_msg));
   ASSERT_EQ(run_file_msg.response.result, "File parsed");
@@ -466,7 +514,7 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
   // reset the client
   run_python_command_client =
         node_handle.serviceClient<dynamic_graph_manager::RunCommand>(
-          "/dynamic_graph_manager/run_python_command");
+          "/dynamic_graph/run_python_command");
 
 //  // perform a simple operation
 //  run_com_msg.request.input = "1 + 1";

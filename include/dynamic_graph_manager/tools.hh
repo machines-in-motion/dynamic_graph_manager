@@ -4,7 +4,7 @@
  * \author Maximilien Naveau
  * \date 2018
  *
- * Implementation of the DynamicGraphManager class
+ * Implementation of some tools like a yaml parser
  *
  */
 

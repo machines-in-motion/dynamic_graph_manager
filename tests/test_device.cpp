@@ -95,6 +95,26 @@ TEST_F(TestDevice, test_parse_yaml_file)
 {
   Device device("simple_robot", params_);
   device.initialize_maps(params_);
+//  for(VectorDGMap::const_iterator it=device.sensors_map_.begin() ;
+//      it!=device.sensors_map_.end() ; ++it)
+//  {
+//    std::cout << it->first << " ; " << it->second.transpose() << std::endl;
+//  }
+//  for(VectorDGMap::const_iterator it=device.motor_controls_map_.begin() ;
+//      it!=device.motor_controls_map_.end() ; ++it)
+//  {
+//    std::cout << it->first << " ; " << it->second.transpose() << std::endl;
+//  }
+//  for(DeviceOutSignalMap::const_iterator it=device.sensors_out_.begin() ;
+//      it!=device.sensors_out_.end() ; ++it)
+//  {
+//    std::cout << it->first << " ; " << it->second->accessCopy().transpose() << std::endl;
+//  }
+//  for(DeviceInSignalMap::const_iterator it=device.motor_controls_in_.begin() ;
+//      it!=device.motor_controls_in_.end() ; ++it)
+//  {
+//    std::cout << it->first << " ; " << it->second->accessCopy().transpose() << std::endl;
+//  }
   const Device::SignalMap& sig_map = device.getSignalMap();
   ASSERT_EQ(sig_map.count("encoders"), 1);
   ASSERT_EQ(sig_map.count("imu_accelerometer"), 1);
@@ -192,8 +212,8 @@ TEST_F(TestDevice, test_get_controls_to_map)
 
   // create the controls map
   VectorDGMap motor_controls;
-  motor_controls["torques"].resize(5, 0.0);
-  motor_controls["positions"].resize(5, 0.0);
+  motor_controls["torques"].resize(5);
+  motor_controls["positions"].resize(5);
 
   // setup the controls
   device.motor_controls_in_["torques"]->setConstant(dg::Vector::Random(5));
