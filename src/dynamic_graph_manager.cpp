@@ -58,17 +58,22 @@ void DynamicGraphManager::run()
   {
     pid_dynamic_graph_process_ = getpid();
     pid_hardware_communication_process_ = getppid();
+
+    initialize_dynamic_graph_process();
+    run_dynamic_graph_process();
+    wait_stop_dynamic_graph();
     exit(0);
   }else if(child_pid > 0) // parent process
   {
     pid_dynamic_graph_process_ = child_pid;
     pid_hardware_communication_process_ = getpid();
-    has_dynamic_graph_process_died();
+
+    initialize_hardware_communication_process();
+    run_hardware_communication_process();
   }else
   {
     throw(std::runtime_error("DynamicGraphManager::run(): the fork failed"));
   }
-  wait(nullptr);
 }
 
 void DynamicGraphManager::wait_start_dynamic_graph()
@@ -169,6 +174,8 @@ void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
 
 void DynamicGraphManager::dynamic_graph_real_time_loop()
 {
+  std::cout << "dynamic graph thread started" << std::endl;
+  is_dynamic_graph_stopped_ = false;
   // local variables of the sensors map
   VectorDGMap sensors_map, motor_controls_map;
   sensors_map = device_->sensors_map_;
@@ -189,13 +196,14 @@ void DynamicGraphManager::dynamic_graph_real_time_loop()
     shared_memory::set("DynamicGraphManager", "motor_controls_map",
                        motor_controls_map);
   }
-  ros::waitForShutdown();
+  is_dynamic_graph_stopped_ = true;
+  std::cout << "dynamic graph thread stopped" << std::endl;
 }
 
 void DynamicGraphManager::hardware_communication_real_time_loop()
 {
-  is_hardware_communication_stopped_ = false;
   std::cout << "hardware communication loop started" << std::endl;
+  is_hardware_communication_stopped_ = false;
   // setup the maps from the yaml
   VectorDGMap sensors_map, motor_controls_map;
   parse_yaml_node(params_, sensors_map, motor_controls_map);
@@ -218,6 +226,6 @@ void DynamicGraphManager::hardware_communication_real_time_loop()
     // send the command to the motors
     set_motor_controls_from_map(motor_controls_map);
   }
-  std::cout << "hardware communication loop stopped" << std::endl;
   is_hardware_communication_stopped_ = true;
+  std::cout << "hardware communication loop stopped" << std::endl;
 }

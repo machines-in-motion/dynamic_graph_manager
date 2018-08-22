@@ -239,6 +239,13 @@ public:
                              "accessing a device that has not been created"));
   }
 
+  /**
+   * @brief has_dynamic_graph_process_died check if the process of the
+   * DynamicGraph has died or not.
+   * @return true if the DynamicGraph process died.
+   */
+  bool has_dynamic_graph_process_died();
+
 private:
 
   /**
@@ -282,13 +289,6 @@ private:
    * with the hardware and send the commands (torque, position, current, ...)
    */
   void hardware_communication_real_time_loop();
-
-  /**
-   * @brief has_dynamic_graph_process_died check if the process of the
-   * DynamicGraph has died or not.
-   * @return true if the DynamicGraph process died.
-   */
-  bool has_dynamic_graph_process_died();
 
   /***********************
    *  Private attributes *

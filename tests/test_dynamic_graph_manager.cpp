@@ -43,17 +43,42 @@ protected:
   void TearDown() {
     dynamic_graph::ros_shutdown("dynamic_graph");
     dynamic_graph::ros_shutdown("hardware_communication");
-    usleep(5000);
     if(ros::ok())
     {
       ros::shutdown();
     }
     assert(!ros::ok() && "ROS must be shut down now.");
+    usleep(500000);
   }
 
   YAML::Node params_;
 };
 
+class SimpleDGM : public dynamic_graph::DynamicGraphManager
+{
+public:
+  SimpleDGM(): dynamic_graph::DynamicGraphManager(){}
+  ~SimpleDGM(){}
+  void initialize_hardware_communication_process(){}
+  void get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  {
+//    std::cout << "get_sensors_to_map called by SimpleDGM" << std::endl;
+    map["encoders"].setRandom();
+    map["imu_accelerometer"].setRandom();
+    map["imu_gyroscope"].setRandom();
+    map["imu"].setRandom();
+  }
+  void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
+  {
+//    std::cout << "set_motor_controls_from_map called by SimpleDGM" << std::endl;
+    ctrl_map = map;
+  }
+  dynamic_graph::VectorDGMap ctrl_map;
+};
+
+/*****************
+ * Start Testing *
+ *****************/
 
 TEST_F(TestDynamicGraphManager, test_constructor)
 {
@@ -81,14 +106,29 @@ TEST_F(TestDynamicGraphManager, test_initialize)
   );
 }
 
-TEST_F(DISABLED_TestDynamicGraphManager, test_run)
+TEST_F(TestDynamicGraphManager, test_run)
 {
-  dynamic_graph::DynamicGraphManager dgm;
+  SimpleDGM dgm;
   dgm.initialize(params_);
   dgm.run();
-  usleep(500000);
-  dgm.stop_dynamic_graph();
+  // Check that the stop dynamic graph service works as expected
+  usleep(5000);
+  ros::NodeHandle n;
+  std_srvs::Empty srv;
+  ros::ServiceClient stop_dynamic_graph_client =
+      n.serviceClient<std_srvs::Empty>(
+        "/dynamic_graph/stop_dynamic_graph");
+  ASSERT_TRUE(stop_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
+  ASSERT_TRUE(stop_dynamic_graph_client.call(srv));
+  ASSERT_TRUE(dgm.is_dynamic_graph_stopped());
+  ROS_INFO("The stop_dynamic_graph service has been called successfully");
+  while(!dgm.has_dynamic_graph_process_died())
+  {
+    usleep(1000);
+  }
   dgm.stop_hardware_communication();
+  wait(nullptr);
+  usleep(5000);
 }
 
 /**
@@ -235,8 +275,12 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
           "/dynamic_graph/stop_dynamic_graph");
     ASSERT_TRUE(stop_dynamic_graph_client.waitForExistence());
     ASSERT_TRUE(stop_dynamic_graph_client.exists());
-    while(!stop_dynamic_graph_client.call(srv))
+    pid_t p = 0;
+    int status = 0;
+    p = waitpid(pid, &status, WNOHANG);
+    while(!stop_dynamic_graph_client.call(srv) && p>0)
     {
+      p = waitpid(pid, &status, WNOHANG);
       usleep(5000);
     }
 //    ROS_INFO("The stop_dynamic_graph service has been called successfully");
@@ -258,28 +302,6 @@ TEST_F(TestDynamicGraphManager, test_initialize_hardware_communication_process)
         dgm.initialize_hardware_communication_process(), std::runtime_error
   );
 }
-
-class SimpleDGM : public dynamic_graph::DynamicGraphManager
-{
-public:
-  SimpleDGM(): dynamic_graph::DynamicGraphManager(){}
-  ~SimpleDGM(){}
-  void initialize_hardware_communication_process(){}
-  void get_sensors_to_map(dynamic_graph::VectorDGMap& map)
-  {
-//    std::cout << "get_sensors_to_map called by SimpleDGM" << std::endl;
-    map["encoders"].setRandom();
-    map["imu_accelerometer"].setRandom();
-    map["imu_gyroscope"].setRandom();
-    map["imu"].setRandom();
-  }
-  void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
-  {
-//    std::cout << "set_motor_controls_from_map called by SimpleDGM" << std::endl;
-    ctrl_map = map;
-  }
-  dynamic_graph::VectorDGMap ctrl_map;
-};
 
 TEST_F(TestDynamicGraphManager, test_run_hardware_communication_process)
 {
