@@ -35,6 +35,7 @@ protected:
   void SetUp() {
     params_ = YAML::LoadFile(TEST_CONFIG_FOLDER +
                              std::string("simple_robot.yaml"));
+    shared_memory::clear_shared_memory("DGM_ShM");
   }
 
   /**
@@ -111,23 +112,36 @@ TEST_F(TestDynamicGraphManager, test_run)
   SimpleDGM dgm;
   dgm.initialize(params_);
   dgm.run();
-  // Check that the stop dynamic graph service works as expected
+  // wait that everything started
   usleep(5000);
+  // create some ros object to call the services
   ros::NodeHandle n;
   std_srvs::Empty srv;
+  // Start the dynamic graph
+  ros::ServiceClient start_dynamic_graph_client =
+      n.serviceClient<std_srvs::Empty>(
+        "/dynamic_graph/start_dynamic_graph");
+  ASSERT_TRUE(start_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
+  ASSERT_TRUE(start_dynamic_graph_client.call(srv));
+  ROS_INFO("main: Dynamic Graph Started");
+  // wait few iteration of the dynamic_graph
+  usleep(5000);
+  // Stop the dynamic graph
   ros::ServiceClient stop_dynamic_graph_client =
       n.serviceClient<std_srvs::Empty>(
         "/dynamic_graph/stop_dynamic_graph");
   ASSERT_TRUE(stop_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(stop_dynamic_graph_client.call(srv));
-  ASSERT_TRUE(dgm.is_dynamic_graph_stopped());
-  ROS_INFO("The stop_dynamic_graph service has been called successfully");
+  ROS_INFO("main: Dynamic Graph Stopped");
+  ROS_INFO("main: Wait for the DG process to die");
   while(!dgm.has_dynamic_graph_process_died())
   {
     usleep(1000);
   }
+  ROS_INFO("main: Dynamic Graph Process Died");
+  ROS_INFO("main: Check that the security mode has been activated");
+  ASSERT_TRUE(dgm.is_in_safety_mode());
   dgm.stop_hardware_communication();
-  wait(nullptr);
   usleep(5000);
 }
 
@@ -221,27 +235,19 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     dynamic_graph::VectorDGMap sensors_map = dgm.device().sensors_map_;
     shared_memory::set("DynamicGraphManager", "sensors_map", sensors_map);
     dgm.run_dynamic_graph_process();
-//    std::cout << "Dynamic graph thread launched, wait for it to start"
-//              << std::endl;
-    dgm.wait_start_dynamic_graph();
-//    std::cout << "Dynamic graph started" << std::endl;
-
-//    std::cout << "Waiting for dynamic graph to stop..." << std::endl;
     int time = 0;
     while(!dgm.is_dynamic_graph_stopped())
     {
-//      ++time;
-//      if(time % 1000 == 0)
-//      {
-//        std::cout << "still waiting" << std::endl;
-//      }
       usleep(5000);
     }
-//    std::cout << "Dynamic graph stopped" << std::endl;
     exit(0);
   }
   else if(pid > 0) // Parent process
   {
+    // create the condition variable to notify the dynamic graph
+    shared_memory::ConditionVariable dg_cond(
+          "DGM_ShM", "cond_var");
+
     // Initialize ROS
     ASSERT_TRUE(!ros::ok());
     int argc = 1;
@@ -262,10 +268,11 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     ASSERT_TRUE(start_dynamic_graph_client.exists());
     while(!start_dynamic_graph_client.call(srv))
     {
+      dg_cond.notify_all();
       usleep(5000);
     }
 //    ROS_INFO("The start_dynamic_graph service has been called successfully");
-
+    dg_cond.notify_all();
     // wait a bit
     usleep(5000);
 
@@ -280,6 +287,7 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     p = waitpid(pid, &status, WNOHANG);
     while(!stop_dynamic_graph_client.call(srv) && p>0)
     {
+      dg_cond.notify_all();
       p = waitpid(pid, &status, WNOHANG);
       usleep(5000);
     }

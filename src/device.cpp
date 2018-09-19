@@ -7,8 +7,6 @@
  * This file implements the input and output of the DynamicGraph
  */
 
-#include <Eigen/Geometry>
-
 #include <yaml-cpp/yaml_eigen.h>
 
 #include <dynamic-graph/factory.h>

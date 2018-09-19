@@ -20,6 +20,7 @@
 
 // used to deal with shared memory
 #include <shared_memory/shared_memory.hpp>
+#include "shared_memory/thread_synchronisation.hpp"
 
 // get the yaml configuration
 #include <yaml-cpp/yaml.h>
@@ -88,7 +89,8 @@ public:
   /**
    * @brief run() splits the process in the dynamic_graph process and the
    * hadware_communication process. It initialize them and run them. WARNING
-   * this a blocking function
+   * this a NONE blocking function. One can spin endlessly using the ROS:
+   * ros::waitForShutdown(), for example.
    */
   void run();
 
@@ -118,15 +120,18 @@ public:
 
   /**
    * @brief run_dynamic_graph_process spawns the real time thread and becomes
-   * a ros spinner (thread in charge of the ros::service callbacks)
+   * a ros spinner (thread in charge of the ros::service callbacks).
+   * This function is virtual has it might differ from os to os.
    */
-  void run_dynamic_graph_process();
+  virtual void run_dynamic_graph_process();
 
   /**
-   * @brief run_hardware_communication_process spawns the real time thread and
-   * goes to sleep undefinitely
+   * @brief run_hardware_communication_process spawns the real time thread.
+   * WARNING this function is not blocking. Function to block are available
+   * like ros::waitForShutdown() for example.
+   * This function is virtual has it might differ from os to os.
    */
-  void run_hardware_communication_process();
+  virtual void run_hardware_communication_process();
 
   /***************************
    * method to be overloaded *
@@ -172,6 +177,12 @@ public:
                              "set_motor_controls_from_map(const VectorDGMap&): " +
                              "this method needs to be overloaded"));
   }
+
+  /**
+   * @brief compute_safety_controls computes safety controls very fast in case
+   * the dynamic graph is taking to much computation time or has crashed.
+   */
+  virtual void compute_safety_controls();
 
   /************************
    * gettters and setters *
@@ -245,6 +256,12 @@ public:
    * @return true if the DynamicGraph process died.
    */
   bool has_dynamic_graph_process_died();
+
+  bool is_in_safety_mode()
+  {
+    return (missed_control_count_ >= max_missed_control_) ||
+        has_dynamic_graph_process_died();
+  }
 
 private:
 
@@ -367,6 +384,66 @@ private:
    * the graph.
    */
   std::unique_ptr<Device> device_;
+
+  /**
+   * @brief shared_memory_name is the name of the shared memory segment to be
+   * used
+   */
+  std::string shared_memory_name_;
+
+  /**
+   * @brief sensors_map_name is the name of the sensor map inside the shared
+   * memory segment
+   */
+  std::string sensors_map_name_;
+
+  /**
+   * @brief motor_controls_map_name is the name of the motor controls map inside
+   * the shared memory segment
+   */
+  std::string motor_controls_map_name_;
+
+  /**
+    * @brief sensors_map_ is a map of dynamicgraph::Vector. They represent
+    * all the sensors data measured on the robot.
+    */
+  VectorDGMap sensors_map_ ;
+
+  /**
+   * @brief motor_controls_map_ is a map of dynamicgraph::Vector. They represent
+    * all the controls to be sent to the robot.
+   */
+  VectorDGMap motor_controls_map_ ;
+
+  /**
+   * @brief cond_var_sensors_ this condition variable allow the computation of
+   * the dynamic graph just after the acquisiiton of the sensors
+   */
+  std::unique_ptr<shared_memory::ConditionVariable> cond_var_;
+
+  /**
+   * @brief cond_var_sensors_name_ is the name of the condition variable in the
+   * shared memory
+   */
+  std::string cond_var_name_;
+
+  /**
+   * @brief missed_control_count_ is counting the number of iteration when the
+   * dynamic_graph failed to provide data.
+   */
+  unsigned missed_control_count_;
+
+  /**
+   * @brief max_missed_control_ if the missed_control_count_ reach the value of
+   * max_missed_control_ then we switch to safety mode.
+   */
+  unsigned max_missed_control_;
+
+  /**
+   * @brief hardware_communication_sleep_time_usec_ this is the time in micro
+   * seconds when the hardware communcation needs to sleep
+   */
+  unsigned hardware_communication_sleep_time_usec_ ;
 };
 
 } // namespace dynamic_graph

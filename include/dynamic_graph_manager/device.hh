@@ -94,9 +94,7 @@ namespace dynamic_graph {
 
     /**
       * @brief sensors_map_ is a map of dynamicgraph::Vector. They represent
-      * all the sensors data measured on the robot. It is a internal copy of the
-      * sensor data that is used for type conversion from std::vector<double>
-      * to dynamicgraph::Vector
+      * all the sensors data measured on the robot.
       */
     VectorDGMap sensors_map_;
 
@@ -113,9 +111,7 @@ namespace dynamic_graph {
 
     /**
      * @brief motor_controls_map_ is a map of dynamicgraph::Vector. They represent
-      * all the controls to be sent to the robot. It is a internal copy of the
-      * controls data that is used for type conversion from dynamicgraph::Vector
-      * to std::vector<double>
+      * all the controls to be sent to the robot.
      */
     VectorDGMap motor_controls_map_;
 

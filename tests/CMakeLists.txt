@@ -23,6 +23,8 @@ target_compile_definitions(test_dynamic_graph_manager PUBLIC
   TEST_CONFIG_FOLDER="${TEST_CONFIG_PATH}"
 )
 
+###
+
 # create the executable
 catkin_add_gtest(test_device
   main.cpp
@@ -38,5 +40,3 @@ target_link_libraries(test_device
 target_compile_definitions(test_device PUBLIC
   TEST_CONFIG_FOLDER="${TEST_CONFIG_PATH}"
 )
-
-
