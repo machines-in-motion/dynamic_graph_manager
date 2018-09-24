@@ -1,3 +1,4 @@
+is_real_robot: true
 device:
   name: "default_device"
   sensors:
@@ -18,3 +19,4 @@ device:
 hardware_communication:
   max_missed_control: 10
   hardware_communication_sleep_time_usec: 800
+

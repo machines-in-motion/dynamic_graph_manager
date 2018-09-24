@@ -17,14 +17,20 @@ DynamicGraphManager::DynamicGraphManager()
 {
   // Upon construction the graph is inactive
   params_.reset();
+
   is_dynamic_graph_stopped_ = true;
-  is_dynamic_graph_stopped_ = true;
+  is_hardware_communication_stopped_ = true;
+
+  is_real_robot_ = true;
+
   pid_dynamic_graph_process_ = 0;
   pid_hardware_communication_process_ = 0;
+
   shared_memory_name_ = "DGM_ShM";
   sensors_map_name_ = "sensors_map";
   motor_controls_map_name_ = "motor_controls_map";
   cond_var_name_ = "cond_var";
+
   sensors_map_.clear();
   motor_controls_map_.clear();
 
@@ -77,6 +83,8 @@ void DynamicGraphManager::initialize(YAML::Node param){
   hardware_communication_sleep_time_usec_ =
       params_["hardware_communication"]
       ["hardware_communication_sleep_time_usec"].as<unsigned>();
+
+  is_real_robot_ = params_["is_real_robot"].as<bool>();
 }
 
 void DynamicGraphManager::run()
@@ -223,6 +231,7 @@ void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
 
 void DynamicGraphManager::dynamic_graph_real_time_loop()
 {
+  cond_var_->lock_scope();
   is_dynamic_graph_stopped_ = false;
   while(!is_dynamic_graph_stopped_ && ros::ok())
   {
@@ -246,10 +255,12 @@ void DynamicGraphManager::dynamic_graph_real_time_loop()
   }
   is_dynamic_graph_stopped_ = true;
   std::cout << "dynamic graph thread stopped" << std::endl;
+  cond_var_->unlock_scope();
 }
 
 void DynamicGraphManager::hardware_communication_real_time_loop()
 {
+  cond_var_->lock_scope();
   is_hardware_communication_stopped_ = false;
   assert(!is_hardware_communication_stopped_ && "The loop is started");
   assert(ros::ok() && "Ros has to be initialized");
@@ -264,28 +275,35 @@ void DynamicGraphManager::hardware_communication_real_time_loop()
     // notify the dynamic graph process that is can compute the graph
     cond_var_->notify_all();
 
-    // sleep has much has we can TODO: find a better way to compute the sleep
-    // time, for now it is 800us
-    if(cond_var_->timed_wait(hardware_communication_sleep_time_usec_))
+    if(is_real_robot_)
     {
-      // this thread has been awaken by the dynamic graph.
-      missed_control_count_ = 0;
-    }else{
-      // this thread has automatically awaken
-      ++missed_control_count_;
-    }
+      // sleep has much has we can TODO: find a better way to compute the sleep
+      // time, for now it is 800us
+      if(cond_var_->timed_wait(hardware_communication_sleep_time_usec_))
+      {
+        // this thread has been awaken by the dynamic graph.
+        missed_control_count_ = 0;
+      }else{
+        // this thread has automatically awaken
+        ++missed_control_count_;
+      }
 
-    if(is_in_safety_mode())
+      if(is_in_safety_mode())
+      {
+        compute_safety_controls();
+        // we write the safety command in the shared memory in order to perform
+        // some interpolation
+        shared_memory::set(shared_memory_name_, motor_controls_map_name_,
+                           motor_controls_map_);
+      }else{
+        // we read the command from the shared memory
+        shared_memory::get(shared_memory_name_, motor_controls_map_name_,
+                           motor_controls_map_);
+      }
+    }
+    else
     {
-      compute_safety_controls();
-      // we write the safety command in the shared memory in order to perform
-      // some interpolation
-      shared_memory::set(shared_memory_name_, motor_controls_map_name_,
-                         motor_controls_map_);
-    }else{
-      // we read the command from the shared memory
-      shared_memory::get(shared_memory_name_, motor_controls_map_name_,
-                         motor_controls_map_);
+      cond_var_->wait();
     }
 
     // send the command to the motors
@@ -293,6 +311,7 @@ void DynamicGraphManager::hardware_communication_real_time_loop()
   }
   is_hardware_communication_stopped_ = true;
   std::cout << "hardware communication loop stopped" << std::endl;
+  cond_var_->unlock_scope();
 }
 
 void DynamicGraphManager::compute_safety_controls()

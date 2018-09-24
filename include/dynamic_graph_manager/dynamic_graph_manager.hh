@@ -444,6 +444,12 @@ private:
    * seconds when the hardware communcation needs to sleep
    */
   unsigned hardware_communication_sleep_time_usec_ ;
+
+  /**
+   * @brief is_real_robot this boolean is a parameter to indicate if yes or no
+   * we are in simulation or in a real robot mode.
+   */
+  bool is_real_robot_;
 };
 
 } // namespace dynamic_graph

@@ -167,6 +167,9 @@ TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph)
   }
   else if(pid > 0) // Parent process
   {
+    // create the condition variable to notify the dynamic graph
+    shared_memory::ConditionVariable dg_cond(
+          "DGM_ShM", "cond_var");
     ASSERT_TRUE(!ros::ok());
     int argc = 1;
     char* arg0 = strdup("test_dynamic_graph_manager");
@@ -186,6 +189,7 @@ TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph)
     ASSERT_TRUE(start_dynamic_graph_client.exists());
     while(!start_dynamic_graph_client.call(srv))
     {
+      dg_cond.notify_all();
       usleep(500);
     }
     ROS_INFO("The start_dynamic_graph service has been called successfully");
