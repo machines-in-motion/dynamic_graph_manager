@@ -147,7 +147,6 @@ void DynamicGraphManager::wait_stop_hardware_communication()
   }
 }
 
-
 bool DynamicGraphManager::has_dynamic_graph_process_died()
 {
   bool is_dg_proc_dead = false;
