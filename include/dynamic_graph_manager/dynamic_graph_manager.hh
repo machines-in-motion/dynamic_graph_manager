@@ -14,13 +14,17 @@
 #define DYNAMIC_GRAPH_MANAGER_HH
 
 // used to spawn the real time thread
-#include <thread>
+#include <rtpreempt_tools/realtime_thread_creation.h>
+
+// used to join the different processes
 #include <wait.h>
+
+// here this is used to use atomic (thread safe objects)
 #include <atomic>
 
 // used to deal with shared memory
 #include <shared_memory/shared_memory.hpp>
-#include "shared_memory/thread_synchronisation.hpp"
+#include <shared_memory/thread_synchronisation.hpp>
 
 // get the yaml configuration
 #include <yaml-cpp/yaml.h>
@@ -273,7 +277,7 @@ private:
   bool start_dynamic_graph(std_srvs::Empty::Request& ,
                            std_srvs::Empty::Response& )
   {
-    is_dynamic_graph_stopped_ = false;
+    start_dynamic_graph();
     return true;
   }
 
@@ -285,27 +289,53 @@ private:
   bool stop_dynamic_graph(std_srvs::Empty::Request& ,
                           std_srvs::Empty::Response& )
   {
-    is_dynamic_graph_stopped_ = true;
+    stop_dynamic_graph();
     return true;
   }
 
   /**
    * @brief start_ros_service is the method that advertize the different ros
-   * services
+   * services.
    */
   void start_ros_service(ros::NodeHandle& ros_node_handle);
 
   /**
    * @brief dynamic_graph_real_time_loop is the method used to execute the
-   * dynamic graph
+   * dynamic graph.
    */
-  void dynamic_graph_real_time_loop();
+  void* dynamic_graph_real_time_loop();
+
+  /**
+   * @brief dynamic_graph_real_time_loop_helper is a static member allowing to
+   * use the posix pthread_create.
+   * @param context is the DynamicGraphManager that spawned the thread.
+   * @return nothing interesting for us.
+   */
+  static void* dynamic_graph_real_time_loop_helper(void *context)
+  {
+    std::cout<< "dg helper called" << std::endl;
+    return static_cast<DynamicGraphManager *>(context)->
+        dynamic_graph_real_time_loop();
+  }
 
   /**
    * @brief hardware_communication_real_time_loop is the method that communicate
    * with the hardware and send the commands (torque, position, current, ...)
    */
-  void hardware_communication_real_time_loop();
+  void* hardware_communication_real_time_loop();
+
+  /**
+   * @brief dynamic_graph_real_time_loop_helper is a static member allowing to
+   * use the posix pthread_create.
+   * @param context is the DynamicGraphManager that spawned the thread.
+   * @return nothing interesting for us.
+   */
+  static void* hardware_communication_real_time_loop_helper(void *context)
+  {
+    std::cout<< "hc helper called" << std::endl;
+    return static_cast<DynamicGraphManager *>(context)->
+        hardware_communication_real_time_loop();
+  }
 
   /***********************
    *  Private attributes *
@@ -353,13 +383,13 @@ private:
    * @brief thread_dynamic_graph_ is the real time thread that runs the dynamic
    * graph.
    */
-  std::unique_ptr<std::thread> thread_dynamic_graph_;
+  std::unique_ptr<real_time_tools::RealTimeThread> thread_dynamic_graph_;
 
   /**
    * @brief thread_hardware_communication_ is the real thread that communicate
    * with the hardware.
    */
-  std::unique_ptr<std::thread> thread_hardware_communication_;
+  std::unique_ptr<real_time_tools::RealTimeThread> thread_hardware_communication_;
 
   /**
    * @brief pid_dynamic_graph_process_ is the pid of the DynamicGraph process.

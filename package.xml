@@ -31,6 +31,9 @@
 <!-- This tools provides shared memory object in an encapsulated way -->
   <build_depend> shared_memory </build_depend>
   <run_depend>   shared_memory </run_depend>
+<!-- This tools provides real time thread objects in an encapsulated way -->
+  <build_depend> rtpreempt_tools </build_depend>
+  <run_depend>   rtpreempt_tools </run_depend>
 <!--  <build_depend> pinocchio </build_depend>
   <run_depend>   pinocchio </run_depend>
   <build_depend> eigen </build_depend>

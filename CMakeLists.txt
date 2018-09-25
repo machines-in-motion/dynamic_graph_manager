@@ -1,20 +1,3 @@
-###############################################
-# Add custom (non compiling) targets          #
-# so non cpp files show up in QT_CREATOR IDE. #
-###############################################
-set(USE_QTCREATOR_${PROJECT_NAME} OFF CACHE BOOL
-    "Set to ON if you want QtCreator to display all files in the project tree")
-if(USE_QTCREATOR_${PROJECT_NAME})
-    file(GLOB_RECURSE EXTRA_FILES
-        ../*.h ../*.hh ../*.hpp
-        ../*.cf  ../*.yaml ../*.txt ../*.xml
-        ../start ../*.launch ../*.urdf ../CATKIN_IGNORE ../*.in
-    )
-    list(FILTER EXTRA_FILES EXCLUDE REGEX "build")
-    add_custom_target(${PROJECT_NAME}_OTHER_FILES ALL WORKING_DIRECTORY
-        ${PROJECT_SOURCE_DIR} SOURCES ${EXTRA_FILES})
-endif()
-
 ######################
 # set up the project #
 ######################
@@ -48,6 +31,7 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     dynamic_graph_python
     yaml_cpp
     shared_memory
+    rtpreempt_tools
 )
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
@@ -131,4 +115,21 @@ if(BUILD_DOCUMENTATION)
   add_custom_target (${PROJECT_NAME}_doc ALL
     COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
     SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
+endif()
+
+###############################################
+# Add custom (non compiling) targets          #
+# so non cpp files show up in QT_CREATOR IDE. #
+###############################################
+set(USE_QTCREATOR_${PROJECT_NAME} OFF CACHE BOOL
+    "Set to ON if you want QtCreator to display all files in the project tree")
+if(USE_QTCREATOR_${PROJECT_NAME})
+    file(GLOB_RECURSE EXTRA_FILES
+        ../*.h ../*.hh ../*.hpp
+        ../*.cf  ../*.yaml ../*.txt ../*.xml
+        ../start ../*.launch ../*.urdf ../CATKIN_IGNORE ../*.in
+    )
+    list(FILTER EXTRA_FILES EXCLUDE REGEX "build")
+    add_custom_target(${PROJECT_NAME}_OTHER_FILES ALL WORKING_DIRECTORY
+        ${PROJECT_SOURCE_DIR} SOURCES ${EXTRA_FILES})
 endif()

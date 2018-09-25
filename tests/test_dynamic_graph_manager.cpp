@@ -123,23 +123,24 @@ TEST_F(TestDynamicGraphManager, test_run)
         "/dynamic_graph/start_dynamic_graph");
   ASSERT_TRUE(start_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(start_dynamic_graph_client.call(srv));
-  ROS_INFO("main: Dynamic Graph Started");
+  std::cout << ("main: Dynamic Graph Started") << std::endl;
   // wait few iteration of the dynamic_graph
-  usleep(5000);
+  usleep(500);
   // Stop the dynamic graph
   ros::ServiceClient stop_dynamic_graph_client =
       n.serviceClient<std_srvs::Empty>(
         "/dynamic_graph/stop_dynamic_graph");
   ASSERT_TRUE(stop_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(stop_dynamic_graph_client.call(srv));
-  ROS_INFO("main: Dynamic Graph Stopped");
-  ROS_INFO("main: Wait for the DG process to die");
+  std::cout << ("main: Dynamic Graph Stopped") << std::endl;
+  std::cout << ("main: Wait for the DG process to die") << std::endl;
   while(!dgm.has_dynamic_graph_process_died())
   {
     usleep(1000);
   }
-  ROS_INFO("main: Dynamic Graph Process Died");
-  ROS_INFO("main: Check that the security mode has been activated");
+  std::cout << ("main: Dynamic Graph Process Died") << std::endl;
+  std::cout << ("main: Check that the security mode has been activated")
+            << std::endl;
   ASSERT_TRUE(dgm.is_in_safety_mode());
   dgm.stop_hardware_communication();
   usleep(5000);
@@ -192,7 +193,8 @@ TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph)
       dg_cond.notify_all();
       usleep(500);
     }
-    ROS_INFO("The start_dynamic_graph service has been called successfully");
+    std::cout << ("The start_dynamic_graph service "
+                  "has been called successfully") << std::endl;
     wait(nullptr);
   }
   else
@@ -275,7 +277,7 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
       dg_cond.notify_all();
       usleep(5000);
     }
-//    ROS_INFO("The start_dynamic_graph service has been called successfully");
+//    std::cout << ("The start_dynamic_graph service has been called successfully");
     dg_cond.notify_all();
     // wait a bit
     usleep(5000);
@@ -295,7 +297,7 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
       p = waitpid(pid, &status, WNOHANG);
       usleep(5000);
     }
-//    ROS_INFO("The stop_dynamic_graph service has been called successfully");
+//    std::cout << ("The stop_dynamic_graph service has been called successfully");
 
     // wait to avoid zombie processes
     wait(nullptr);
@@ -338,6 +340,7 @@ TEST_F(TestDynamicGraphManager, test_run_hardware_communication_process)
   ASSERT_FALSE(dgm.is_hardware_communication_stopped());
   ASSERT_TRUE(ros::ok());
   dynamic_graph::ros_shutdown();
+  ASSERT_FALSE(ros::ok());
   dgm.wait_stop_hardware_communication();
   ASSERT_TRUE(dgm.is_hardware_communication_stopped());
   ASSERT_FALSE(ros::ok());
@@ -377,7 +380,8 @@ TEST_F(TestDynamicGraphManager, test_start_stop_ros_services)
   ASSERT_TRUE(start_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(start_dynamic_graph_client.call(srv));
   ASSERT_TRUE(!dgm.is_dynamic_graph_stopped());
-  ROS_INFO("The start_dynamic_graph service has been called successfully");
+  std::cout << ("The start_dynamic_graph service has"
+                " been called successfully") << std::endl;
 
   // Check that the stop dynamic graph service works as expected
   ros::ServiceClient stop_dynamic_graph_client =
@@ -386,7 +390,8 @@ TEST_F(TestDynamicGraphManager, test_start_stop_ros_services)
   ASSERT_TRUE(stop_dynamic_graph_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(stop_dynamic_graph_client.call(srv));
   ASSERT_TRUE(dgm.is_dynamic_graph_stopped());
-  ROS_INFO("The stop_dynamic_graph service has been called successfully");
+  std::cout << ("The stop_dynamic_graph service has"
+                " been called successfully") << std::endl;
 }
 
 TEST_F(TestDynamicGraphManager, test_python_interpreter)
@@ -415,7 +420,8 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter)
   ASSERT_TRUE(run_python_command_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_python_command_client.call(run_com_msg));
   ASSERT_EQ(run_com_msg.response.result, "2");
-  ROS_INFO("The run_python_command service has been called successfully");
+  std::cout << ("The run_python_command service has"
+                " been called successfully") << std::endl;
 
   // check the run_script service and the python interpreter
   dynamic_graph_manager::RunPythonFile run_file_msg;
@@ -426,7 +432,8 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter)
   ASSERT_TRUE(run_script_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_script_client.call(run_file_msg));
   ASSERT_EQ(run_file_msg.response.result, "File parsed");
-  ROS_INFO("The run_script service has been called successfully");
+  std::cout << ("The run_script service has"
+                " been called successfully") << std::endl;
 
   // check that "a" exists and has a value "3"
   run_com_msg.request.input = "a";
@@ -459,7 +466,8 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter_from_the_DGM)
   ASSERT_TRUE(run_python_command_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_python_command_client.call(run_com_msg));
   ASSERT_EQ(run_com_msg.response.result, "2");
-  ROS_INFO("The run_python_command service has been called successfully");
+  std::cout << ("The run_python_command service has"
+                " been called successfully") << std::endl;
 
   // check the run_script service and the python interpreter
   dynamic_graph_manager::RunPythonFile run_file_msg;
@@ -470,7 +478,8 @@ TEST_F(TestDynamicGraphManager, test_python_interpreter_from_the_DGM)
   ASSERT_TRUE(run_script_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_script_client.call(run_file_msg));
   ASSERT_EQ(run_file_msg.response.result, "File parsed");
-  ROS_INFO("The run_script service has been called successfully");
+  std::cout << ("The run_script service has"
+                " been called successfully") << std::endl;
 
   // check that "a" exists and has a value "3"
   run_com_msg.request.input = "a";
@@ -523,7 +532,8 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
   ASSERT_TRUE(run_python_command_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_python_command_client.call(run_com_msg));
   ASSERT_EQ(run_com_msg.response.result, "2");
-  ROS_INFO("The run_python_command service has been called successfully");
+  std::cout << ("The run_python_command service has"
+                " been called successfully") << std::endl;
 
   // check the run_script service and the python interpreter
   dynamic_graph_manager::RunPythonFile run_file_msg;
@@ -534,7 +544,8 @@ TEST_F(DISABLED_TestDynamicGraphManager, test_dynamic_graph_re_initialization)
   ASSERT_TRUE(run_script_client.waitForExistence(ros::Duration(0.5)));
   ASSERT_TRUE(run_script_client.call(run_file_msg));
   ASSERT_EQ(run_file_msg.response.result, "File parsed");
-  ROS_INFO("The run_script service has been called successfully");
+  std::cout << ("The run_script service has"
+                " been called successfully") << std::endl;
 
   // check that "a" exists and has a value "3"
   run_com_msg.request.input = "a";

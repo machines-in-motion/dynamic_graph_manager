@@ -18,8 +18,8 @@ DynamicGraphManager::DynamicGraphManager()
   // Upon construction the graph is inactive
   params_.reset();
 
-  is_dynamic_graph_stopped_ = true;
-  is_hardware_communication_stopped_ = true;
+  stop_dynamic_graph();
+  stop_hardware_communication();
 
   is_real_robot_ = true;
 
@@ -46,24 +46,20 @@ DynamicGraphManager::~DynamicGraphManager()
   ros_service_stop_dg_.shutdown();
   ros_shutdown();
   // wait for the dynamic graph thread to stop
-  if(thread_dynamic_graph_ && thread_dynamic_graph_->joinable())
-  {
-    thread_dynamic_graph_->join();
-  }
+  stop_dynamic_graph();
+  wait_stop_dynamic_graph();
   // wait for the hardware communication thread to stop
-  if(thread_hardware_communication_ &&
-     thread_hardware_communication_->joinable())
-  {
-    thread_hardware_communication_->join();
-  }
+  stop_hardware_communication();
+  wait_stop_hardware_communication();
   // clean the shared memory
   shared_memory::clear_shared_memory(shared_memory_name_);
 }
 
 void DynamicGraphManager::initialize(YAML::Node param){
 
-  // Upon initialization the graph is inactive
-  is_dynamic_graph_stopped_ = true;
+  // Upon initialization the graph and the hardware com are inactive
+  stop_dynamic_graph();
+  stop_hardware_communication();
 
   // copy the yaml node for further use
   params_ = param ;
@@ -85,6 +81,13 @@ void DynamicGraphManager::initialize(YAML::Node param){
       ["hardware_communication_sleep_time_usec"].as<unsigned>();
 
   is_real_robot_ = params_["is_real_robot"].as<bool>();
+
+  // we create and destroy the condition variable to free the shared memory
+  // and therefore the associated mutex which must be lockable at this state.
+  {
+    shared_memory::ConditionVariable(shared_memory_name_,
+                                     cond_var_name_);
+  }
 }
 
 void DynamicGraphManager::run()
@@ -114,7 +117,7 @@ void DynamicGraphManager::run()
 
 void DynamicGraphManager::wait_start_dynamic_graph()
 {
-  while(is_dynamic_graph_stopped_)
+  while(is_dynamic_graph_stopped())
   {
     usleep(1000);
   }
@@ -122,26 +125,25 @@ void DynamicGraphManager::wait_start_dynamic_graph()
 
 void DynamicGraphManager::wait_stop_dynamic_graph()
 {
-  while(!is_dynamic_graph_stopped_)
+  while(!is_dynamic_graph_stopped())
   {
     usleep(1000);
   }
-  if(thread_dynamic_graph_ && thread_dynamic_graph_->joinable())
+  if(thread_dynamic_graph_)
   {
-    thread_dynamic_graph_->join();
+    real_time_tools::join_thread(*thread_dynamic_graph_);
   }
 }
 
 void DynamicGraphManager::wait_stop_hardware_communication()
 {
-  while(!is_hardware_communication_stopped_)
+  while(!is_hardware_communication_stopped())
   {
     usleep(1000);
   }
-  if(thread_hardware_communication_ &&
-     thread_hardware_communication_->joinable())
+  if(thread_hardware_communication_)
   {
-    thread_hardware_communication_->join();
+    real_time_tools::join_thread(*thread_hardware_communication_);
   }
 }
 
@@ -162,9 +164,8 @@ bool DynamicGraphManager::has_dynamic_graph_process_died()
   }
   else
   {
-    std::cout << "DynamicGraphManager::"
-              << "has_dynamic_graph_process_died(): waitpid failed"
-              << std::endl;
+    printf("DynamicGraphManager::has_dynamic_graph_process_died():"
+           " waitpid failed\n");
     is_dg_proc_dead = true;
   }
   return is_dg_proc_dead;
@@ -190,11 +191,15 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
 
 void DynamicGraphManager::run_dynamic_graph_process()
 {
+  printf("wait to start dynamic graph\n");
   wait_start_dynamic_graph();
   // launch the real time thread and ros spin
-  thread_dynamic_graph_.reset(new std::thread(
-        &DynamicGraphManager::dynamic_graph_real_time_loop, this));
-  std::cout << "dynamic graph thread started" << std::endl;
+  real_time_tools::block_memory();
+  thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
+  real_time_tools::create_realtime_thread(
+        *thread_dynamic_graph_,
+        &DynamicGraphManager::dynamic_graph_real_time_loop_helper, this);
+  printf("dynamic graph thread started\n");
 }
 
 void DynamicGraphManager::run_hardware_communication_process()
@@ -207,11 +212,17 @@ void DynamicGraphManager::run_hardware_communication_process()
                             shared_memory_name_,
                             cond_var_name_));
 
-  // launch the real time thread
-  thread_hardware_communication_.reset(new std::thread(
-        &DynamicGraphManager::hardware_communication_real_time_loop, this));
+  // allow the hardware thread to run
+  start_hardware_communication();
 
-  std::cout << "hardware communication loop started" << std::endl;
+  // launch the real time thread
+  real_time_tools::block_memory();
+  thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
+  real_time_tools::create_realtime_thread(
+        *thread_hardware_communication_,
+        &DynamicGraphManager::hardware_communication_real_time_loop_helper,
+        this);
+  printf("hardware communication loop started\n");
 }
 
 void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
@@ -229,11 +240,12 @@ void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
   ros_python_interpreter_->start_ros_service();
 }
 
-void DynamicGraphManager::dynamic_graph_real_time_loop()
+void* DynamicGraphManager::dynamic_graph_real_time_loop()
 {
+  //std::cout << "DG: Locking scope..." << std::endl;
   cond_var_->lock_scope();
-  is_dynamic_graph_stopped_ = false;
-  while(!is_dynamic_graph_stopped_ && ros::ok())
+  std::cout << "DG: Start loop" << std::endl;
+  while(!is_dynamic_graph_stopped() && ros::ok())
   {
     // wait that the hardware_communication process acquiers the data
     cond_var_->wait();
@@ -250,21 +262,26 @@ void DynamicGraphManager::dynamic_graph_real_time_loop()
     shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                        motor_controls_map_);
 
+    //std::cout << "DG: notifies" << std::endl;
     // notify the hardware_communication process that the control has been done
     cond_var_->notify_all();
   }
-  is_dynamic_graph_stopped_ = true;
-  std::cout << "dynamic graph thread stopped" << std::endl;
+  // we use this function here because the loop might stop because of ROS
+  stop_dynamic_graph();
+  //printf("dynamic graph thread stopped\n");
+  std::cout << "DG: Stop loop" << std::endl;
   cond_var_->unlock_scope();
 }
 
-void DynamicGraphManager::hardware_communication_real_time_loop()
+void* DynamicGraphManager::hardware_communication_real_time_loop()
 {
+  //std::cout << "HARDWARE: Locking scope..." << std::endl;
   cond_var_->lock_scope();
-  is_hardware_communication_stopped_ = false;
   assert(!is_hardware_communication_stopped_ && "The loop is started");
   assert(ros::ok() && "Ros has to be initialized");
-  while(!is_hardware_communication_stopped_ && ros::ok())
+  // printf("Start hardware communication loop");
+  std::cout << "HARDWARE: Start loop" << std::endl;
+  while(!is_hardware_communication_stopped() && ros::ok())
   {
     // call the sensors
     get_sensors_to_map(sensors_map_);
@@ -279,6 +296,7 @@ void DynamicGraphManager::hardware_communication_real_time_loop()
     {
       // sleep has much has we can TODO: find a better way to compute the sleep
       // time, for now it is 800us
+      //std::cout << "HARDWARE: Waiting..." << std::endl;
       if(cond_var_->timed_wait(hardware_communication_sleep_time_usec_))
       {
         // this thread has been awaken by the dynamic graph.
@@ -309,8 +327,10 @@ void DynamicGraphManager::hardware_communication_real_time_loop()
     // send the command to the motors
     set_motor_controls_from_map(motor_controls_map_);
   }
-  is_hardware_communication_stopped_ = true;
-  std::cout << "hardware communication loop stopped" << std::endl;
+  // we use this function here because the loop might stop because of ROS
+  stop_hardware_communication();
+  //printf("hardware communication loop stopped\n");
+  std::cout << "HARDWARE: Stop loop" << std::endl;
   cond_var_->unlock_scope();
 }
 
