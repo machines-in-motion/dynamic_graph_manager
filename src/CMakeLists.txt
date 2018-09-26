@@ -1,6 +1,6 @@
-#############################################
-## create the dynamic graph manager library #
-#############################################
+############################################
+# create the dynamic graph manager library #
+############################################
 
 set(DYNAMIC_GRAPH_MANAGER_SRC
     dynamic_graph_manager.cpp

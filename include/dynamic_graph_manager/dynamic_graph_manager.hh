@@ -347,7 +347,7 @@ private:
   /***********************
    *  Private attributes *
    ***********************/
-private:
+protected:
   /**
    * @brief ros_service_start_dg_ allows to start the dynamic graph on call.
    * It simply sets a flags that is used to wait the user call. Only used in

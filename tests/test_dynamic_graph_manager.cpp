@@ -69,12 +69,9 @@ public:
     map["imu_gyroscope"].setRandom();
     map["imu"].setRandom();
   }
-  void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
+  void set_motor_controls_from_map(const dynamic_graph::VectorDGMap&)
   {
-//    std::cout << "set_motor_controls_from_map called by SimpleDGM" << std::endl;
-    ctrl_map = map;
   }
-  dynamic_graph::VectorDGMap ctrl_map;
 };
 
 /*****************
