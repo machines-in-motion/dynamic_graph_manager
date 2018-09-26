@@ -237,15 +237,10 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     dynamic_graph::DynamicGraphManager dgm;
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
-
-    dynamic_graph::VectorDGMap sensors_map = dgm.device().sensors_map_;
-    shared_memory::set("DynamicGraphManager", "sensors_map", sensors_map);
+    shared_memory::set("DynamicGraphManager", "sensors_map",
+                       dgm.device().sensors_map_);
     dgm.run_dynamic_graph_process();
-    int time = 0;
-    while(!dgm.is_dynamic_graph_stopped())
-    {
-      usleep(5000);
-    }
+    dgm.wait_stop_dynamic_graph();
     exit(0);
   }
   else if(pid > 0) // Parent process
@@ -291,16 +286,12 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     pid_t p = 0;
     int status = 0;
     p = waitpid(pid, &status, WNOHANG);
-    while(!stop_dynamic_graph_client.call(srv) && p>0)
+    while(!stop_dynamic_graph_client.call(srv) || p>0)
     {
       dg_cond.notify_all();
       p = waitpid(pid, &status, WNOHANG);
       usleep(5000);
     }
-//    std::cout << ("The stop_dynamic_graph service has been called successfully");
-
-    // wait to avoid zombie processes
-    wait(nullptr);
   }
   else
   {

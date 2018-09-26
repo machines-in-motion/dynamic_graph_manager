@@ -31,7 +31,7 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     dynamic_graph_python
     yaml_cpp
     shared_memory
-    rtpreempt_tools
+    real_time_tools
 )
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})

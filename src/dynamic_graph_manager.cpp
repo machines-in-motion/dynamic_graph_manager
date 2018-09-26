@@ -34,9 +34,11 @@ DynamicGraphManager::DynamicGraphManager()
   sensors_map_.clear();
   motor_controls_map_.clear();
 
+  has_been_waken_by_dg_ = false;
+
   missed_control_count_ = 0;
   max_missed_control_ = 0;
-  hardware_communication_sleep_time_usec_ = 0;
+  control_period_ = clock::duration(0);
 }
 
 DynamicGraphManager::~DynamicGraphManager()
@@ -76,9 +78,8 @@ void DynamicGraphManager::initialize(YAML::Node param){
   // get the paarameter for the hardware communication loop
   max_missed_control_ = params_["hardware_communication"]
                         ["max_missed_control"].as<unsigned>();
-  hardware_communication_sleep_time_usec_ =
-      params_["hardware_communication"]
-      ["hardware_communication_sleep_time_usec"].as<unsigned>();
+  control_period_ =  clock::duration(params_["hardware_communication"]
+                     ["control_period"].as<unsigned>());
 
   is_real_robot_ = params_["is_real_robot"].as<bool>();
 
@@ -274,12 +275,21 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
 
 void* DynamicGraphManager::hardware_communication_real_time_loop()
 {
-  //std::cout << "HARDWARE: Locking scope..." << std::endl;
+  // we acquiere the lock on the condition variable here
   cond_var_->lock_scope();
+
+  // some basic checks
   assert(!is_hardware_communication_stopped_ && "The loop is started");
   assert(ros::ok() && "Ros has to be initialized");
-  // printf("Start hardware communication loop");
-  std::cout << "HARDWARE: Start loop" << std::endl;
+
+  printf("HARDWARE: Start loop\n");
+
+  // we initialize the time after sleep the first time here
+  hw_time_loop_after_sleep_ = clock::now();
+  hw_ref_sleep_time_ = clock::duration(
+                         static_cast<long>(control_period_.count()*0.5));
+
+  // we start the main loop
   while(!is_hardware_communication_stopped() && ros::ok())
   {
     // call the sensors
@@ -291,12 +301,31 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     // notify the dynamic graph process that is can compute the graph
     cond_var_->notify_all();
 
+    // check if we are using a real robot. In this case we need to ensure the
+    // thread frequency
     if(is_real_robot_)
     {
-      // sleep has much has we can TODO: find a better way to compute the sleep
-      // time, for now it is 800us
-      //std::cout << "HARDWARE: Waiting..." << std::endl;
-      if(cond_var_->timed_wait(hardware_communication_sleep_time_usec_))
+      // first we get the time before sleeping
+      hw_time_loop_before_sleep_ = clock::now();
+      // then we get the active time of the thread
+      hw_meas_active_time_ = hw_time_loop_before_sleep_ -
+                             hw_time_loop_after_sleep_;
+//       std::cout << "active:" << hw_meas_active_time_.count() << " ";
+      // we compute the reference sleep time
+      hw_ref_sleep_time_ = control_period_ -
+                           (hw_meas_sleep_time_ - hw_ref_sleep_time_) -
+                           hw_meas_active_time_;
+//      std::cout << "period:" << control_period_.count() << " ";
+//      std::cout << "ref_slp:" << hw_ref_sleep_time_.count() << " ";
+      // we wait the dyanmic graph command and wake up if needed
+      has_been_waken_by_dg_ = cond_var_->timed_wait(hw_ref_sleep_time_.count());
+      hw_time_loop_after_sleep_ = clock::now();
+      hw_meas_sleep_time_ = hw_time_loop_after_sleep_ -
+                                hw_time_loop_before_sleep_;
+//      std::cout << "meas_slp:" << hw_meas_sleep_time_.count() << std::endl;
+
+      // here we manage the safety mode
+      if(has_been_waken_by_dg_)
       {
         // this thread has been awaken by the dynamic graph.
         missed_control_count_ = 0;
@@ -304,7 +333,6 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
         // this thread has automatically awaken
         ++missed_control_count_;
       }
-
       if(is_in_safety_mode())
       {
         compute_safety_controls();
@@ -318,6 +346,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
                            motor_controls_map_);
       }
     }
+    // if we are in simulation we stop here until we actually get a control
     else
     {
       cond_var_->wait();

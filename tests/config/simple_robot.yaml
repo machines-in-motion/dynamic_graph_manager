@@ -18,5 +18,5 @@ device:
       size: 5
 hardware_communication:
   max_missed_control: 10
-  hardware_communication_sleep_time_usec: 800
+  control_period: 1000000
 

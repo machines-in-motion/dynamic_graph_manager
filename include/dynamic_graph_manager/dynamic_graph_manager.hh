@@ -14,10 +14,13 @@
 #define DYNAMIC_GRAPH_MANAGER_HH
 
 // used to spawn the real time thread
-#include <rtpreempt_tools/realtime_thread_creation.h>
+#include <real_time_tools/realtime_thread_creation.h>
 
 // used to join the different processes
 #include <wait.h>
+
+// used to synchronise the control loop
+#include <chrono>
 
 // here this is used to use atomic (thread safe objects)
 #include <atomic>
@@ -42,6 +45,12 @@
 
 namespace dynamic_graph
 {
+
+  /**
+   * @brief clock is the std::chrono::high_resolution_clock object. This typedef
+   * is here as a shortcut to simplify the code readibility.
+   */
+  typedef std::chrono::steady_clock clock;
 
 /**
  * This class has for purpose to manage the different processes during run time.
@@ -313,7 +322,6 @@ private:
    */
   static void* dynamic_graph_real_time_loop_helper(void *context)
   {
-    std::cout<< "dg helper called" << std::endl;
     return static_cast<DynamicGraphManager *>(context)->
         dynamic_graph_real_time_loop();
   }
@@ -332,7 +340,6 @@ private:
    */
   static void* hardware_communication_real_time_loop_helper(void *context)
   {
-    std::cout<< "hc helper called" << std::endl;
     return static_cast<DynamicGraphManager *>(context)->
         hardware_communication_real_time_loop();
   }
@@ -458,6 +465,12 @@ private:
   std::string cond_var_name_;
 
   /**
+   * @brief has_been_waken_by_dg_ is a flag that indicates if the hardware
+   * communication process has been awaken by the dynamic_graph process or not.
+   */
+  bool has_been_waken_by_dg_;
+
+  /**
    * @brief missed_control_count_ is counting the number of iteration when the
    * dynamic_graph failed to provide data.
    */
@@ -470,10 +483,39 @@ private:
   unsigned max_missed_control_;
 
   /**
-   * @brief hardware_communication_sleep_time_usec_ this is the time in micro
-   * seconds when the hardware communcation needs to sleep
+   * @brief control_period_ this is the control period in Nano Seconds.
    */
-  unsigned hardware_communication_sleep_time_usec_ ;
+  clock::duration control_period_ ;
+
+  /**
+   * @brief hw_time_loop_before_sleep_ is the time measurement just before the
+   * hardware communication loop goes to sleep.
+   */
+  clock::time_point hw_time_loop_before_sleep_;
+
+  /**
+   * @brief hw_time_loop_after_sleep_ is the time measurement just after the
+   * hardware communication loop goes to sleep.
+   */
+  clock::time_point hw_time_loop_after_sleep_;
+
+  /**
+   * @brief hw_measured_sleep_time_ is the time during which the hardware
+   * communication process actually slept.
+   */
+  clock::duration hw_meas_sleep_time_;
+
+  /**
+   * @brief hw_ref_sleep_time_ is the time during which the hardware
+   * communication process is supposed to sleep.
+   */
+  clock::duration hw_ref_sleep_time_;
+
+  /**
+   * @brief hw_meas_active_time_ is the time during which the hardware
+   * communication process is supposed to sleep.
+   */
+  clock::duration hw_meas_active_time_;
 
   /**
    * @brief is_real_robot this boolean is a parameter to indicate if yes or no
