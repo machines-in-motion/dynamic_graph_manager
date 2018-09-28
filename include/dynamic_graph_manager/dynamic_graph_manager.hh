@@ -10,6 +10,7 @@
  * usage: see demos and unit tests and documentation
  */
 
+#pragma once
 #ifndef DYNAMIC_GRAPH_MANAGER_HH
 #define DYNAMIC_GRAPH_MANAGER_HH
 
@@ -26,7 +27,6 @@
 #include <atomic>
 
 // used to deal with shared memory
-#include <shared_memory/shared_memory.hpp>
 #include <shared_memory/thread_synchronisation.hpp>
 
 // get the yaml configuration

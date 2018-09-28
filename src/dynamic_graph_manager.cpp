@@ -10,6 +10,7 @@
 
 #include <dynamic_graph_manager/ros_init.hh>
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
+//#include <shared_memory/shared_memory.hpp>
 
 using namespace dynamic_graph;
 
