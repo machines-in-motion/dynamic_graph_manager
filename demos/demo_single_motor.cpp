@@ -14,6 +14,7 @@ int main(int , char* []) {
 
   dgm.initialize(param);
   dgm.run();
+  std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
   ros::waitForShutdown();
 }
 
