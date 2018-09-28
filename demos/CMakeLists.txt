@@ -16,7 +16,7 @@ target_link_libraries(demo_single_motor
   rt
 )
 target_compile_definitions(demo_single_motor PUBLIC
-  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/config/demo_single_motor.yaml")
+  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/single_motor/dgm_single_motor_simu.yaml")
 
 #### demo with a simulated single motor ####
 add_executable(demo_single_motor_simu
@@ -30,4 +30,4 @@ target_link_libraries(demo_single_motor_simu
   rt
 )
 target_compile_definitions(demo_single_motor_simu PUBLIC
-  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/config/demo_single_motor_simu.yaml")
+  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/single_motor/dgm_single_motor_simu.yaml")

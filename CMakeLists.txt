@@ -129,7 +129,7 @@ if(USE_QTCREATOR_${PROJECT_NAME})
         ../*.cf  ../*.yaml ../*.txt ../*.xml
         ../start ../*.launch ../*.urdf ../CATKIN_IGNORE ../*.in
     )
-    list(FILTER EXTRA_FILES EXCLUDE REGEX "build")
+    #list(FILTER EXTRA_FILES EXCLUDE REGEX "build")
     add_custom_target(${PROJECT_NAME}_OTHER_FILES ALL WORKING_DIRECTORY
         ${PROJECT_SOURCE_DIR} SOURCES ${EXTRA_FILES})
 endif()

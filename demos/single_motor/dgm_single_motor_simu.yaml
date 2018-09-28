@@ -1,4 +1,4 @@
-is_real_robot: true
+is_real_robot: false
 device:
   name: "single_motor"
   sensors:
