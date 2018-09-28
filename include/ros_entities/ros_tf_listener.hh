@@ -9,15 +9,15 @@
 # include <dynamic-graph/signal.h>
 # include <dynamic-graph/command-bind.h>
 
-# include <sot/core/matrix-geometry.hh>
+# include <ros_entities/matrix_geometry.hh>
 
-namespace dynamicgraph {
+namespace dynamic_graph {
   class RosTfListener;
 
   namespace internal
   {
     struct TransformListenerData {
-      typedef Signal<sot::MatrixHomogeneous, int> signal_t;
+      typedef dynamicgraph::Signal<MatrixHomogeneous, int> signal_t;
 
       tf::TransformListener& listener;
       const std::string toFrame, fromFrame;
@@ -35,7 +35,7 @@ namespace dynamicgraph {
         signal.setFunction (boost::bind(&TransformListenerData::getTransform, this, _1, _2));
       }
 
-      sot::MatrixHomogeneous& getTransform (sot::MatrixHomogeneous& res, int time)
+      MatrixHomogeneous& getTransform (MatrixHomogeneous& res, int time)
       {
         static const ros::Time rosTime(0);
         try {
@@ -45,8 +45,8 @@ namespace dynamicgraph {
           ROS_ERROR("Enable to get transform at time %i: %s",time,ex.what());
           return res;
         }
-        for (sot::MatrixHomogeneous::Index r = 0; r < 3; ++r) {
-          for (sot::MatrixHomogeneous::Index c = 0; c < 3; ++c)
+        for (MatrixHomogeneous::Index r = 0; r < 3; ++r) {
+          for (MatrixHomogeneous::Index c = 0; c < 3; ++c)
             res.linear ()(r,c) = transform.getBasis().getRow(r)[c];
           res.translation()[r] = transform.getOrigin()[r];
         }
@@ -55,7 +55,7 @@ namespace dynamicgraph {
     };
   } // end of internal namespace.
 
-  class RosTfListener : public Entity
+  class RosTfListener : public dynamicgraph::Entity
   {
     DYNAMIC_GRAPH_ENTITY_DECL();
 
@@ -74,7 +74,7 @@ namespace dynamicgraph {
           "    - signalName: the signal name in dynamic-graph"
           "\n";
         addCommand ("add",
-            command::makeCommandVoid3(*this, &RosTfListener::add, docstring));
+            dynamicgraph::command::makeCommandVoid3(*this, &RosTfListener::add, docstring));
       }
 
       ~RosTfListener ()

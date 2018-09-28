@@ -11,13 +11,13 @@
 # include <dynamic-graph/signal.h>
 # include <dynamic-graph/entity.h>
 
-namespace dynamicgraph {
+namespace dynamic_graph {
 
   class RosTime : public dynamicgraph::Entity
   {
     DYNAMIC_GRAPH_ENTITY_DECL ();
   public:
-    Signal <boost::posix_time::ptime, int> now_;
+    dynamicgraph::Signal <boost::posix_time::ptime, int> now_;
     RosTime (const std::string& name);
     virtual std::string getDocString () const;
   protected:

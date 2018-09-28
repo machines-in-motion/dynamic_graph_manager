@@ -7,10 +7,10 @@
 #include <dynamic-graph/signal-caster.h>
 #include <dynamic-graph/signal-cast-helper.h>
 
-#include "ros_time.hh"
-#include "converter.hh"
+#include "ros_entities/ros_time.hh"
+#include "ros_entities/converter.hh"
 
-namespace dynamicgraph {
+namespace dynamic_graph {
 
   DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(RosTime, "RosTime");
 

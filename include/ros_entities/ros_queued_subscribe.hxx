@@ -26,13 +26,13 @@
 # include <dynamic-graph/linear-algebra.h>
 # include <dynamic-graph/signal-cast-helper.h>
 # include <std_msgs/Float64.h>
-# include "dynamic_graph_bridge_msgs/Matrix.h"
-# include "dynamic_graph_bridge_msgs/Vector.h"
+# include "dynamic_graph_manager/Matrix.h"
+# include "dynamic_graph_manager/Vector.h"
 
 namespace dg = dynamicgraph;
 typedef boost::mutex::scoped_lock scoped_lock;
 
-namespace dynamicgraph
+namespace dynamic_graph
 {
   namespace internal
   {
@@ -46,14 +46,14 @@ namespace dynamicgraph
 			const std::string& signal,
 			const std::string& topic)
       {
-        typedef typename SotToRos<T>::sot_t sot_t;
-	typedef typename SotToRos<T>::ros_const_ptr_t ros_const_ptr_t;
+        typedef typename DgToRos<T>::sot_t sot_t;
+        typedef typename DgToRos<T>::ros_const_ptr_t ros_const_ptr_t;
         typedef BindedSignal<sot_t, BUFFER_SIZE> BindedSignal_t;
 	typedef typename BindedSignal_t::Signal_t Signal_t;
 
 	// Initialize the bindedSignal object.
         BindedSignal_t* bs = new BindedSignal_t(&rosSubscribe);
-        SotToRos<T>::setDefault (bs->last);
+        DgToRos<T>::setDefault (bs->last);
 
 	// Initialize the signal.
 	boost::format signalName ("RosQueuedSubscribe(%1%)::output(%2%)::%3%");

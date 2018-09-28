@@ -7,13 +7,13 @@
 # include <dynamic-graph/linear-algebra.h>
 # include <dynamic-graph/signal-cast-helper.h>
 # include <std_msgs/Float64.h>
-# include "dynamic_graph_bridge_msgs/Matrix.h"
-# include "dynamic_graph_bridge_msgs/Vector.h"
+# include "dynamic_graph_manager/Matrix.h"
+# include "dynamic_graph_manager/Vector.h"
 # include "ros_time.hh"
 
 namespace dg = dynamicgraph;
 
-namespace dynamicgraph
+namespace dynamic_graph
 {
   template <typename R, typename S>
   void
@@ -47,9 +47,9 @@ namespace dynamicgraph
 			const std::string& signal,
 			const std::string& topic)
       {
-	typedef typename SotToRos<T>::sot_t sot_t;
-	typedef typename SotToRos<T>::ros_const_ptr_t ros_const_ptr_t;
-	typedef typename SotToRos<T>::signalIn_t signal_t;
+        typedef typename DgToRos<T>::sot_t sot_t;
+        typedef typename DgToRos<T>::ros_const_ptr_t ros_const_ptr_t;
+        typedef typename DgToRos<T>::signalIn_t signal_t;
 
 	// Initialize the bindedSignal object.
 	RosSubscribe::bindedSignal_t bindedSignal;
@@ -60,7 +60,7 @@ namespace dynamicgraph
 
 	boost::shared_ptr<signal_t> signal_
 	  (new signal_t (0, signalName.str ()));
-	SotToRos<T>::setDefault(*signal_);
+        DgToRos<T>::setDefault(*signal_);
 	bindedSignal.first = signal_;
 	RosSubscribe.signalRegistration (*bindedSignal.first);
 
@@ -87,9 +87,9 @@ namespace dynamicgraph
       {
 	typedef std::pair<T, dg::Vector> type_t;
 
-	typedef typename SotToRos<type_t>::sot_t sot_t;
-	typedef typename SotToRos<type_t>::ros_const_ptr_t ros_const_ptr_t;
-	typedef typename SotToRos<type_t>::signalIn_t signal_t;
+        typedef typename DgToRos<type_t>::sot_t sot_t;
+        typedef typename DgToRos<type_t>::ros_const_ptr_t ros_const_ptr_t;
+        typedef typename DgToRos<type_t>::signalIn_t signal_t;
 
 	// Initialize the bindedSignal object.
 	RosSubscribe::bindedSignal_t bindedSignal;
@@ -100,7 +100,7 @@ namespace dynamicgraph
 
 	boost::shared_ptr<signal_t> signal_
 	  (new signal_t (0, signalName.str ()));
-	SotToRos<T>::setDefault(*signal_);
+        DgToRos<T>::setDefault(*signal_);
 	bindedSignal.first = signal_;
 	RosSubscribe.signalRegistration (*bindedSignal.first);
 

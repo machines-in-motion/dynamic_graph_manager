@@ -32,6 +32,8 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     yaml_cpp
     shared_memory
     real_time_tools
+    tf2_bullet
+    #tf
 )
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})

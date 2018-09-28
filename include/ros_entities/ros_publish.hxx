@@ -3,31 +3,31 @@
 # include <vector>
 # include <std_msgs/Float64.h>
 
-# include "dynamic_graph_bridge_msgs/Matrix.h"
-# include "dynamic_graph_bridge_msgs/Vector.h"
+# include "dynamic_graph_manager/Matrix.h"
+# include "dynamic_graph_manager/Vector.h"
 
-# include "sot_to_ros.hh"
+# include "dg_to_ros.hh"
 
 # include <iostream>
 
-namespace dynamicgraph
+namespace dynamic_graph
 {
   template <>
   inline void
   RosPublish::sendData
-  <std::pair<sot::MatrixHomogeneous, Vector> >
+  <std::pair<MatrixHomogeneous, Vector> >
   (boost::shared_ptr
    <realtime_tools::RealtimePublisher
-   <SotToRos
-   <std::pair<sot::MatrixHomogeneous, Vector> >::ros_t> > publisher,
+   <DgToRos
+   <std::pair<MatrixHomogeneous, Vector> >::ros_t> > publisher,
    boost::shared_ptr
-   <SotToRos
-   <std::pair<sot::MatrixHomogeneous, Vector> >::signalIn_t> signal,
+   <DgToRos
+   <std::pair<MatrixHomogeneous, Vector> >::signalIn_t> signal,
    int time)
   {
-    SotToRos
+    DgToRos
       <std::pair
-      <sot::MatrixHomogeneous, Vector> >::ros_t result;
+      <MatrixHomogeneous, Vector> >::ros_t result;
     if (publisher->trylock ())
       {
 	publisher->msg_.child_frame_id = "/dynamic_graph/world";
@@ -41,11 +41,11 @@ namespace dynamicgraph
   RosPublish::sendData
   (boost::shared_ptr
    <realtime_tools::RealtimePublisher
-   <typename SotToRos<T>::ros_t> > publisher,
-   boost::shared_ptr<typename SotToRos<T>::signalIn_t> signal,
+   <typename DgToRos<T>::ros_t> > publisher,
+   boost::shared_ptr<typename DgToRos<T>::signalIn_t> signal,
    int time)
   {
-    typename SotToRos<T>::ros_t result;
+    typename DgToRos<T>::ros_t result;
     if (publisher->trylock ())
       {
 	converter (publisher->msg_, signal->access (time));
@@ -56,8 +56,8 @@ namespace dynamicgraph
   template <typename T>
   void RosPublish::add (const std::string& signal, const std::string& topic)
   {
-    typedef typename SotToRos<T>::ros_t ros_t;
-    typedef typename SotToRos<T>::signalIn_t signal_t;
+    typedef typename DgToRos<T>::ros_t ros_t;
+    typedef typename DgToRos<T>::signalIn_t signal_t;
 
     // Initialize the bindedSignal object.
     bindedSignal_t bindedSignal;
@@ -73,9 +73,9 @@ namespace dynamicgraph
     boost::shared_ptr<signal_t> signalPtr
       (new signal_t
        (0,
-	MAKE_SIGNAL_STRING(name, true, SotToRos<T>::signalTypeName, signal)));
+        MAKE_SIGNAL_STRING(name, true, DgToRos<T>::signalTypeName, signal)));
     boost::get<0> (bindedSignal) = signalPtr;
-    SotToRos<T>::setDefault(*signalPtr);
+    DgToRos<T>::setDefault(*signalPtr);
     signalRegistration (*boost::get<0> (bindedSignal));
 
     // Initialize the callback.

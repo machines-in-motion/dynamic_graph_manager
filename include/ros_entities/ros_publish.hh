@@ -15,10 +15,10 @@
 
 # include <realtime_tools/realtime_publisher.h>
 
-# include "converter.hh"
-# include "sot_to_ros.hh"
+# include "ros_entities/converter.hh"
+# include "ros_entities/dg_to_ros.hh"
 
-namespace dynamicgraph
+namespace dynamic_graph
 {
   class RosPublish;
 
@@ -81,8 +81,8 @@ namespace dynamicgraph
     sendData
     (boost::shared_ptr
      <realtime_tools::RealtimePublisher
-     <typename SotToRos<T>::ros_t> > publisher,
-     boost::shared_ptr<typename SotToRos<T>::signalIn_t> signal,
+     <typename DgToRos<T>::ros_t> > publisher,
+     boost::shared_ptr<typename DgToRos<T>::signalIn_t> signal,
      int time);
 
     template <typename T>

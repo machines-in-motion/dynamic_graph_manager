@@ -34,11 +34,13 @@ set(ROS_ENTITIES_SRC
   ros_entities/ros_tf_listener.cpp
   ros_entities/ros_time.cpp
   ros_entities/ros_queued_subscribe.cpp
+  ros_entities/converter.cpp
 )
 add_library(ros_entities SHARED ${ROS_ENTITIES_SRC})
 target_link_libraries(ros_entities
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
+  dynamic_graph_manager
   rt
 )
 set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} ros_entities PARENT_SCOPE)

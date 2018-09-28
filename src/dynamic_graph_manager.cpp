@@ -14,6 +14,10 @@
 
 using namespace dynamic_graph;
 
+const std::string DynamicGraphManager::dg_ros_node_name_ = "dynamic_graph";
+const std::string DynamicGraphManager::hw_com_ros_node_name_ =
+    "hardware_communication";
+
 DynamicGraphManager::DynamicGraphManager()
 {
   // Upon construction the graph is inactive
@@ -175,7 +179,7 @@ bool DynamicGraphManager::has_dynamic_graph_process_died()
 void DynamicGraphManager::initialize_dynamic_graph_process()
 {
   // from here this process becomes a ros node
-  ros::NodeHandle& ros_node_handle = ros_init("dynamic_graph");
+  ros::NodeHandle& ros_node_handle = ros_init(dg_ros_node_name_);
   // we create a python interpreter
   ros_python_interpreter_.reset(
         new dynamic_graph::RosPythonInterpreter(ros_node_handle));
@@ -206,7 +210,7 @@ void DynamicGraphManager::run_dynamic_graph_process()
 void DynamicGraphManager::run_hardware_communication_process()
 {
   // from here on this process is a ros node
-  ros_init("hardware_communication");
+  ros_init(hw_com_ros_node_name_);
 
   // we build the condition variables after the fork (seems safer this way)
   cond_var_.reset(new shared_memory::ConditionVariable(
@@ -283,7 +287,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   assert(!is_hardware_communication_stopped_ && "The loop is started");
   assert(ros::ok() && "Ros has to be initialized");
 
-  printf("HARDWARE: Start loop\n");
+  std::cout << "HARDWARE: Start loop" << std::endl;
 
   // we initialize the time after sleep the first time here
   hw_time_loop_after_sleep_ = clock::now();
@@ -293,6 +297,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   // we start the main loop
   while(!is_hardware_communication_stopped() && ros::ok())
   {
+    std::cout << "HARDWARE: loop" << std::endl;
     // call the sensors
     get_sensors_to_map(sensors_map_);
 

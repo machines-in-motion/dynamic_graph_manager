@@ -270,11 +270,28 @@ public:
    */
   bool has_dynamic_graph_process_died();
 
+  /**
+   * @brief is_in_safety_mode check if the dynamic graph is still alive and
+   * sending commands at a descent frequency.
+   * @return true if there is a problem
+   */
   bool is_in_safety_mode()
   {
     return (missed_control_count_ >= max_missed_control_) ||
         has_dynamic_graph_process_died();
   }
+
+  /**
+   * @brief dg_ros_node_name_ this is the ros node name of the dynamic graph
+   * process
+   */
+  static const std::string dg_ros_node_name_;
+
+  /**
+   * @brief hw_com_ros_node_name_ this is the ros node name of the harware
+   * communication process
+   */
+  static const std::string hw_com_ros_node_name_;
 
 private:
 

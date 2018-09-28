@@ -29,10 +29,12 @@
 
 #include <dynamic-graph/factory.h>
 
-#include "dynamic_graph_bridge/ros_init.hh"
-#include "ros_queued_subscribe.hh"
+#include "dynamic_graph_manager/ros_init.hh"
+#include "dynamic_graph_manager/dynamic_graph_manager.hh"
 
-namespace dynamicgraph
+#include "ros_entities/ros_queued_subscribe.hh"
+
+namespace dynamic_graph
 {
   DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(RosQueuedSubscribe, "RosQueuedSubscribe");
 
@@ -122,7 +124,7 @@ namespace dynamicgraph
 	else if (type == "vector3")
 	  entity.add<specific::Vector3> (type, signal, topic);
 	else if (type == "matrixHomo")
-	  entity.add<sot::MatrixHomogeneous> (type, signal, topic);
+    entity.add<MatrixHomogeneous> (type, signal, topic);
 	else if (type == "twist")
 	  entity.add<specific::Twist> (type, signal, topic);
 	else
@@ -196,7 +198,7 @@ namespace dynamicgraph
 
   RosQueuedSubscribe::RosQueuedSubscribe (const std::string& n)
     : dynamicgraph::Entity(n),
-      nh_ (rosInit (true)),
+      nh_ (ros_init(DynamicGraphManager::dg_ros_node_name_)),
       bindedSignal_ (),
       readQueue_ (-1)
   {
