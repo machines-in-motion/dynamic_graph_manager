@@ -26,6 +26,24 @@ target_link_libraries(dynamic_graph_manager
 set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dynamic_graph_manager
     PARENT_SCOPE)
 
+
+set(ROS_ENTITIES_SRC
+  ros_entities/dg_to_ros.cpp
+  ros_entities/ros_publish.cpp
+  ros_entities/ros_subscribe.cpp
+  ros_entities/ros_tf_listener.cpp
+  ros_entities/ros_time.cpp
+  ros_entities/ros_queued_subscribe.cpp
+)
+add_library(ros_entities SHARED ${ROS_ENTITIES_SRC})
+target_link_libraries(ros_entities
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+  rt
+)
+set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} ros_entities PARENT_SCOPE)
+
+
 #SET(DEVICE_NAME dg-simple-robot-device)
 #ADD_LIBRARY(${DEVICE_NAME} SHARED
 #  src/abstract_sot_external_interface/dg_simple_robot_device.cpp

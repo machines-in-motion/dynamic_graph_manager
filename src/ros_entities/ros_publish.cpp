@@ -15,7 +15,7 @@
 #include <dynamic-graph/command.h>
 #include <dynamic-graph/linear-algebra.h>
 
-#include "dynamic_graph_bridge/ros_init.hh"
+#include "dynamic_graph_manager/ros_init.hh"
 #include "ros_publish.hh"
 
 namespace dynamicgraph
