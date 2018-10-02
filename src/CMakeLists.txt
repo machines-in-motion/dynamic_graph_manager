@@ -2,6 +2,16 @@
 # create the dynamic graph manager library #
 ############################################
 
+set(EXCEPTION_SRC
+  exception/exception-abstract.cpp
+  exception/exception-factory.cpp
+  exception/exception-signal.cpp
+  exception/exception-tools.cpp
+  exception/exception-dynamic.cpp
+  exception/exception-feature.cpp
+  exception/exception-task.cpp
+)
+
 set(DYNAMIC_GRAPH_MANAGER_SRC
     dynamic_graph_manager.cpp
     device.cpp
@@ -9,13 +19,7 @@ set(DYNAMIC_GRAPH_MANAGER_SRC
     ros_init.cpp
     ros_interpreter.cpp
     tools.cpp
-    exception/exception-abstract.cpp
-    exception/exception-factory.cpp
-    exception/exception-signal.cpp
-    exception/exception-tools.cpp
-    exception/exception-dynamic.cpp
-    exception/exception-feature.cpp
-    exception/exception-task.cpp
+    ${EXCEPTION_SRC}
 )
 add_library(dynamic_graph_manager SHARED ${DYNAMIC_GRAPH_MANAGER_SRC})
 target_link_libraries(dynamic_graph_manager
@@ -26,35 +30,44 @@ target_link_libraries(dynamic_graph_manager
 set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dynamic_graph_manager
     PARENT_SCOPE)
 
-
-set(ROS_ENTITIES_SRC
+################################################################
+# Export some default entities used for ROS<->DG communication #
+################################################################
+# first we create small library for type convertions
+add_library(dg_ros_convertion
   ros_entities/dg_to_ros.cpp
-  ros_entities/ros_publish.cpp
-  ros_entities/ros_subscribe.cpp
-  ros_entities/ros_tf_listener.cpp
-  ros_entities/ros_time.cpp
-  ros_entities/ros_queued_subscribe.cpp
   ros_entities/converter.cpp
 )
-add_library(ros_entities SHARED ${ROS_ENTITIES_SRC})
-target_link_libraries(ros_entities
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES}
-  dynamic_graph_manager
-  rt
+target_link_libraries(dg_ros_convertion dynamic_graph_manager)
+set_target_properties(dg_ros_convertion PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY "${CATKIN_DEVEL_PREFIX}/lib/plugin/"
 )
-set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} ros_entities PARENT_SCOPE)
 
+# then we build the different entities and install them in devel/lib/plugin folder
+set(LIST_ROS_ENTITIES
+  ros_publish
+  ros_subscribe
+  ros_queued_subscribe
+  ros_tf_listener
+  ros_time
+)
 
-#SET(DEVICE_NAME dg-simple-robot-device)
-#ADD_LIBRARY(${DEVICE_NAME} SHARED
-#  src/abstract_sot_external_interface/dg_simple_robot_device.cpp
-#)
-## Link the dynamic library containing the SoT with its dependencies.
-#PKG_CONFIG_USE_DEPENDENCY(${DEVICE_NAME} "dynamic-graph")
-#PKG_CONFIG_USE_DEPENDENCY(${DEVICE_NAME} "dynamic-graph-python")
-#PKG_CONFIG_USE_DEPENDENCY(${DEVICE_NAME} "dynamic_graph_bridge")
-#PKG_CONFIG_USE_DEPENDENCY(${DEVICE_NAME} "sot-core")
-#IF(UNIX AND NOT APPLE)
-#  TARGET_LINK_LIBRARIES(${DEVICE_NAME} ${Boost_LIBRARIES})
-#ENDIF(UNIX AND NOT APPLE)
+foreach(ROS_ENTITY ${LIST_ROS_ENTITIES})
+  add_library(${ROS_ENTITY} SHARED
+    ros_entities/${ROS_ENTITY}.cpp
+  )
+  target_link_libraries(${ROS_ENTITY} dg_ros_convertion dynamic_graph_manager)
+  SET_TARGET_PROPERTIES(${ROS_ENTITY} PROPERTIES
+    PREFIX ""
+    LIBRARY_OUTPUT_DIRECTORY ${DYNAMIC_GRAPH_PLUGINDIR}
+  )
+  dynamic_graph_python_module("ros/${ROS_ENTITY}"
+    ${ROS_ENTITY}
+    ${ROS_ENTITY}_wrap
+  )
+endforeach()
+# copy an empty __init__.py in the dynamic_graph/ros folder in dist-lib
+CONFIGURE_FILE(
+  ${PROJECT_SOURCE_DIR}/cmake/dynamic_graph/submodule/__init__.py.empty.cmake
+  ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}/dynamic_graph/ros/__init__.py
+)

@@ -21,6 +21,7 @@ include(cmake/pkg-config.cmake)
 include(cmake/python.cmake)
 include(cmake/boost.cmake)
 include(cmake/eigen.cmake)
+include(cmake/dynamic_graph/submodule.cmake)
 SEARCH_FOR_PYTHON()
 SEARCH_FOR_BOOST()
 SEARCH_FOR_EIGEN()
@@ -33,10 +34,17 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     shared_memory
     real_time_tools
     tf2_bullet
-    #tf
 )
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
+
+####################################
+# Define the OS to be used locally #
+####################################
+
+# This macro sets the C++ preprocessor flags "XENOMAI", "RT_PREEMPT", or
+# "UBUNTU" according to the current operating system.
+DEFINE_OS()
 
 ######################################################
 # define the include directory of all ${CATKIN_PKGS} #
@@ -90,18 +98,20 @@ add_subdirectory(tests)
 ####################
 add_subdirectory(demos)
 
-###########################################
-## export the package as a catkin package #
-###########################################
+##########################################
+# export the package as a catkin package #
+##########################################
 catkin_package(
   LIBRARIES ${EXPORTED_LIBRAIRIES}
   INCLUDE_DIRS include
   CATKIN_DEPENDS ${CATKIN_PKGS}
+  CFG_EXTRAS pkg-config.cmake python.cmake boost.cmake
+             eigen.cmake dynamic_graph/submodule.cmake
 )
 
-###########################
-## building documentation #
-###########################
+##########################
+# building documentation #
+##########################
 set(BUILD_DOCUMENTATION OFF CACHE BOOL
     "Set to ON if you want to build the documentation")
 if(BUILD_DOCUMENTATION)
