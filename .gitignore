@@ -15,4 +15,5 @@ readme\.txt
 
 start
 
-python/dynamic_graph
+*.pyc
+
