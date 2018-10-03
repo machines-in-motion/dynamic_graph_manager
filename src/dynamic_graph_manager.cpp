@@ -17,6 +17,8 @@ using namespace dynamic_graph;
 const std::string DynamicGraphManager::dg_ros_node_name_ = "dynamic_graph";
 const std::string DynamicGraphManager::hw_com_ros_node_name_ =
     "hardware_communication";
+const std::string DynamicGraphManager::python_log_file_ =
+     "/tmp/python_log_dynamic_graph_manager.out";
 
 DynamicGraphManager::DynamicGraphManager()
 {
@@ -192,6 +194,61 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   cond_var_.reset(new shared_memory::ConditionVariable(
                             shared_memory_name_,
                             cond_var_name_));
+  // we call the prologue of the python interpreter
+  // we *NEED* to do this *AFTER* the device is created to fetch its pointer
+  // in the python interpreter
+  python_prologue();
+}
+
+void DynamicGraphManager::run_python_command(std::ostream& file,
+                                             const std::string& command)
+{
+  file << ">>> " << command << std::endl;
+  std::string lerr(""),lout(""),lres("");
+  ros_python_interpreter_->run_python_command(command,lres,lout,lerr);
+  if (lres != "None")
+  {
+    if (lres=="<NULL>")
+    {
+      file << lout << std::endl;
+      file << "------" << std::endl;
+      file << lerr << std::endl;
+    }
+    else
+    {
+      file << lres << std::endl;
+    }
+  }
+}
+
+void DynamicGraphManager::python_prologue()
+{
+  // open the log file
+  std::ofstream aof(python_log_file_.c_str());
+
+  run_python_command(
+        aof, "print(\"Executing python interpreter prologue...\")");
+  // make sure that the current environment variable are setup in the current
+  // python interpreter.
+  run_python_command(aof, "import sys, os");
+  run_python_command(aof, "pythonpath = os.environ['PYTHONPATH']");
+  run_python_command(aof, "path = []");
+  run_python_command(aof,
+             "for p in pythonpath.split(':'):\n"
+             "  if p not in sys.path:\n"
+             "    path.append(p)");
+  run_python_command (aof, "path.extend(sys.path)");
+  run_python_command (aof, "sys.path = path");
+  // used to be able to invoke rospy
+  run_python_command (aof,
+                      "if not hasattr(sys, \'argv\'):\n"
+                      "    sys.argv  = ['dynamic_graph_manager']");
+  // Create the device or get a pointer to the c++ object if it already exist
+  run_python_command(aof, "from dynamic_graph.device.prologue import robot");
+  run_python_command(
+        aof, "print(\"Executing python interpreter prologue... Done\")");
+  // close the log file
+  aof.close();
 }
 
 void DynamicGraphManager::run_dynamic_graph_process()
@@ -210,7 +267,12 @@ void DynamicGraphManager::run_dynamic_graph_process()
 void DynamicGraphManager::run_hardware_communication_process()
 {
   // from here on this process is a ros node
-  ros_init(hw_com_ros_node_name_);
+  ros::NodeHandle& hw_ros_node = ros_init(hw_com_ros_node_name_);
+
+  // export the yaml node to ros so we can access it in the python interpretor
+  // and in other ros node if needed.
+  hw_ros_node.setParam("device_name",
+                       params_["device"]["name"].as<std::string>());
 
   // we build the condition variables after the fork (seems safer this way)
   cond_var_.reset(new shared_memory::ConditionVariable(
@@ -252,9 +314,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   std::cout << "DG: Start loop" << std::endl;
   while(!is_dynamic_graph_stopped() && ros::ok())
   {
-    // wait that the hardware_communication process acquiers the data
-    cond_var_->wait();
-
+    //std::cout << "DG: Running ..." << std::endl;
     // read the sensor from the shared memory
     shared_memory::get(shared_memory_name_, sensors_map_name_, sensors_map_);
 
@@ -270,6 +330,8 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
     //std::cout << "DG: notifies" << std::endl;
     // notify the hardware_communication process that the control has been done
     cond_var_->notify_all();
+    // wait that the hardware_communication process acquiers the data
+    cond_var_->wait();
   }
   // we use this function here because the loop might stop because of ROS
   stop_dynamic_graph();
@@ -297,7 +359,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   // we start the main loop
   while(!is_hardware_communication_stopped() && ros::ok())
   {
-    std::cout << "HARDWARE: loop" << std::endl;
+    //std::cout << "HARDWARE: loop" << std::endl;
     // call the sensors
     get_sensors_to_map(sensors_map_);
 

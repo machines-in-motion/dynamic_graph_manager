@@ -17,14 +17,7 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 # Search for dependencies. #
 ############################
-include(cmake/pkg-config.cmake)
-include(cmake/python.cmake)
-include(cmake/boost.cmake)
-include(cmake/eigen.cmake)
-include(cmake/dynamic_graph/submodule.cmake)
-SEARCH_FOR_PYTHON()
-SEARCH_FOR_BOOST()
-SEARCH_FOR_EIGEN()
+
 set(CATKIN_PKGS ${CATKIN_PKGS}
     message_generation
     roscpp
@@ -35,8 +28,12 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     real_time_tools
     tf2_bullet
 )
-
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
+
+SEARCH_FOR_PYTHON()
+SEARCH_FOR_BOOST()
+SEARCH_FOR_EIGEN()
+
 
 ####################################
 # Define the OS to be used locally #
@@ -77,6 +74,7 @@ add_message_files(FILES
 # manage python file install #
 ##############################
 catkin_python_setup()
+INSTALL_PYTHON_FILES("" "python/dynamic_graph_manager")
 
 #####################################################################
 # Actually generate the language-specific message and service files #
@@ -105,8 +103,6 @@ catkin_package(
   LIBRARIES ${EXPORTED_LIBRAIRIES}
   INCLUDE_DIRS include
   CATKIN_DEPENDS ${CATKIN_PKGS}
-  CFG_EXTRAS pkg-config.cmake python.cmake boost.cmake
-             eigen.cmake dynamic_graph/submodule.cmake
 )
 
 ##########################
@@ -137,7 +133,7 @@ set(USE_QTCREATOR_${PROJECT_NAME} OFF CACHE BOOL
     "Set to ON if you want QtCreator to display all files in the project tree")
 if(USE_QTCREATOR_${PROJECT_NAME})
     file(GLOB_RECURSE EXTRA_FILES
-        ../*.h ../*.hh ../*.hpp
+        ../*.h ../*.hh ../*.hpp ../*.py
         ../*.cf  ../*.yaml ../*.txt ../*.xml
         ../start ../*.launch ../*.urdf ../CATKIN_IGNORE ../*.in
     )

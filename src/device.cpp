@@ -32,6 +32,10 @@ constexpr unsigned int str2int(const char* str, int h = 0)
         5381 : (str2int(str, h+1) * 33) ^ static_cast<unsigned int>(str[h]);
 }
 
+/**
+ * @brief dynamic_graph::Device::CLASS_NAME must be the name as the actual
+ * device class.
+ */
 const std::string dynamic_graph::Device::CLASS_NAME = "Device";
 
 Device::Device(const std::string& input_name, const YAML::Node& params):
@@ -206,7 +210,7 @@ void Device::execute_graph()
   for(DeviceInSignalMap::const_iterator sig_in_it = motor_controls_in_.begin() ;
       sig_in_it != motor_controls_in_.end() ; ++sig_in_it)
   {
-    (*(sig_in_it->second))( time );
+    (*(sig_in_it->second))(time+1);
   }
 
   /******************************************************************
@@ -215,6 +219,7 @@ void Device::execute_graph()
    ******************************************************************/
   try
   {
+    // TODO: "time" or "time + 1"
     periodic_call_after_.run(time+1);
   }
   catch (std::exception& e)

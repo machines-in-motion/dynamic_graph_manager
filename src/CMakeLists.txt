@@ -40,7 +40,7 @@ add_library(dg_ros_convertion
 )
 target_link_libraries(dg_ros_convertion dynamic_graph_manager)
 set_target_properties(dg_ros_convertion PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${CATKIN_DEVEL_PREFIX}/lib/plugin/"
+  RUNTIME_OUTPUT_DIRECTORY "${DYNAMIC_GRAPH_PLUGIN_DIR}"
 )
 
 # then we build the different entities and install them in devel/lib/plugin folder
@@ -57,17 +57,12 @@ foreach(ROS_ENTITY ${LIST_ROS_ENTITIES})
     ros_entities/${ROS_ENTITY}.cpp
   )
   target_link_libraries(${ROS_ENTITY} dg_ros_convertion dynamic_graph_manager)
-  SET_TARGET_PROPERTIES(${ROS_ENTITY} PROPERTIES
+  set_target_properties(${ROS_ENTITY} PROPERTIES
     PREFIX ""
-    LIBRARY_OUTPUT_DIRECTORY ${DYNAMIC_GRAPH_PLUGINDIR}
+    LIBRARY_OUTPUT_DIRECTORY ${DYNAMIC_GRAPH_PLUGIN_DIR}
   )
   dynamic_graph_python_module("ros/${ROS_ENTITY}"
     ${ROS_ENTITY}
     ${ROS_ENTITY}_wrap
   )
 endforeach()
-# copy an empty __init__.py in the dynamic_graph/ros folder in dist-lib
-CONFIGURE_FILE(
-  ${PROJECT_SOURCE_DIR}/cmake/dynamic_graph/submodule/__init__.py.empty.cmake
-  ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}/dynamic_graph/ros/__init__.py
-)

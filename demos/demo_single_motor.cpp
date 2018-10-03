@@ -9,7 +9,6 @@ int main(int , char* []) {
             << YAML_PARAMS
             << std::endl;
   YAML::Node param = YAML::LoadFile(YAML_PARAMS);
-
   dynamic_graph_demo::DGMSingleMotor dgm;
 
   dgm.initialize(param);

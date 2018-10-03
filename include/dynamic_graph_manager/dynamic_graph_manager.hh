@@ -132,6 +132,20 @@ public:
   void initialize_dynamic_graph_process();
 
   /**
+   * @brief run_python_command
+   * @param file is the logging file to log the entry
+   * @param command is the python command itself
+   */
+  void run_python_command(std::ostream& file,
+                          const std::string& command);
+
+  /**
+   * @brief python_prologue get the pointer of the device in the the python
+   * interpretor.
+   */
+  void python_prologue();
+
+  /**
    * @brief run_dynamic_graph_process spawns the real time thread and becomes
    * a ros spinner (thread in charge of the ros::service callbacks).
    * This function is virtual has it might differ from os to os.
@@ -292,6 +306,12 @@ public:
    * communication process
    */
   static const std::string hw_com_ros_node_name_;
+
+  /**
+   * @brief DGSimpleIntegratorController::LOG_PYTHON
+   */
+  static const std::string python_log_file_;
+
 
 private:
 

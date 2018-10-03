@@ -7,11 +7,11 @@ import os
 # Used to compile the instruction given in the python terminal
 import code
 from code import InteractiveConsole
-from dynamic_graph_manager.ros.dgcompleter import DGCompleter
+from dynamic_graph.ros.dgcompleter import DGCompleter
 
 # Used to connect to ROS services
 import rospy
-from dynamic_graph_manager.srv import RunCommand
+from dynamic_graph_manager.srv import RunCommand, RunPythonFile
 
 # Used to deal with the python history
 try:
@@ -42,16 +42,17 @@ class RosShell(InteractiveConsole):
 
         # Create a client for the single python command service of the
         # dynamic_graph_manager
-        rospy.loginfo('waiting for service...')
-        rospy.wait_for_service('run_command')
-        self.client = rospy.ServiceProxy(
-            'run_command', dynamic_graph_bridge_msgs.srv.RunCommand, True)
-        rospy.wait_for_service('run_script')
+        service_name = '/dynamic_graph/run_python_command'
+        rospy.loginfo('waiting for service' + service_name + '...')
+        rospy.wait_for_service(service_name)
+        self.client = rospy.ServiceProxy(service_name, RunCommand, True)
 
         # Create a client for the python script reading service of the
         # dynamic_graph_manager
-        self.scriptClient = rospy.ServiceProxy(
-            'run_script', dynamic_graph_bridge_msgs.srv.RunPythonFile, True)
+        service_name = '/dynamic_graph/run_python_script'
+        rospy.loginfo('waiting for service' + service_name + '...')
+        rospy.wait_for_service(service_name)
+        self.scriptClient = rospy.ServiceProxy(service_name, RunPythonFile, True)
         
         # Initialize the python completion
         readline.set_completer(DGCompleter(self.client).complete)
