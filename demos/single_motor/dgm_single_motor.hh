@@ -1,4 +1,14 @@
-
+/**
+ * \file dgm_single_motor.hh
+ * \brief The Control Manager for a single motor
+ * \author Maximilien Naveau
+ * \date 2018
+ *
+ * This file declares the DGMSingleMotor class.
+ * This code manages the different threads and processes in order to use the
+ * DynamicGraph.
+ * usage: see the main file: demo_single_motor.cpp
+ */
 #pragma once
 #ifndef DGM_SINGLE_MOTOR_HH
 #define DGM_SINGLE_MOTOR_HH

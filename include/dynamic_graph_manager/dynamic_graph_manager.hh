@@ -6,7 +6,7 @@
  *
  * This file declares the DynamicGraphManager class.
  * This code manages the different threads and processes in order to use the
- * DynamicGrpah.
+ * DynamicGraph.
  * usage: see demos and unit tests and documentation
  */
 

@@ -109,6 +109,8 @@ void DynamicGraphManager::run()
     initialize_dynamic_graph_process();
     run_dynamic_graph_process();
     wait_stop_dynamic_graph();
+    ros::spin();
+    std::cout << "End of the dynamic graph process." << std::endl;
     exit(0);
   }else if(child_pid > 0) // parent process
   {
