@@ -56,9 +56,11 @@ DynamicGraphManager::~DynamicGraphManager()
   ros_shutdown();
   // wait for the dynamic graph thread to stop
   stop_dynamic_graph();
+  cond_var_->notify_all();
   wait_stop_dynamic_graph();
   // wait for the hardware communication thread to stop
   stop_hardware_communication();
+  cond_var_->notify_all();
   wait_stop_hardware_communication();
   // clean the shared memory
   shared_memory::clear_shared_memory(shared_memory_name_);
@@ -109,7 +111,7 @@ void DynamicGraphManager::run()
     initialize_dynamic_graph_process();
     run_dynamic_graph_process();
     wait_stop_dynamic_graph();
-    ros::spin();
+    ros::waitForShutdown();
     std::cout << "End of the dynamic graph process." << std::endl;
     exit(0);
   }else if(child_pid > 0) // parent process
@@ -137,10 +139,11 @@ void DynamicGraphManager::wait_stop_dynamic_graph()
 {
   while(!is_dynamic_graph_stopped())
   {
-    usleep(1000);
+    usleep(100000);
   }
   if(thread_dynamic_graph_)
   {
+    cond_var_->notify_all();
     real_time_tools::join_thread(*thread_dynamic_graph_);
   }
 }
@@ -149,10 +152,11 @@ void DynamicGraphManager::wait_stop_hardware_communication()
 {
   while(!is_hardware_communication_stopped())
   {
-    usleep(1000);
+    usleep(100000);
   }
   if(thread_hardware_communication_)
   {
+    cond_var_->notify_all();
     real_time_tools::join_thread(*thread_hardware_communication_);
   }
 }
@@ -422,8 +426,13 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       cond_var_->wait();
     }
 
-    // send the command to the motors
-    set_motor_controls_from_map(motor_controls_map_);
+    // we do not send the command if the thread is asked to stopped
+    if(!is_hardware_communication_stopped() && ros::ok())
+    {
+      // send the command to the motors
+      set_motor_controls_from_map(motor_controls_map_);
+    }
+
   }
   // we use this function here because the loop might stop because of ROS
   stop_hardware_communication();
