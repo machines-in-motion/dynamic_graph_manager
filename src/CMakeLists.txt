@@ -25,8 +25,14 @@ add_library(dynamic_graph_manager SHARED ${DYNAMIC_GRAPH_MANAGER_SRC})
 target_link_libraries(dynamic_graph_manager
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
-#  rt
 )
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+target_link_libraries(dynamic_graph_manager
+  rt
+  pthread
+)
+endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
 set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dynamic_graph_manager
     PARENT_SCOPE)
 

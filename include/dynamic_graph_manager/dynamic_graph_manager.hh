@@ -19,6 +19,9 @@
 
 // used to join the different processes
 #include <unistd.h>
+#ifndef __APPLE__
+#    include <wait.h>
+#endif // __APPLE__
 
 // used to synchronise the control loop
 #include <chrono>
@@ -263,6 +266,25 @@ public:
   bool is_hardware_communication_stopped()
   {
     return is_hardware_communication_stopped_;
+  }
+
+  /**
+   * @brief pid_dynamic_graph_process is an accessor on the pid of the process
+   * @return the pid of the dynamic graph process
+   */
+  pid_t pid_dynamic_graph_process()
+  {
+    return pid_dynamic_graph_process_;
+  }
+
+  /**
+   * @brief pid_hardware_communication_process is an accessor on the pid of
+   * the process
+   * @return the pid of the dynamic graph process
+   */
+  pid_t pid_hardware_communication_process()
+  {
+    return pid_hardware_communication_process_;
   }
 
   /**

@@ -13,6 +13,8 @@
 #include <dynamic_graph_manager/ros_init.hh>
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <ros/ros.h>
+#include <sys/types.h>
+#include <signal.h>
 
 /**
  * @brief The DISABLED_TestDynamicGraphManager class is used to disable test
@@ -122,7 +124,7 @@ TEST_F(TestDynamicGraphManager, test_run)
   ASSERT_TRUE(start_dynamic_graph_client.call(srv));
   std::cout << ("main: Dynamic Graph Started") << std::endl;
   // wait few iteration of the dynamic_graph
-  usleep(500);
+  sleep(1);
   // Stop the dynamic graph
   ros::ServiceClient stop_dynamic_graph_client =
       n.serviceClient<std_srvs::Empty>(
@@ -131,6 +133,7 @@ TEST_F(TestDynamicGraphManager, test_run)
   ASSERT_TRUE(stop_dynamic_graph_client.call(srv));
   std::cout << ("main: Dynamic Graph Stopped") << std::endl;
   std::cout << ("main: Wait for the DG process to die") << std::endl;
+  kill(dgm.pid_dynamic_graph_process(), SIGKILL);
   while(!dgm.has_dynamic_graph_process_died())
   {
     usleep(1000);

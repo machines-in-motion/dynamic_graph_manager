@@ -10,7 +10,6 @@
 
 #include <dynamic_graph_manager/ros_init.hh>
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
-//#include <shared_memory/shared_memory.hpp>
 
 using namespace dynamic_graph;
 
@@ -56,11 +55,17 @@ DynamicGraphManager::~DynamicGraphManager()
   ros_shutdown();
   // wait for the dynamic graph thread to stop
   stop_dynamic_graph();
-  cond_var_->notify_all();
+  if(cond_var_)
+  {
+    cond_var_->notify_all();
+  }
   wait_stop_dynamic_graph();
   // wait for the hardware communication thread to stop
   stop_hardware_communication();
-  cond_var_->notify_all();
+  if(cond_var_)
+  {
+    cond_var_->notify_all();
+  }
   wait_stop_hardware_communication();
   // clean the shared memory
   shared_memory::clear_shared_memory(shared_memory_name_);
