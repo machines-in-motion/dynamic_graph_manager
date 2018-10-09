@@ -109,7 +109,7 @@ namespace dynamic_graph
       // synchronize with method clear:
       // If reading from the list cannot be done, then return last value.
       scoped_lock lock(rmutex, boost::try_to_lock);
-      if (!lock.owns_lock() || entity->readQueue_ == -1 || time < entity->readQueue_) {
+      if (!lock.owns_lock() || entity->readQueue() == -1 || time < entity->readQueue()) {
         data = last;
       } else {
         if (empty())

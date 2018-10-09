@@ -56,7 +56,12 @@ foreach(ROS_ENTITY ${LIST_ROS_ENTITIES})
   add_library(${ROS_ENTITY} SHARED
     ros_entities/${ROS_ENTITY}.cpp
   )
-  target_link_libraries(${ROS_ENTITY} dg_ros_convertion dynamic_graph_manager)
+  target_link_libraries(${ROS_ENTITY}
+    dg_ros_convertion
+    dynamic_graph_manager
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}    
+  )
   set_target_properties(${ROS_ENTITY} PROPERTIES
     PREFIX ""
     LIBRARY_OUTPUT_DIRECTORY ${DYNAMIC_GRAPH_PLUGIN_DIR}

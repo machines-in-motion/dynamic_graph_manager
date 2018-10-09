@@ -29,6 +29,7 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     # ROS dependencies
     message_generation
     roscpp
+    tf
     tf2_bullet
     realtime_tools
 )

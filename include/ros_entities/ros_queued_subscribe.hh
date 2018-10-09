@@ -210,6 +210,9 @@ namespace dynamic_graph
 
     template <typename T>
     friend class internal::Add;
+
+    int readQueue(){return readQueue_;}
+    
   private:
     static const std::string docstring_;
     ros::NodeHandle& nh_;
@@ -218,7 +221,7 @@ namespace dynamic_graph
     int readQueue_;
     // Signal<bool, int> readQueue_;
 
-    template <typename T>
+    template <typename T, int BufferSize>
     friend class internal::BindedSignal;
   };
 } // end of namespace dynamicgraph.
