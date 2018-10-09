@@ -1,5 +1,5 @@
-#ifndef DYNAMIC_GRAPH_ROS_SOT_TO_ROS_HH
-# define DYNAMIC_GRAPH_ROS_SOT_TO_ROS_HH
+#ifndef DYNAMIC_GRAPH_ROS_DG_TO_ROS_HH
+# define DYNAMIC_GRAPH_ROS_DG_TO_ROS_HH
 # include <vector>
 # include <utility>
 
@@ -54,12 +54,12 @@ namespace dynamic_graph
   template <>
   struct DgToRos<double>
   {
-    typedef double sot_t;
+    typedef double dg_t;
     typedef std_msgs::Float64 ros_t;
     typedef std_msgs::Float64ConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::Signal<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::Signal<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
@@ -69,7 +69,7 @@ namespace dynamic_graph
       s.setConstant (0.);
     }
 
-    static void setDefault(sot_t& s)
+    static void setDefault(dg_t& s)
     {
       s = 0.;
     }
@@ -78,12 +78,12 @@ namespace dynamic_graph
   template <>
   struct DgToRos<unsigned int>
   {
-    typedef unsigned int sot_t;
+    typedef unsigned int dg_t;
     typedef std_msgs::UInt32 ros_t;
     typedef std_msgs::UInt32ConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::Signal<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::Signal<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
@@ -93,7 +93,7 @@ namespace dynamic_graph
       s.setConstant (0);
     }
 
-    static void setDefault(sot_t& s)
+    static void setDefault(dg_t& s)
     {
       s = 0;
     }
@@ -102,12 +102,12 @@ namespace dynamic_graph
   template <>
   struct DgToRos<Matrix>
   {
-    typedef Matrix sot_t;
+    typedef Matrix dg_t;
     typedef dynamic_graph_manager::Matrix ros_t;
     typedef dynamic_graph_manager::MatrixConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::SignalTimeDependent<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
@@ -119,7 +119,7 @@ namespace dynamic_graph
       s.setConstant (m);
     }
 
-    static void setDefault(sot_t& s)
+    static void setDefault(dg_t& s)
     {
       s.resize(0,0);
     }
@@ -128,12 +128,12 @@ namespace dynamic_graph
   template <>
   struct DgToRos<Vector>
   {
-    typedef Vector sot_t;
+    typedef Vector dg_t;
     typedef dynamic_graph_manager::Vector ros_t;
     typedef dynamic_graph_manager::VectorConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::SignalTimeDependent<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
@@ -145,7 +145,7 @@ namespace dynamic_graph
       s.setConstant (v);
     }
 
-    static void setDefault(sot_t& s)
+    static void setDefault(dg_t& s)
     {
       s.resize(0,0);
     }
@@ -154,12 +154,12 @@ namespace dynamic_graph
   template <>
   struct DgToRos<specific::Vector3>
   {
-    typedef Vector sot_t;
+    typedef Vector dg_t;
     typedef geometry_msgs::Vector3 ros_t;
     typedef geometry_msgs::Vector3ConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::SignalTimeDependent<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
@@ -170,7 +170,7 @@ namespace dynamic_graph
       s.setConstant (v);
     }
 
-    static void setDefault(sot_t& s)
+    static void setDefault(dg_t& s)
     {
       s = Vector::Zero(3);
     }
@@ -179,12 +179,12 @@ namespace dynamic_graph
   template <>
   struct DgToRos<MatrixHomogeneous>
   {
-    typedef MatrixHomogeneous sot_t;
+    typedef MatrixHomogeneous dg_t;
     typedef geometry_msgs::Transform ros_t;
     typedef geometry_msgs::TransformConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::SignalTimeDependent<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
@@ -195,7 +195,7 @@ namespace dynamic_graph
       s.setConstant (m);
     }
 
-    static void setDefault(sot_t& s)
+    static void setDefault(dg_t& s)
     {
       s.setIdentity();
     }
@@ -204,12 +204,12 @@ namespace dynamic_graph
   template <>
   struct DgToRos<specific::Twist>
   {
-    typedef Vector sot_t;
+    typedef Vector dg_t;
     typedef geometry_msgs::Twist ros_t;
     typedef geometry_msgs::TwistConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::SignalTimeDependent<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
@@ -221,7 +221,7 @@ namespace dynamic_graph
       s.setConstant (v);
     }
 
-    static void setDefault(sot_t& s)
+    static void setDefault(dg_t& s)
     {
       s = Vector::Zero(6);
     }
@@ -231,19 +231,19 @@ namespace dynamic_graph
   template <>
   struct DgToRos<std::pair<specific::Vector3, Vector> >
   {
-    typedef Vector sot_t;
+    typedef Vector dg_t;
     typedef geometry_msgs::Vector3Stamped ros_t;
     typedef geometry_msgs::Vector3StampedConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::SignalTimeDependent<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
     template <typename S>
     static void setDefault(S& s)
     {
-      DgToRos<sot_t>::setDefault(s);
+      DgToRos<dg_t>::setDefault(s);
     }
   };
 
@@ -251,19 +251,19 @@ namespace dynamic_graph
   template <>
   struct DgToRos<std::pair<MatrixHomogeneous, Vector> >
   {
-    typedef MatrixHomogeneous sot_t;
+    typedef MatrixHomogeneous dg_t;
     typedef geometry_msgs::TransformStamped ros_t;
     typedef geometry_msgs::TransformStampedConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::SignalTimeDependent<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
     template <typename S>
     static void setDefault(S& s)
     {
-      DgToRos<sot_t>::setDefault(s);
+      DgToRos<dg_t>::setDefault(s);
     }
   };
 
@@ -271,19 +271,19 @@ namespace dynamic_graph
   template <>
   struct DgToRos<std::pair<specific::Twist, Vector> >
   {
-    typedef Vector sot_t;
+    typedef Vector dg_t;
     typedef geometry_msgs::TwistStamped ros_t;
     typedef geometry_msgs::TwistStampedConstPtr ros_const_ptr_t;
-    typedef dynamicgraph::SignalTimeDependent<sot_t, int> signal_t;
-    typedef dynamicgraph::SignalPtr<sot_t, int> signalIn_t;
-    typedef boost::function<sot_t& (sot_t&, int)> callback_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
+    typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
+    typedef boost::function<dg_t& (dg_t&, int)> callback_t;
 
     static const char* signalTypeName;
 
     template <typename S>
     static void setDefault(S& s)
     {
-      DgToRos<sot_t>::setDefault(s);
+      DgToRos<dg_t>::setDefault(s);
     }
   };
 
@@ -304,4 +304,4 @@ namespace dynamic_graph
   }
 } // end of namespace dynamicgraph.
 
-#endif //! DYNAMIC_GRAPH_ROS_SOT_TO_ROS_HH
+#endif //! DYNAMIC_GRAPH_ROS_DG_TO_ROS_HH

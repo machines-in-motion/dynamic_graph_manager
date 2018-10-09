@@ -36,6 +36,7 @@
 # include <ros_entities/converter.hh>
 # include <ros_entities/dg_to_ros.hh>
 
+
 namespace dynamic_graph
 {
   class RosQueuedSubscribe;

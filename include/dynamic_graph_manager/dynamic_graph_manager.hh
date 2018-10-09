@@ -18,7 +18,7 @@
 #include <real_time_tools/realtime_thread_creation.h>
 
 // used to join the different processes
-#include <wait.h>
+#include <unistd.h>
 
 // used to synchronise the control loop
 #include <chrono>

@@ -46,9 +46,9 @@ namespace dynamic_graph
 			const std::string& signal,
 			const std::string& topic)
       {
-        typedef typename DgToRos<T>::sot_t sot_t;
+        typedef typename DgToRos<T>::dg_t dg_t;
         typedef typename DgToRos<T>::ros_const_ptr_t ros_const_ptr_t;
-        typedef BindedSignal<sot_t, BUFFER_SIZE> BindedSignal_t;
+        typedef BindedSignal<dg_t, BUFFER_SIZE> BindedSignal_t;
 	typedef typename BindedSignal_t::Signal_t Signal_t;
 
 	// Initialize the bindedSignal object.

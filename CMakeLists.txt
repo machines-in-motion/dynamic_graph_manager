@@ -19,14 +19,18 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 
 set(CATKIN_PKGS ${CATKIN_PKGS}
-    message_generation
-    roscpp
+    # local dependencies
     dynamic_graph
     dynamic_graph_python
     yaml_cpp
     shared_memory
     real_time_tools
+    
+    # ROS dependencies
+    message_generation
+    roscpp
     tf2_bullet
+    realtime_tools
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
 
@@ -40,7 +44,7 @@ SEARCH_FOR_EIGEN()
 ####################################
 
 # This macro sets the C++ preprocessor flags "XENOMAI", "RT_PREEMPT", or
-# "UBUNTU" according to the current operating system.
+# "NON_REAL_TIME" according to the current operating system.
 DEFINE_OS()
 
 ######################################################

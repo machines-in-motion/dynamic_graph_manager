@@ -13,7 +13,7 @@ target_link_libraries(demo_single_motor
   dynamic_graph_manager
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
-  rt
+#  rt
 )
 target_compile_definitions(demo_single_motor PUBLIC
   YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/single_motor/dgm_single_motor_simu.yaml")
@@ -27,7 +27,7 @@ target_link_libraries(demo_single_motor_simu
   dynamic_graph_manager
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
-  rt
+#  rt
 )
 target_compile_definitions(demo_single_motor_simu PUBLIC
   YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/single_motor/dgm_single_motor_simu.yaml")

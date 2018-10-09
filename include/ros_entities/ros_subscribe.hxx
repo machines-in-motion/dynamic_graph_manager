@@ -21,8 +21,8 @@ namespace dynamic_graph
   (boost::shared_ptr<dynamicgraph::SignalPtr<S, int> > signal,
    const R& data)
   {
-    typedef S sot_t;
-    sot_t value;
+    typedef S dg_t;
+    dg_t value;
     converter (value, data);
     signal->setConstant (value);
   }
@@ -47,7 +47,7 @@ namespace dynamic_graph
 			const std::string& signal,
 			const std::string& topic)
       {
-        typedef typename DgToRos<T>::sot_t sot_t;
+        typedef typename DgToRos<T>::dg_t dg_t;
         typedef typename DgToRos<T>::ros_const_ptr_t ros_const_ptr_t;
         typedef typename DgToRos<T>::signalIn_t signal_t;
 
@@ -67,7 +67,7 @@ namespace dynamic_graph
 	// Initialize the subscriber.
 	typedef boost::function<void (const ros_const_ptr_t& data)> callback_t;
 	callback_t callback = boost::bind
-	  (&RosSubscribe::callback<ros_const_ptr_t, sot_t>,
+	  (&RosSubscribe::callback<ros_const_ptr_t, dg_t>,
 	   &RosSubscribe, signal_, _1);
 
 	bindedSignal.second =
@@ -87,7 +87,7 @@ namespace dynamic_graph
       {
 	typedef std::pair<T, dg::Vector> type_t;
 
-        typedef typename DgToRos<type_t>::sot_t sot_t;
+        typedef typename DgToRos<type_t>::dg_t dg_t;
         typedef typename DgToRos<type_t>::ros_const_ptr_t ros_const_ptr_t;
         typedef typename DgToRos<type_t>::signalIn_t signal_t;
 
@@ -107,7 +107,7 @@ namespace dynamic_graph
 	// Initialize the publisher.
 	typedef boost::function<void (const ros_const_ptr_t& data)> callback_t;
 	callback_t callback = boost::bind
-	  (&RosSubscribe::callback<ros_const_ptr_t, sot_t>,
+	  (&RosSubscribe::callback<ros_const_ptr_t, dg_t>,
 	   &RosSubscribe, signal_, _1);
 
 	bindedSignal.second =

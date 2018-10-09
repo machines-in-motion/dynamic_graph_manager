@@ -36,14 +36,19 @@
   <run_depend>   real_time_tools </run_depend>
 <!-- Allow to use the tranform form ROS -->
   <build_depend> tf2_bullet </build_depend>
-  <run_depend>   tf2_bullet </run_depend>
-<!--  <build_depend> pinocchio </build_depend>
-  <run_depend>   pinocchio </run_depend>
-  <build_depend> eigen </build_depend>
-  <run_depend>   eigen </run_depend>-->
-<!--  <build_depend> dynamic-graph-bridge </build_depend>
-  <run_depend>   dynamic-graph-bridge </run_depend>
-  <build_depend> dynamic-graph-bridge_msgs </build_depend>
-  <run_depend>   dynamic-graph-bridge_msgs </run_depend>-->
+  <run_depend>   tf2_bullet </run_depend> 
+<!-- ros_realtime allow to export data from the real time thread to the network -->
+  <build_depend> realtime_tools </build_depend>
+  <run_depend>   realtime_tools </run_depend>
 
+<!--
+  <build_depend> eigen </build_depend>
+  <run_depend>   eigen </run_depend>
+
+  <build_depend> dynamic-graph-bridge </build_depend>
+  <run_depend>   dynamic-graph-bridge </run_depend>
+
+  <build_depend> dynamic-graph-bridge_msgs </build_depend>
+  <run_depend>   dynamic-graph-bridge_msgs </run_depend>
+-->
 </package>

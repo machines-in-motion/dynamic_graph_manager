@@ -4,25 +4,32 @@
 # include <stdexcept>
 # include "dg_to_ros.hh"
 
-# include <boost/static_assert.hpp>
-# include <boost/date_time/date.hpp>
-# include <boost/date_time/posix_time/posix_time.hpp>
-
 # include <ros/time.h>
 # include <std_msgs/Header.h>
 
 # include <LinearMath/btMatrix3x3.h>
 # include <LinearMath/btQuaternion.h>
 
+#ifdef MAC_OS
+// On MAC_OS a macro "tolower" when __APPLE__ is defined.
+// For compatibility reason we need to undefine it as it
+// interfere with the std::tolower function used in boost/date_time
+#    undef tolower
+#endif // MAC_OS
+
+# include <boost/static_assert.hpp>
+# include <boost/date_time/date.hpp>
+# include <boost/date_time/posix_time/posix_time.hpp>
+
 # define DG_TO_ROS_IMPL(T)						\
   template <>								\
   inline void								\
-  converter (DgToRos<T>::ros_t& dst, const DgToRos<T>::sot_t& src)
+  converter (DgToRos<T>::ros_t& dst, const DgToRos<T>::dg_t& src)
 
 # define ROS_TO_DG_IMPL(T)						\
   template <>								\
   inline void								\
-  converter (DgToRos<T>::sot_t& dst, const DgToRos<T>::ros_t& src)
+  converter (DgToRos<T>::dg_t& dst, const DgToRos<T>::ros_t& src)
 
 namespace dynamic_graph
 {
@@ -187,10 +194,10 @@ namespace dynamic_graph
   template <>								\
   inline void converter							\
   (DgToRos<std::pair<T, Vector> >::ros_t& dst,			\
-   const DgToRos<std::pair<T, Vector> >::sot_t& src)		\
+   const DgToRos<std::pair<T, Vector> >::dg_t& src)		\
   {									\
     makeHeader(dst.header);						\
-    converter<DgToRos<T>::ros_t, DgToRos<T>::sot_t> (dst.ATTRIBUTE, src); \
+    converter<DgToRos<T>::ros_t, DgToRos<T>::dg_t> (dst.ATTRIBUTE, src); \
     do { EXTRA } while (0);						\
   }									\
   struct e_n_d__w_i_t_h__s_e_m_i_c_o_l_o_n
@@ -210,10 +217,10 @@ namespace dynamic_graph
 # define DG_BRIDGE_MAKE_SHPTR_IMPL(T)					\
   template <>								\
   inline void converter							\
-  (DgToRos<T>::sot_t& dst,						\
+  (DgToRos<T>::dg_t& dst,						\
    const boost::shared_ptr<DgToRos<T>::ros_t const>& src)		\
   {									\
-    converter<DgToRos<T>::sot_t, DgToRos<T>::ros_t> (dst, *src);	\
+    converter<DgToRos<T>::dg_t, DgToRos<T>::ros_t> (dst, *src);	\
   }									\
   struct e_n_d__w_i_t_h__s_e_m_i_c_o_l_o_n
 
@@ -232,10 +239,10 @@ namespace dynamic_graph
 # define DG_BRIDGE_MAKE_STAMPED_IMPL(T, ATTRIBUTE, EXTRA)		\
   template <>								\
   inline void converter							\
-  (DgToRos<std::pair<T, Vector> >::sot_t& dst,			\
+  (DgToRos<std::pair<T, Vector> >::dg_t& dst,			\
    const DgToRos<std::pair<T, Vector> >::ros_t& src)		\
   {									\
-    converter<DgToRos<T>::sot_t, DgToRos<T>::ros_t> (dst, src.ATTRIBUTE); \
+    converter<DgToRos<T>::dg_t, DgToRos<T>::ros_t> (dst, src.ATTRIBUTE); \
     do { EXTRA } while (0);						\
   }									\
   struct e_n_d__w_i_t_h__s_e_m_i_c_o_l_o_n
@@ -251,11 +258,11 @@ namespace dynamic_graph
 # define DG_BRIDGE_MAKE_STAMPED_SHPTR_IMPL(T, ATTRIBUTE, EXTRA)		\
   template <>								\
   inline void converter							\
-  (DgToRos<std::pair<T, Vector> >::sot_t& dst,			\
+  (DgToRos<std::pair<T, Vector> >::dg_t& dst,			\
    const boost::shared_ptr						\
    <DgToRos<std::pair<T, Vector> >::ros_t const>& src)		\
   {									\
-    converter<DgToRos<T>::sot_t, DgToRos<T>::ros_t> (dst, src->ATTRIBUTE); \
+    converter<DgToRos<T>::dg_t, DgToRos<T>::ros_t> (dst, src->ATTRIBUTE); \
     do { EXTRA } while (0);						\
   }									\
   struct e_n_d__w_i_t_h__s_e_m_i_c_o_l_o_n
