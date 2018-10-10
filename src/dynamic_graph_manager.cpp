@@ -69,6 +69,10 @@ DynamicGraphManager::~DynamicGraphManager()
   wait_stop_hardware_communication();
   // clean the shared memory
   shared_memory::clear_shared_memory(shared_memory_name_);
+  // destroy the python interpretor before the device
+
+  device_.reset(nullptr);
+  ros_python_interpreter_.reset(nullptr);
 }
 
 void DynamicGraphManager::initialize(YAML::Node param){

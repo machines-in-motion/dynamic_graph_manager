@@ -44,8 +44,10 @@ protected:
    * @brief TearDown, is executed after teh unit tests
    */
   void TearDown() {
-    dynamic_graph::ros_shutdown("dynamic_graph");
-    dynamic_graph::ros_shutdown("hardware_communication");
+    dynamic_graph::ros_shutdown(
+          dynamic_graph::DynamicGraphManager::dg_ros_node_name_);
+    dynamic_graph::ros_shutdown(
+          dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
     if(ros::ok())
     {
       ros::shutdown();
@@ -111,6 +113,7 @@ TEST_F(TestDynamicGraphManager, test_run)
   SimpleDGM dgm;
   dgm.initialize(params_);
   dgm.run();
+  ASSERT_TRUE(ros::ok());
   // wait that everything started
   usleep(5000);
   // create some ros object to call the services
@@ -143,6 +146,7 @@ TEST_F(TestDynamicGraphManager, test_run)
             << std::endl;
   ASSERT_TRUE(dgm.is_in_safety_mode());
   dgm.stop_hardware_communication();
+  n.shutdown();
   usleep(5000);
 }
 
@@ -195,6 +199,7 @@ TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph)
     }
     std::cout << ("The start_dynamic_graph service "
                   "has been called successfully") << std::endl;
+    n.shutdown();
     wait(nullptr);
   }
   else
@@ -208,7 +213,7 @@ TEST_F(TestDynamicGraphManager, test_initialize_dynamic_graph_process)
   dynamic_graph::DynamicGraphManager dgm;
   dgm.initialize(params_);
   dgm.initialize_dynamic_graph_process();
-  ros::NodeHandle& n = dynamic_graph::ros_init("dynamic_graph");
+  ros::NodeHandle& n = dynamic_graph::ros_init(dgm.dg_ros_node_name_);
   ros::ServiceClient start_dg =
       n.serviceClient<std_srvs::Empty>(
         "/dynamic_graph/start_dynamic_graph");
@@ -226,6 +231,11 @@ TEST_F(TestDynamicGraphManager, test_initialize_dynamic_graph_process)
   ASSERT_TRUE(stop_dg.isValid());
   ASSERT_TRUE(run_py_cmd.isValid());
   ASSERT_TRUE(run_py_script.isValid());
+  start_dg.shutdown();
+  stop_dg.shutdown();
+  run_py_cmd.shutdown();
+  run_py_script.shutdown();
+  n.shutdown();
 }
 
 TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
@@ -241,6 +251,7 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
                        dgm.device().sensors_map_);
     dgm.run_dynamic_graph_process();
     dgm.wait_stop_dynamic_graph();
+    std::cout << "CHILD: dg process died" << std::endl;
     exit(0);
   }
   else if(pid > 0) // Parent process
@@ -269,7 +280,6 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
     ASSERT_TRUE(start_dynamic_graph_client.exists());
     while(!start_dynamic_graph_client.call(srv))
     {
-      dg_cond.notify_all();
       usleep(5000);
     }
 //    std::cout << ("The start_dynamic_graph service has been called successfully");
