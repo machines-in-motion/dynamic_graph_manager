@@ -14,6 +14,7 @@
 #define DGM_SINGLE_MOTOR_HH
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
+#include <blmc_drivers/devices/motor.hpp>
 
 namespace dynamic_graph_demo{
 
@@ -115,9 +116,25 @@ private:
   double motor_i_;
 
   /**
+   * @brief motor_KT_ is the current to torque ration [Nm/A]
+   */
+  double motor_KT_;
+
+  /**
    * @brief dt_ is the control_period_ cast in double and in second
    */
   double dt_;
+
+  /**
+   * Entries for the real hardware.
+   */
+
+   /**
+    * @brief blmc_motor_ the real hardware motor.
+    */
+   std::shared_ptr<Motor> blmc_motor_;
+
+
 };
 
 } // dynamic_graph_demo

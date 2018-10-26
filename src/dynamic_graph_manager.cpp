@@ -324,12 +324,12 @@ void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
 
 void* DynamicGraphManager::dynamic_graph_real_time_loop()
 {
-  //std::cout << "DG: Locking scope..." << std::endl;
   cond_var_->lock_scope();
+
+  // //std::cout << "DG: Locking scope..." << std::endl;
   std::cout << "DG: Start loop" << std::endl;
   while(!is_dynamic_graph_stopped() && ros::ok())
   {
-    //std::cout << "DG: Running ..." << std::endl;
     // read the sensor from the shared memory
     shared_memory::get(shared_memory_name_, sensors_map_name_, sensors_map_);
 
@@ -342,10 +342,10 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
     shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                        motor_controls_map_);
 
-    //std::cout << "DG: notifies" << std::endl;
     // notify the hardware_communication process that the control has been done
     cond_var_->notify_all();
-    // wait that the hardware_communication process acquiers the data
+
+    // wait that the hardware_communication process acquiers the data.
     cond_var_->wait();
   }
   // we use this function here because the loop might stop because of ROS
@@ -355,8 +355,20 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   cond_var_->unlock_scope();
 }
 
+void
+timespec_add_ns(struct timespec* t, long ns)
+{
+  t->tv_nsec += ns;
+  if (t->tv_nsec > 1000000000) {
+    t->tv_nsec = t->tv_nsec - 1000000000; // + ms * 1000000;
+    t->tv_sec += 1;
+  }
+}
+
 void* DynamicGraphManager::hardware_communication_real_time_loop()
 {
+  struct timespec next;
+
   // we acquiere the lock on the condition variable here
   cond_var_->lock_scope();
 
@@ -366,10 +378,10 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
 
   std::cout << "HARDWARE: Start loop" << std::endl;
 
-  // we initialize the time after sleep the first time here
-  hw_time_loop_after_sleep_ = clock::now();
-  hw_ref_sleep_time_ = clock::duration(
-                         static_cast<long>(control_period_.count()*0.5));
+  clock_gettime(CLOCK_REALTIME, &next);
+
+  // HACK: Call this method to initialize the motor_controls_map with zeros.
+  compute_safety_controls();
 
   // we start the main loop
   while(!is_hardware_communication_stopped() && ros::ok())
@@ -378,66 +390,65 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     // call the sensors
     get_sensors_to_map(sensors_map_);
 
-    // write the sensors to the shared memory
-    shared_memory::set(shared_memory_name_, sensors_map_name_, sensors_map_);
+    if (cond_var_->owns() || cond_var_->try_lock()) {
+      // write the sensors to the shared memory
+      shared_memory::set(shared_memory_name_, sensors_map_name_, sensors_map_);
 
-    // notify the dynamic graph process that is can compute the graph
-    cond_var_->notify_all();
+      // If running on the real hardware, unlock the mutex such that the
+      // task process can acquire it right away after calling `notify_all()`.
+      // In simulation, the mutex is released by the call to `wait` further below.
+      if (is_real_robot_) {
+        cond_var_->unlock();
+      }
 
-    // check if we are using a real robot. In this case we need to ensure the
-    // thread frequency
-    if(is_real_robot_)
-    {
-      // first we get the time before sleeping
-      hw_time_loop_before_sleep_ = clock::now();
-      // then we get the active time of the thread
-      hw_meas_active_time_ = hw_time_loop_before_sleep_ -
-                             hw_time_loop_after_sleep_;
-//       std::cout << "active:" << hw_meas_active_time_.count() << " ";
-      // we compute the reference sleep time
-      hw_ref_sleep_time_ = control_period_ -
-                           (hw_meas_sleep_time_ - hw_ref_sleep_time_) -
-                           hw_meas_active_time_;
-//      std::cout << "period:" << control_period_.count() << " ";
-//      std::cout << "ref_slp:" << hw_ref_sleep_time_.count() << " ";
-      // we wait the dyanmic graph command and wake up if needed
-      has_been_waken_by_dg_ = cond_var_->timed_wait(hw_ref_sleep_time_.count());
-      hw_time_loop_after_sleep_ = clock::now();
-      hw_meas_sleep_time_ = hw_time_loop_after_sleep_ -
-                                hw_time_loop_before_sleep_;
-//      std::cout << "meas_slp:" << hw_meas_sleep_time_.count() << std::endl;
+      // Notify the dynamic graph process that it can compute the graph.
+      // If running on the real hardware, this notify_all also acts as
+      // time-synchronization between the task and motor process.
+      cond_var_->notify_all();
+    }
 
-      // here we manage the safety mode
-      if(has_been_waken_by_dg_)
-      {
-        // this thread has been awaken by the dynamic graph.
+    // NOTE(jviereck): SL reads the current command values at this point and
+    //                 sends them to the robot before going to sleep.
+
+    if (is_real_robot_) {
+      // Sleeps for one period. This clocks the motor process.
+      timespec_add_ns(&next, static_cast<long>(control_period_.count()));
+      clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next, NULL);
+
+      // If the control process finished its computation, it is waiting
+      // and we are able to acquire the lock here.
+      if (cond_var_->try_lock()) {
+        // The a new control command is available.
         missed_control_count_ = 0;
-      }else{
-        // this thread has automatically awaken
+      } else {
         ++missed_control_count_;
       }
-      if(is_in_safety_mode())
-      {
+
+      if (is_in_safety_mode()) {
         compute_safety_controls();
         // we write the safety command in the shared memory in order to perform
         // some interpolation
+        // QUESTION(jviereck): Why write the values into the shared memory here?
+        //                     Couldn't this cause the values written by the
+        //                     task proces to get overwritten?
         shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                            motor_controls_map_);
-      }else{
-        // we read the command from the shared memory
+      } else if (missed_control_count_ == 0) {
+        // If the wait on the conditional variable was successful, then read
+        // the values from shared memory.
         shared_memory::get(shared_memory_name_, motor_controls_map_name_,
                            motor_controls_map_);
-      }
-    }
-    // if we are in simulation we stop here until we actually get a control
-    else
-    {
-      cond_var_->wait();
+     }
+    } else {
+        // if we are in simulation we stop here until we actually get a control.
+        cond_var_->wait();
+        shared_memory::get(shared_memory_name_, motor_controls_map_name_,
+                           motor_controls_map_);
     }
 
+
     // we do not send the command if the thread is asked to stopped
-    if(!is_hardware_communication_stopped() && ros::ok())
-    {
+    if(!is_hardware_communication_stopped() && ros::ok()) {
       // send the command to the motors
       set_motor_controls_from_map(motor_controls_map_);
     }

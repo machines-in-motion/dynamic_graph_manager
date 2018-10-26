@@ -2,7 +2,10 @@
 # create some demos #
 #####################
 
-include_directories(${PROJECT_SOURCE_DIR}/demos)
+include_directories(
+  ${PROJECT_SOURCE_DIR}/demos
+  ${blmc_drivers_INCLUDE_DIRS}
+)
 
 #### demo with a real single motor ####
 add_executable(demo_single_motor
@@ -16,7 +19,7 @@ target_link_libraries(demo_single_motor
 #  rt
 )
 target_compile_definitions(demo_single_motor PUBLIC
-  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/single_motor/dgm_single_motor_simu.yaml")
+  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/single_motor/dgm_single_motor.yaml")
 
 #### demo with a simulated single motor ####
 add_executable(demo_single_motor_simu

@@ -33,6 +33,7 @@ MotorController::MotorController(const std::string& inName) :
   torque.fill(0.);
   torqueSOUT.setConstant(torque);
   stateSIN.setConstant(state);
+  desired_ = state;
 
   // Define refresh function for output signal
   torqueSOUT.setFunction(boost::bind(&MotorController::computeMotorControl,
@@ -83,6 +84,8 @@ dynamicgraph::Vector& MotorController::computeMotorControl(dynamicgraph::Vector&
 					"%d, should be 1.",
 					state.size());
   dynamicgraph::Vector v (gain_ * (desired_ - state));
+  // dynamicgraph::Vector v (gain_ () * state);
   torque = v;
+
   return torque;
 }

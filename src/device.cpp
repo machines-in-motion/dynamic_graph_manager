@@ -265,4 +265,3 @@ void Device::get_controls_to_map(VectorDGMap& motor_controls)
    ext_control_it->second = motor_controls_map_[ext_control_it->first];
   }
 }
-

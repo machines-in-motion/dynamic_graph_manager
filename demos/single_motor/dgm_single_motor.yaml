@@ -11,4 +11,6 @@ hardware_communication:
   max_missed_control: 10
   control_period: 1000000 # in nano second this means 1ms <=> 1kz
 
-motor_I: 0.1
+motor_I: 0.045 # The interia of a single blmc_motor
+motor_KT: 0.025    # The Kt constant of the motor [Nm/A]: tau = I * Kt
+can_bus: "can0"
