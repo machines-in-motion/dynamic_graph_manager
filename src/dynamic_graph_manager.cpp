@@ -8,6 +8,8 @@
  *
  */
 
+#include "real_time_tools/spinner.h"
+#include "real_time_tools/realtime_check.h"
 #include <dynamic_graph_manager/ros_init.hh>
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 
@@ -355,20 +357,8 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   cond_var_->unlock_scope();
 }
 
-void
-timespec_add_ns(struct timespec* t, long ns)
-{
-  t->tv_nsec += ns;
-  if (t->tv_nsec > 1000000000) {
-    t->tv_nsec = t->tv_nsec - 1000000000; // + ms * 1000000;
-    t->tv_sec += 1;
-  }
-}
-
 void* DynamicGraphManager::hardware_communication_real_time_loop()
 {
-  struct timespec next;
-
   // we acquiere the lock on the condition variable here
   cond_var_->lock_scope();
 
@@ -378,10 +368,12 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
 
   std::cout << "HARDWARE: Start loop" << std::endl;
 
-  clock_gettime(CLOCK_REALTIME, &next);
-
   // HACK: Call this method to initialize the motor_controls_map with zeros.
   compute_safety_controls();
+
+  double control_frequency_ = 1e9 / static_cast<double>(control_period_.count());
+  real_time_tools::Spinner spinner(control_frequency_);
+  // real_time_tools::Realtime_check realtime_check(control_frequency_);
 
   // we start the main loop
   while(!is_hardware_communication_stopped() && ros::ok())
@@ -412,8 +404,10 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
 
     if (is_real_robot_) {
       // Sleeps for one period. This clocks the motor process.
-      timespec_add_ns(&next, static_cast<long>(control_period_.count()));
-      clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next, NULL);
+      spinner.spin();
+
+      // TODO: Check if realtime was lost here. Using realtime_check always
+      // recorded switches for jviereck.
 
       // If the control process finished its computation, it is waiting
       // and we are able to acquire the lock here.
