@@ -20,7 +20,7 @@
 // used to join the different processes
 #include <unistd.h>
 #ifndef __APPLE__
-#    include <wait.h>
+#include <wait.h>
 #endif // __APPLE__
 
 // used to synchronise the control loop
