@@ -25,6 +25,8 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     yaml_cpp
     shared_memory
     real_time_tools
+
+    # TODO to be remove
     blmc_drivers
 
     # ROS dependencies
@@ -35,11 +37,9 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     realtime_tools
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
-
-SEARCH_FOR_PYTHON()
-SEARCH_FOR_BOOST()
-SEARCH_FOR_EIGEN()
-
+search_for_python()
+search_for_boost()
+search_for_eigen()
 
 ####################################
 # Define the OS to be used locally #
@@ -47,7 +47,7 @@ SEARCH_FOR_EIGEN()
 
 # This macro sets the C++ preprocessor flags "XENOMAI", "RT_PREEMPT", or
 # "NON_REAL_TIME" according to the current operating system.
-DEFINE_OS()
+define_os()
 
 ######################################################
 # define the include directory of all ${CATKIN_PKGS} #
@@ -80,7 +80,7 @@ add_message_files(FILES
 # manage python file install #
 ##############################
 catkin_python_setup()
-INSTALL_PYTHON_FILES("" "python/dynamic_graph_manager")
+install_python_files("" "python/dynamic_graph_manager")
 
 #####################################################################
 # Actually generate the language-specific message and service files #
