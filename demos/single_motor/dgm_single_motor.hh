@@ -132,7 +132,7 @@ private:
    /**
     * @brief blmc_motor_ the real hardware motor.
     */
-   std::shared_ptr<Motor> blmc_motor_;
+   std::shared_ptr<blmc_drivers::Motor> blmc_motor_;
 
 
 };

@@ -67,10 +67,10 @@ void DGMSingleMotor::set_motor_controls_from_map_simu(
 }
 
 void DGMSingleMotor::initialize_hardware_communication_process_real_robot(){
-    auto can_bus = std::make_shared<CanBus>(params_["can_bus"].as<std::string>());
-    auto blmc_board = std::make_shared<CanBusMotorBoard>(can_bus);
+    auto can_bus = std::make_shared<blmc_drivers::CanBus>(params_["can_bus"].as<std::string>());
+    auto blmc_board = std::make_shared<blmc_drivers::CanBusMotorBoard>(can_bus);
 
-    blmc_motor_ = std::make_shared<SafeMotor>(blmc_board, 0);
+    blmc_motor_ = std::make_shared<blmc_drivers::SafeMotor>(blmc_board, 0);
 }
 
 void DGMSingleMotor::get_sensors_to_map_real_robot(
@@ -78,7 +78,7 @@ void DGMSingleMotor::get_sensors_to_map_real_robot(
 {
   // QUESTION(jviereck): How to signal an hardware error to the control process
   // from here? Just kill the process?
-  map["encoder"][0] = blmc_motor_->get_measurement(MotorInterface::position)->newest_element();
+  map["encoder"][0] = blmc_motor_->get_measurement(blmc_drivers::MotorInterface::position)->newest_element();
 }
 
 void DGMSingleMotor::set_motor_controls_from_map_real_robot(
