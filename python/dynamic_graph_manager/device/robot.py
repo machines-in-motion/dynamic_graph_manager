@@ -18,8 +18,10 @@ from __future__ import print_function
 
 import numpy as np
 
+from dynamic_graph import plug
 from dynamic_graph.tracer_real_time import TracerRealTime
 from dynamic_graph.tools import addTrace
+from dynamic_graph.ros import Ros
 
 # Internal helper tool.
 def matrixToTuple(M):
@@ -67,30 +69,36 @@ class Robot(object):
         # Initialize tracer if necessary.
         if tracer:
             self.tracer = tracer
-        self.initializeTracer()
+        self.initialize_tracer()
 
-        # Which signals should be traced.
+        # We trace by default all signals of the device.
         self.tracedSignals = {'device': []}
+        self.device_signals_names = []
         for signal in self.device.signals():
           signal_name = signal.name.split('::')[-1]
-          print(signal_name)
           self.tracedSignals['device'].append(signal_name)
+          self.device_signals_names.append(signal_name)
 
         # Device
         for s in self.tracedSignals['device']:
-            self.addTrace(self.device.name, s)
+            self.add_trace(self.device.name, s)
+
+        # Prepare potential ros import/export
+        self.ros = Ros(self)
+        self.device.after.addDownsampledSignal('rosPublish.trigger',1);
+        self.export_device_dg_to_ros()
 
     def __del__(self):
         if self.tracer:
-            self.stopTracer()
+            self.stop_tracer()
 
-    def addTrace(self, entityName, signalName):
+    def add_trace(self, entityName, signalName):
         if self.tracer:
             self.autoRecomputedSignals.append(
                 '{0}.{1}'.format(entityName, signalName))
             addTrace(self, self.tracer, entityName, signalName)
 
-    def initializeTracer(self):
+    def initialize_tracer(self):
         if not self.tracer:
             self.tracer = TracerRealTime('trace')
             self.tracer.setBufferSize(self.tracerSize)
@@ -98,14 +106,14 @@ class Robot(object):
             # Recompute trace.triger at each iteration to enable tracing.
             self.device.after.addSignal('{0}.triger'.format(self.tracer.name))
 
-    def startTracer(self):
+    def start_tracer(self):
         """
-        Start the tracer if it does not already been stopped.
+        Start the tracer if it has not already been stopped.
         """
         if self.tracer:
             self.tracer.start()
 
-    def stopTracer(self):
+    def stop_tracer(self):
         """
         Stop and destroy tracer.
         """
@@ -118,5 +126,17 @@ class Robot(object):
                 self.device.after.rmSignal(s)
             self.tracer = None
 
+    def export_device_dg_to_ros(self):
+        """
+        Import in ROS the signal from the dynamic graph device.
+        """
+        for sig_name in self.device_signals_names:
+            # arguments: type of data, signal name, rostopic name where to publish
+            self.ros.rosPublish.add ("vector", sig_name,
+                                       "/dynamic_graph/device/" + sig_name)
+            plug(self.device.signal(sig_name),
+                 self.ros.rosPublish.signal(sig_name))
+
+        self.ros.rosPublish.displaySignals()
 
 __all__ = ["Robot"]
