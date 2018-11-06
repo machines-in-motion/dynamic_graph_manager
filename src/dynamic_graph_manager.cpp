@@ -119,28 +119,35 @@ void DynamicGraphManager::initialize(YAML::Node param){
 
 void DynamicGraphManager::run()
 {
-  pid_t child_pid = fork();
-  if(child_pid == 0) // child process
+  if(is_real_robot_)
   {
-    pid_dynamic_graph_process_ = getpid();
-    pid_hardware_communication_process_ = getppid();
+    pid_t child_pid = fork();
+    if(child_pid == 0) // child process
+    {
+      pid_dynamic_graph_process_ = getpid();
+      pid_hardware_communication_process_ = getppid();
 
+      initialize_dynamic_graph_process();
+      run_dynamic_graph_process();
+      wait_stop_dynamic_graph();
+      ros::waitForShutdown();
+      std::cout << "End of the dynamic graph process." << std::endl;
+      exit(0);
+    }else if(child_pid > 0) // parent process
+    {
+      pid_dynamic_graph_process_ = child_pid;
+      pid_hardware_communication_process_ = getpid();
+
+      initialize_hardware_communication_process();
+      run_hardware_communication_process();
+    }else
+    {
+      throw(std::runtime_error("DynamicGraphManager::run(): the fork failed"));
+    }
+  }else{
     initialize_dynamic_graph_process();
-    run_dynamic_graph_process();
-    wait_stop_dynamic_graph();
-    ros::waitForShutdown();
-    std::cout << "End of the dynamic graph process." << std::endl;
-    exit(0);
-  }else if(child_pid > 0) // parent process
-  {
-    pid_dynamic_graph_process_ = child_pid;
-    pid_hardware_communication_process_ = getpid();
-
     initialize_hardware_communication_process();
-    run_hardware_communication_process();
-  }else
-  {
-    throw(std::runtime_error("DynamicGraphManager::run(): the fork failed"));
+    run_single_process();
   }
 }
 
@@ -316,6 +323,21 @@ void DynamicGraphManager::run_hardware_communication_process()
   printf("hardware communication loop started\n");
 }
 
+void DynamicGraphManager::run_single_process()
+{
+  printf("wait to start dynamic graph\n");
+  wait_start_dynamic_graph();
+
+  // launch the real time thread and ros spin
+  real_time_tools::block_memory();
+  thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
+  real_time_tools::create_realtime_thread(
+        *thread_dynamic_graph_,
+        &DynamicGraphManager::single_process_real_time_loop_helper, this);
+
+  printf("single process dynamic graph loop started\n");
+}
+
 void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
 {
   // Advertize the service to start and stop the dynamic graph
@@ -396,9 +418,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       // If running on the real hardware, unlock the mutex such that the
       // task process can acquire it right away after calling `notify_all()`.
       // In simulation, the mutex is released by the call to `wait` further below.
-      if (is_real_robot_) {
-        cond_var_->unlock();
-      }
+      cond_var_->unlock();
 
       // Notify the dynamic graph process that it can compute the graph.
       // If running on the real hardware, this notify_all also acts as
@@ -409,44 +429,39 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     // NOTE(jviereck): SL reads the current command values at this point and
     //                 sends them to the robot before going to sleep.
 
-    if (is_real_robot_) {
-      // Sleeps for one period. This clocks the motor process.
-      spinner.spin();
+    // Sleeps for one period. This clocks the motor process.
+    spinner.spin();
 
-      // TODO: Check if realtime was lost here. Using realtime_check always
-      // recorded switches for jviereck.
+    // TODO: Check if realtime was lost here. Using realtime_check always
+    // recorded switches for jviereck.
 
-      // If the control process finished its computation, it is waiting
-      // and we are able to acquire the lock here.
-      if (cond_var_->try_lock()) {
-        // The a new control command is available.
-        missed_control_count_ = 0;
-      } else {
-        ++missed_control_count_;
-      }
-
-      if (is_in_safety_mode()) {
-        compute_safety_controls();
-        // we write the safety command in the shared memory in order to perform
-        // some interpolation
-        // QUESTION(jviereck): Why write the values into the shared memory here?
-        //                     Couldn't this cause the values written by the
-        //                     task proces to get overwritten?
-        shared_memory::set(shared_memory_name_, motor_controls_map_name_,
-                           motor_controls_map_);
-      } else if (missed_control_count_ == 0) {
-        // If the wait on the conditional variable was successful, then read
-        // the values from shared memory.
-        shared_memory::get(shared_memory_name_, motor_controls_map_name_,
-                           motor_controls_map_);
-     }
+    // If the control process finished its computation, it is waiting
+    // and we are able to acquire the lock here.
+    if (cond_var_->try_lock()) {
+      // The a new control command is available.
+      missed_control_count_ = 0;
     } else {
-        // if we are in simulation we stop here until we actually get a control.
-        cond_var_->wait();
-        shared_memory::get(shared_memory_name_, motor_controls_map_name_,
-                           motor_controls_map_);
+      ++missed_control_count_;
     }
 
+    if (is_in_safety_mode()) {
+      compute_safety_controls();
+      // we write the safety command in the shared memory in order to perform
+      // some interpolation
+      // QUESTION(jviereck): Why write the values into the shared memory here?
+      //                     Couldn't this cause the values written by the
+      //                     task proces to get overwritten?
+      // ANSWER(mnaveau): Yes and that is what we want, in this case the
+      // dynamic_graph is not responding so we recompute a "safe" control,
+      // see "compute_safety_controls()" below.
+      shared_memory::set(shared_memory_name_, motor_controls_map_name_,
+                         motor_controls_map_);
+    } else if (missed_control_count_ == 0) {
+      // If the wait on the conditional variable was successful, then read
+      // the values from shared memory.
+      shared_memory::get(shared_memory_name_, motor_controls_map_name_,
+                         motor_controls_map_);
+    }
 
     // we do not send the command if the thread is asked to stopped
     if(!is_hardware_communication_stopped() && ros::ok()) {
@@ -455,7 +470,8 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     }
 
   }
-  // we use this function here because the loop might stop because of ROS
+  // We use this function here because the loop might stop because of ROS
+  // and we need the flag to be set to off
   stop_hardware_communication();
   //printf("hardware communication loop stopped\n");
   std::cout << "HARDWARE: Stop loop" << std::endl;
@@ -470,4 +486,28 @@ void DynamicGraphManager::compute_safety_controls()
   {
     ctrl->second.fill(0.0);
   }
+}
+
+void* DynamicGraphManager::single_process_real_time_loop()
+{
+  // //std::cout << "DG: Locking scope..." << std::endl;
+  std::cout << "DG: Start loop" << std::endl;
+  while(!is_dynamic_graph_stopped() && ros::ok())
+  {
+    // acquire the sensors data
+    get_sensors_to_map(sensors_map_);
+
+    // call the dynamic graph
+    device_->set_sensors_from_map(sensors_map_);
+    device_->execute_graph();
+    device_->get_controls_to_map(motor_controls_map_);
+
+    // send the command to the motors
+    set_motor_controls_from_map(motor_controls_map_);
+  }
+  // we use this function here because the loop might stop because of ROS
+  // we need to make sure that the flag is set properly
+  stop_dynamic_graph();
+  //printf("dynamic graph thread stopped\n");
+  std::cout << "DG: Stop loop" << std::endl;
 }

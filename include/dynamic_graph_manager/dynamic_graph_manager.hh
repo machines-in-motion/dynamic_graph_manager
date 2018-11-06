@@ -163,6 +163,14 @@ public:
    */
   virtual void run_hardware_communication_process();
 
+  /**
+   * @brief run_single_process spawns the real time thread.
+   * WARNING this function is not blocking. Function to block are available
+   * like ros::waitForShutdown() for example.
+   * This function is virtual has it might differ from os to os.
+   */
+  virtual void run_single_process();
+
   /***************************
    * method to be overloaded *
    ***************************/
@@ -401,6 +409,24 @@ private:
   {
     return static_cast<DynamicGraphManager *>(context)->
         hardware_communication_real_time_loop();
+  }
+
+  /**
+   * @brief single_process_real_time_loop is the method that performs the
+   * control but in one single process. (torque, position, current, ...)
+   */
+  void* single_process_real_time_loop();
+
+  /**
+   * @brief dynamic_graph_real_time_loop_helper is a static member allowing to
+   * use the posix pthread_create.
+   * @param context is the DynamicGraphManager that spawned the thread.
+   * @return nothing interesting for us.
+   */
+  static void* single_process_real_time_loop_helper(void *context)
+  {
+    return static_cast<DynamicGraphManager *>(context)->
+        single_process_real_time_loop();
   }
 
   /***********************
