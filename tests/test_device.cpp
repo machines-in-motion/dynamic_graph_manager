@@ -67,7 +67,8 @@ protected:
  */
 TEST_F(TestDevice, test_get_class_name)
 {
-  Device device("banana", empty_params_);
+  Device device("banana");
+  device.initialize(empty_params_);
   ASSERT_EQ("Device", device.CLASS_NAME);
   ASSERT_EQ("Device", device.getClassName());
   ASSERT_EQ("banana", device.getName());
@@ -75,7 +76,8 @@ TEST_F(TestDevice, test_get_class_name)
 
 TEST_F(TestDevice, test_constructor)
 {
-  Device device("banana", empty_params_);
+  Device device("banana");
+  device.initialize(empty_params_);
   ASSERT_EQ(device.sensors_map_.size(), 0);
   ASSERT_EQ(device.sensors_out_.size(), 0);
   ASSERT_EQ(device.motor_controls_map_.size(), 0);
@@ -85,7 +87,8 @@ TEST_F(TestDevice, test_constructor)
 TEST_F(TestDevice, test_destructor)
 {
   {
-    Device device("banana", empty_params_);
+    Device device("banana");
+    device.initialize(empty_params_);
     ASSERT_EQ(entity_map_.count("banana"), 1);
   }
   ASSERT_EQ(entity_map_.count("banana"), 0);
@@ -93,8 +96,8 @@ TEST_F(TestDevice, test_destructor)
 
 TEST_F(TestDevice, test_parse_yaml_file)
 {
-  Device device("simple_robot", params_);
-  device.initialize_maps(params_);
+  Device device("simple_robot");
+  device.initialize(params_);
 //  for(VectorDGMap::const_iterator it=device.sensors_map_.begin() ;
 //      it!=device.sensors_map_.end() ; ++it)
 //  {
@@ -133,7 +136,7 @@ TEST_F(TestDevice, test_parse_yaml_file)
 TEST_F(TestDevice, test_set_sensors_from_map)
 {
   // create the device
-  Device device("simple_robot", params_);
+  Device device("simple_robot");
   device.initialize_maps(params_);
 
   // prepare some randomness
@@ -166,9 +169,9 @@ class SimpleRobot: public Device
 public:
   static const std::string CLASS_NAME;
   SimpleRobot(std::string RobotName):
-    Device(RobotName, YAML::LoadFile(TEST_CONFIG_FOLDER +
-                                     std::string("simple_robot.yaml")))
+    Device(RobotName)
   {
+    initialize(YAML::LoadFile(TEST_CONFIG_FOLDER + std::string("simple_robot.yaml")));
     sig_before_.reset(new OutSignal("SimpleRobot::before::sigbefore"));
     sig_after_.reset(new OutSignal("SimpleRobot::after::sigafter"));
     sig_before_->setConstant(dg::Vector(3));
@@ -203,7 +206,7 @@ TEST_F(TestDevice, test_execute_graph)
 TEST_F(TestDevice, test_get_controls_to_map)
 {
   // create the device
-  Device device("simple_robot", params_);
+  Device device("simple_robot");
   device.initialize_maps(params_);
 
   // prepare some randomness

@@ -38,13 +38,31 @@ constexpr unsigned int str2int(const char* str, int h = 0)
  * @brief dynamic_graph::Device::CLASS_NAME must be the name as the actual
  * device class.
  */
-const std::string dynamic_graph::Device::CLASS_NAME = "Device";
+DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(Device, "Device");
 
-Device::Device(const std::string& input_name, const YAML::Node& params):
+Device::Device(const std::string& input_name):
   // Call the mother class constructor
-  Entity(input_name),
-  params_(params)
+  Entity(input_name)
 {
+  addCommand (
+        "initialize",
+        dynamicgraph::command::makeCommandVoid1(
+          *this,
+          &Device::initialize_from_file,
+          dynamicgraph::command::docCommandVoid1(
+            "Initialize the device from a YAML file",
+            "string (valid path to the yaml configuration file)")));
+}
+
+void Device::initialize_from_file(const std::string& yaml_file)
+{
+  YAML::Node params = YAML::LoadFile(yaml_file);
+  initialize(params["device"]);
+}
+
+void Device::initialize(const YAML::Node& params)
+{
+  params_ = params;
   /**********************************************
    * create maps for signals and vector<double> *
    **********************************************/

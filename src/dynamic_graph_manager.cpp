@@ -213,8 +213,8 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   // we start the ros services for the DGM (python command + start/stop DG)
   start_ros_service(ros_node_handle);
   // we create the device of the DG and implicitly the DG itself
-  device_.reset(new Device(params_["device"]["name"].as<std::string>(),
-      params_["device"]));
+  device_.reset(new Device(params_["device"]["name"].as<std::string>()));
+  device_->initialize(params_["device"]);
   // we build the condition variables after the fork (seems safer this way)
   cond_var_.reset(new shared_memory::ConditionVariable(
                             shared_memory_name_,

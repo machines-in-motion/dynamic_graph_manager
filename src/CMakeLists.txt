@@ -36,6 +36,14 @@ endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dynamic_graph_manager
     PARENT_SCOPE)
 
+###############################
+# Expose the device in python #
+###############################
+dynamic_graph_python_module("device"
+  dynamic_graph_manager
+  device_wrap
+)
+
 ################################################################
 # Export some default entities used for ROS<->DG communication #
 ################################################################
@@ -77,3 +85,4 @@ foreach(ROS_ENTITY ${LIST_ROS_ENTITIES})
     ${ROS_ENTITY}_wrap
   )
 endforeach()
+

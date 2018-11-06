@@ -43,15 +43,29 @@ namespace dynamic_graph {
     /**
      * @brief Device is the constructor. The name allow the DynamicGraph to
      * identify the entity
-     * @param input_name is the entity name
      * @param params is the yaml file used to initialize the device
      */
-    Device(const std::string& input_name, const YAML::Node& params);
+    Device(const std::string& input_name);
 
     /**
      * @brief ~Device is a default destructor that might overloaded
      */
     virtual ~Device();
+
+    /**
+     * @brief initialize is the function that initialize the device from the
+     * YAML paramters
+     * @param params is the yaml file used to initialize the device
+     */
+    void initialize(const YAML::Node& params);
+
+    /**
+     * @brief initialize_from_file is the function that initialize the device
+     * from a YAML file. It loads internally the file and then use the paramters
+     * to initialize itself using the "initialize" method.
+     * @param params is the yaml file used to initialize the device
+     */
+    void initialize_from_file(const std::string& yaml_file);
 
     /**
      * @brief parse_yaml_file fill in the internal maps for sensors and controls.
