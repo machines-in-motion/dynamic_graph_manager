@@ -15,7 +15,7 @@ DeviceClass = PyEntityFactoryClass('Device')
 
 # Get the name of the device from the configuration file.
 import rospy
-device_name = rospy.get_param("/hardware_communication/device_name")
+device_name = rospy.get_param("/dynamic_graph/device_name")
 
 # Create the robot using the device.
 device_cpp_object = DeviceClass(device_name)

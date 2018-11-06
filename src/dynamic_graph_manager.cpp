@@ -100,6 +100,8 @@ void DynamicGraphManager::initialize(YAML::Node param){
                         ["max_missed_control"].as<unsigned>();
   control_period_ =  clock::duration(params_["hardware_communication"]
                      ["control_period"].as<unsigned>());
+  control_period_sec_ = params_["hardware_communication"]
+                           ["control_period"].as<double>() * std::pow(10,-9);
 
   is_real_robot_ = params_["is_real_robot"].as<bool>();
 
@@ -199,6 +201,12 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
 {
   // from here this process becomes a ros node
   ros::NodeHandle& ros_node_handle = ros_init(dg_ros_node_name_);
+
+  // export the yaml node to ros so we can access it in the python interpretor
+  // and in other ros node if needed.
+  ros_node_handle.setParam("device_name",
+                       params_["device"]["name"].as<std::string>());
+
   // we create a python interpreter
   ros_python_interpreter_.reset(
         new dynamic_graph::RosPythonInterpreter(ros_node_handle));
@@ -285,11 +293,6 @@ void DynamicGraphManager::run_hardware_communication_process()
 {
   // from here on this process is a ros node
   ros::NodeHandle& hw_ros_node = ros_init(hw_com_ros_node_name_);
-
-  // export the yaml node to ros so we can access it in the python interpretor
-  // and in other ros node if needed.
-  hw_ros_node.setParam("device_name",
-                       params_["device"]["name"].as<std::string>());
 
   // we build the condition variables after the fork (seems safer this way)
   cond_var_.reset(new shared_memory::ConditionVariable(

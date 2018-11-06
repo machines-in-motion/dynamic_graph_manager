@@ -542,6 +542,12 @@ protected:
   unsigned max_missed_control_;
 
   /**
+   * @brief control_period_sec_ this is the control period in Seconds
+   * (S.I. units) for computation.
+   */
+  double control_period_sec_ ;
+
+  /**
    * @brief control_period_ this is the control period in Nano Seconds.
    */
   clock::duration control_period_ ;

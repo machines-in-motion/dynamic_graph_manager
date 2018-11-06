@@ -137,6 +137,6 @@ class Robot(object):
             plug(self.device.signal(sig_name),
                  self.ros.rosPublish.signal(sig_name))
 
-        self.ros.rosPublish.displaySignals()
+        #self.ros.rosPublish.displaySignals()
 
 __all__ = ["Robot"]
