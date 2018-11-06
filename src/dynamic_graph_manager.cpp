@@ -47,6 +47,9 @@ DynamicGraphManager::DynamicGraphManager()
   missed_control_count_ = 0;
   max_missed_control_ = 0;
   control_period_ = clock::duration(0);
+
+  // clean the shared memory
+  shared_memory::clear_shared_memory(shared_memory_name_);
 }
 
 DynamicGraphManager::~DynamicGraphManager()
@@ -71,8 +74,7 @@ DynamicGraphManager::~DynamicGraphManager()
   wait_stop_hardware_communication();
   // clean the shared memory
   shared_memory::clear_shared_memory(shared_memory_name_);
-  // destroy the python interpretor before the device
-
+  // destroy the python interpretor after the device
   device_.reset(nullptr);
   ros_python_interpreter_.reset(nullptr);
 }
@@ -89,6 +91,8 @@ void DynamicGraphManager::initialize(YAML::Node param){
   pid_dynamic_graph_process_ = 0;
   pid_hardware_communication_process_ = 0;
 
+  // clean the shared memory
+  shared_memory::clear_shared_memory(shared_memory_name_);
   // we initialize the sensors and control maps in the common initializer
   parse_yaml_node(params_["device"], sensors_map_, motor_controls_map_);
   shared_memory::set(shared_memory_name_, sensors_map_name_, sensors_map_);
@@ -205,7 +209,7 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   // export the yaml node to ros so we can access it in the python interpretor
   // and in other ros node if needed.
   ros_node_handle.setParam("device_name",
-                       params_["device"]["name"].as<std::string>());
+                           params_["device"]["name"].as<std::string>());
 
   // we create a python interpreter
   ros_python_interpreter_.reset(
