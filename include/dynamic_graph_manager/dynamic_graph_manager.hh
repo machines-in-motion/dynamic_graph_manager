@@ -15,7 +15,10 @@
 #define DYNAMIC_GRAPH_MANAGER_HH
 
 // used to spawn the real time thread
-#include <real_time_tools/realtime_thread_creation.h>
+#include <real_time_tools/realtime_thread_creation.hpp>
+
+// time measurement
+#include <real_time_tools/timer.hpp>
 
 // used to join the different processes
 #include <unistd.h>
@@ -613,6 +616,60 @@ protected:
    * we are in simulation or in a real robot mode.
    */
   bool is_real_robot_;
+
+  /**
+   * @brief dg_timer_file_ this is the path to the file that will contain the
+   * computation time of each of the dynamic graph complete execution.
+   */
+  std::string dg_timer_file_;
+
+  /**
+   * @brief hwc_active_timer_file_ this is the path to the file that will
+   * contain the computation time of each active period of the hardware
+   * communication loop.
+   */
+  std::string hwc_active_timer_file_;
+
+  /**
+   * @brief hwc_sleep_timer_file_ this is the path to the file that will
+   * contain the sleeping time of the hardware communication loop.
+   */
+  std::string hwc_sleep_timer_file_;
+
+  /**
+   * @brief hwc_timer_file_ this is the path to the file that will contain the
+   * computation time of each of the hardware communication complete execution.
+   */
+  std::string hwc_timer_file_;
+
+  /**
+   * @brief dg_timer is the timer for the dynamic graph loop
+   */
+  real_time_tools::Timer dg_timer_;
+
+  /**
+   * @brief hwc_active_timer is measuring the active time of the hardware
+   * communication loop
+   */
+  real_time_tools::Timer hwc_active_timer_;
+
+  /**
+   * @brief hwc_sleep_timer is measuring the sleeping time of the hardware
+   * communication loop
+   */
+  real_time_tools::Timer hwc_sleep_timer_;
+
+  /**
+   * @brief hwc_timer is measuring the time of the hardware communication loop
+   */
+  real_time_tools::Timer hwc_timer_;
+
+  /**
+   * @brief memory_buffer_timers_ is the size of the memory buffers for the
+   * real_time_tools timers.
+   */
+  unsigned memory_buffer_timers_;
+
 };
 
 } // namespace dynamic_graph

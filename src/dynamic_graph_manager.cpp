@@ -8,9 +8,15 @@
  *
  */
 
-#include "real_time_tools/spinner.h"
-#include "real_time_tools/realtime_check.h"
+// use the realtime spinner to time the loops
+#include <real_time_tools/spinner.hpp>
+// use the realtime checks to measure the loops computation time
+#include <real_time_tools/realtime_check.hpp>
+// use for real_time printf
+#include <real_time_tools/realtime_iostream.hpp>
+// use the ROS singleton to initialize and use ROS
 #include <dynamic_graph_manager/ros_init.hh>
+// this file defines the class in this header
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 
 using namespace dynamic_graph;
@@ -20,6 +26,11 @@ const std::string DynamicGraphManager::hw_com_ros_node_name_ =
     "hardware_communication";
 const std::string DynamicGraphManager::python_log_file_ =
      "/tmp/python_log_dynamic_graph_manager.out";
+
+#define DG_TIMER_FILE "/tmp/dg_timer.dat";
+#define HWC_ACTIVE_TIMER_FILE "/tmp/hwc_active_timer.dat";
+#define HWC_SLEEP_TIMER_FILE "/tmp/hwc_sleep_timer.dat";
+#define HWC_TIMER_FILE "/tmp/hwc_timer.dat";
 
 DynamicGraphManager::DynamicGraphManager()
 {
@@ -50,6 +61,12 @@ DynamicGraphManager::DynamicGraphManager()
 
   // clean the shared memory
   shared_memory::clear_shared_memory(shared_memory_name_);
+
+  // files where to dump the timers
+  dg_timer_file_ = DG_TIMER_FILE;
+  hwc_active_timer_file_ = HWC_ACTIVE_TIMER_FILE;
+  hwc_sleep_timer_file_ = HWC_SLEEP_TIMER_FILE;
+  hwc_timer_file_ = HWC_TIMER_FILE;
 }
 
 DynamicGraphManager::~DynamicGraphManager()
@@ -109,12 +126,27 @@ void DynamicGraphManager::initialize(YAML::Node param){
 
   is_real_robot_ = params_["is_real_robot"].as<bool>();
 
+  try{
+    dg_timer_file_ = params_["dg_timer_file"].as<std::string>();
+    hwc_active_timer_file_ = params_["hwc_active_timer_file"].as<std::string>();
+    hwc_sleep_timer_file_ = params_["hwc_sleep_timer_file"].as<std::string>();
+    hwc_timer_file_ = params_["hwc_timer_file"].as<std::string>();
+    dg_timer_file_ = params_["dg_timer_file"].as<std::string>();
+  }catch(...){
+    dg_timer_file_ = DG_TIMER_FILE;
+    hwc_active_timer_file_ = HWC_ACTIVE_TIMER_FILE;
+    hwc_sleep_timer_file_ = HWC_SLEEP_TIMER_FILE;
+    hwc_timer_file_ = HWC_TIMER_FILE;
+  }
+
   // we create and destroy the condition variable to free the shared memory
   // and therefore the associated mutex which must be lockable at this state.
   {
     shared_memory::ConditionVariable(shared_memory_name_,
                                      cond_var_name_);
   }
+
+
 }
 
 void DynamicGraphManager::run()
@@ -355,12 +387,14 @@ void DynamicGraphManager::start_ros_service(ros::NodeHandle& ros_node_handle)
 
 void* DynamicGraphManager::dynamic_graph_real_time_loop()
 {
+  //std::cout << "DG: Locking scope..." << std::endl;
   cond_var_->lock_scope();
 
-  // //std::cout << "DG: Locking scope..." << std::endl;
   std::cout << "DG: Start loop" << std::endl;
+
   while(!is_dynamic_graph_stopped() && ros::ok())
   {
+    dg_timer_.tic();
     // read the sensor from the shared memory
     shared_memory::get(shared_memory_name_, sensors_map_name_, sensors_map_);
 
@@ -373,17 +407,23 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
     shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                        motor_controls_map_);
 
+    dg_timer_.tac();
+
     // notify the hardware_communication process that the control has been done
     cond_var_->notify_all();
 
     // wait that the hardware_communication process acquiers the data.
     cond_var_->wait();
   }
+
   // we use this function here because the loop might stop because of ROS
   stop_dynamic_graph();
-  //printf("dynamic graph thread stopped\n");
-  std::cout << "DG: Stop loop" << std::endl;
+
+  std::cout << "DG: Dumping time measurement" << std::endl;
+  dg_timer_.dump_measurements(dg_timer_file_);
+
   cond_var_->unlock_scope();
+  std::cout << "DG: Loop stooped" << std::endl;
 }
 
 void* DynamicGraphManager::hardware_communication_real_time_loop()
@@ -395,19 +435,25 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   assert(!is_hardware_communication_stopped_ && "The loop is started");
   assert(ros::ok() && "Ros has to be initialized");
 
-  std::cout << "HARDWARE: Start loop" << std::endl;
+  rt_printf("HARDWARE: Start loop \n");
 
-  // HACK: Call this method to initialize the motor_controls_map with zeros.
-  compute_safety_controls();
+  // Initialize the motor_controls_map with zeros.
+  for(VectorDGMap::iterator ctrl = motor_controls_map_.begin() ;
+      ctrl != motor_controls_map_.end() ; ++ctrl)
+  {
+    ctrl->second.fill(0.0);
+  }
 
-  double control_frequency_ = 1e9 / static_cast<double>(control_period_.count());
-  real_time_tools::Spinner spinner(control_frequency_);
-  // real_time_tools::Realtime_check realtime_check(control_frequency_);
+  hwc_active_timer_.tic();
+  hwc_timer_.tic();
+
+  // time the loop so it respect the input frequence/period
+  real_time_tools::Spinner spinner;
+  spinner.set_period(control_period_sec_);
 
   // we start the main loop
   while(!is_hardware_communication_stopped() && ros::ok())
   {
-    //std::cout << "HARDWARE: loop" << std::endl;
     // call the sensors
     get_sensors_to_map(sensors_map_);
 
@@ -426,14 +472,24 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       cond_var_->notify_all();
     }
 
-    // NOTE(jviereck): SL reads the current command values at this point and
-    //                 sends them to the robot before going to sleep.
+    // here is the end of the thread activity
+    hwc_active_timer_.tac();
+    hwc_timer_.tac();
+    hwc_timer_.tic();
 
     // Sleeps for one period. This clocks the motor process.
+    hwc_sleep_timer_.tic();
     spinner.spin();
+    hwc_sleep_timer_.tac();
+
+    // here is the beginning of the thread activity
+    hwc_active_timer_.tic();
+
 
     // TODO: Check if realtime was lost here. Using realtime_check always
     // recorded switches for jviereck.
+
+
 
     // If the control process finished its computation, it is waiting
     // and we are able to acquire the lock here.
@@ -448,12 +504,6 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       compute_safety_controls();
       // we write the safety command in the shared memory in order to perform
       // some interpolation
-      // QUESTION(jviereck): Why write the values into the shared memory here?
-      //                     Couldn't this cause the values written by the
-      //                     task proces to get overwritten?
-      // ANSWER(mnaveau): Yes and that is what we want, in this case the
-      // dynamic_graph is not responding so we recompute a "safe" control,
-      // see "compute_safety_controls()" below.
       shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                          motor_controls_map_);
     } else if (missed_control_count_ == 0) {
@@ -468,12 +518,17 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       // send the command to the motors
       set_motor_controls_from_map(motor_controls_map_);
     }
-
+    hwc_timer_.tac();
   }
   // We use this function here because the loop might stop because of ROS
   // and we need the flag to be set to off
   stop_hardware_communication();
-  //printf("hardware communication loop stopped\n");
+  std::cout << "HARDWARE: Dump active time measurement" << std::endl;
+  hwc_active_timer_.dump_measurements(hwc_active_timer_file_);
+  std::cout << "HARDWARE: sleep time measurement" << std::endl;
+  hwc_sleep_timer_.dump_measurements(hwc_sleep_timer_file_);
+  std::cout << "HARDWARE: hwc time measurement" << std::endl;
+  hwc_timer_.dump_measurements(hwc_timer_file_);
   std::cout << "HARDWARE: Stop loop" << std::endl;
   cond_var_->unlock_scope();
 }
