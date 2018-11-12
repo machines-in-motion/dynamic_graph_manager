@@ -8,6 +8,7 @@
 *deprecated*
 
 *config*
+!/cmake/pkg-config.cmake
 
 CATKIN_IGNORE
 
