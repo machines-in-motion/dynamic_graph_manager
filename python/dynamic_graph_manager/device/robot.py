@@ -21,7 +21,7 @@ import numpy as np
 from dynamic_graph import plug
 from dynamic_graph.tracer_real_time import TracerRealTime
 from dynamic_graph.tools import addTrace
-from dynamic_graph.ros import Ros
+from dynamic_graph_manager.ros import Ros
 
 # Internal helper tool.
 def matrixToTuple(M):

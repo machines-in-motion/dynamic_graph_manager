@@ -1,7 +1,7 @@
 from dynamic_graph import plug
-from dynamic_graph.ros.ros_publish import RosPublish
-from dynamic_graph.ros.ros_subscribe import RosSubscribe
-from dynamic_graph.ros.ros_time import RosTime
+from dynamic_graph_manager.ros.ros_publish import RosPublish
+from dynamic_graph_manager.ros.ros_subscribe import RosSubscribe
+from dynamic_graph_manager.ros.ros_time import RosTime
 
 class Ros(object):
 

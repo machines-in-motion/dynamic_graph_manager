@@ -94,6 +94,14 @@ DynamicGraphManager::~DynamicGraphManager()
   // destroy the python interpretor after the device
   device_.reset(nullptr);
   ros_python_interpreter_.reset(nullptr);
+  if(pid_hardware_communication_process_ == getpid())
+  {
+    kill(pid_dynamic_graph_process(), SIGKILL);
+    while(!has_dynamic_graph_process_died())
+    {
+      usleep(1000);
+    }
+  }
 }
 
 void DynamicGraphManager::initialize(YAML::Node param){
@@ -312,7 +320,8 @@ void DynamicGraphManager::python_prologue()
                       "if not hasattr(sys, \'argv\'):\n"
                       "    sys.argv  = ['dynamic_graph_manager']");
   // Create the device or get a pointer to the c++ object if it already exist
-  run_python_command(aof, "from dynamic_graph.device.prologue import robot");
+  run_python_command(aof,
+                     "from dynamic_graph_manager.device.prologue import robot");
   run_python_command(
         aof, "print(\"Executing python interpreter prologue... Done\")");
   // close the log file

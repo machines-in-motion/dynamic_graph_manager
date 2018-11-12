@@ -7,7 +7,7 @@ import os
 # Used to compile the instruction given in the python terminal
 import code
 from code import InteractiveConsole
-from dynamic_graph.ros.dgcompleter import DGCompleter
+from dynamic_graph_manager.ros.dgcompleter import DGCompleter
 
 # Used to connect to ROS services
 import rospy
