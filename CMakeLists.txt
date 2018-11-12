@@ -20,8 +20,6 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 set(CATKIN_PKGS ${CATKIN_PKGS}
     # local dependencies
-    dynamic_graph
-    dynamic_graph_python
     yaml_cpp
     shared_memory
     real_time_tools
@@ -37,9 +35,43 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     realtime_tools
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
-search_for_python()
+
+set(CMAKE_LOCAL_MODULES
+  pkg-config.cmake
+  boost.cmake
+  eigen.cmake
+  dg-dirs.cmake
+  python.cmake
+  pthread.cmake
+)
+foreach(cmake_local_module ${CMAKE_LOCAL_MODULES})
+  include(cmake/${cmake_local_module})
+endforeach()
+
+search_for_python(2.7 EXACT REQUIRED)
 search_for_boost()
 search_for_eigen()
+search_for_pthread()
+
+# Trigger dependency to dynamic-graph.
+add_required_dependency("dynamic-graph >= 3.0.0")
+add_required_dependency("dynamic-graph-python >= 3.0.0")
+build_prefix_for_pkg("dynamic-graph" dg_name)
+build_prefix_for_pkg("dynamic-graph-python" dgp_name)
+set(catkin_INCLUDE_DIRS
+  ${${dg_name}_INCLUDE_DIRS}
+  ${${dgp_name}_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+link_directories(
+  ${${dg_name}_LIBRARY_DIRS}
+  ${${dgp_name}_LIBRARY_DIRS}
+)
+set(catkin_LIBRARIES
+  ${${dg_name}_LIBRARIES}
+  ${${dgp_name}_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
 
 ####################################
 # Define the OS to be used locally #
@@ -53,11 +85,8 @@ define_os()
 # define the include directory of all ${CATKIN_PKGS} #
 ######################################################
 include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${catkin_INCLUDE_DIRS}
-    ${PYTHON_INCLUDE_PATH}
-    ${Boost_INCLUDE_DIR}
-    ${Eigen_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR}/include
+  ${catkin_INCLUDE_DIRS}
 )
 
 #########################################
@@ -107,8 +136,10 @@ add_subdirectory(demos)
 ##########################################
 catkin_package(
   LIBRARIES ${EXPORTED_LIBRAIRIES}
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include ${${dg_name}_INCLUDE_DIRS} ${${dgp_name}_INCLUDE_DIRS}
   CATKIN_DEPENDS ${CATKIN_PKGS}
+  DEPENDS dynamic-graph dynamic-graph-python
+  CFG_EXTRAS ${CMAKE_LOCAL_MODULES}
 )
 
 ##########################
