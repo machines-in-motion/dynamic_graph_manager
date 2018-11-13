@@ -37,12 +37,8 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
 
 set(CMAKE_LOCAL_MODULES
-  pkg-config.cmake
-  boost.cmake
-  eigen.cmake
   dg-dirs.cmake
   python.cmake
-  pthread.cmake
 )
 foreach(cmake_local_module ${CMAKE_LOCAL_MODULES})
   include(cmake/${cmake_local_module})
