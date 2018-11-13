@@ -18,6 +18,8 @@ from __future__ import print_function
 
 import numpy as np
 
+import rospy
+
 from dynamic_graph import plug
 from dynamic_graph.tracer_real_time import TracerRealTime
 from dynamic_graph.tools import addTrace
@@ -102,7 +104,8 @@ class Robot(object):
         if not self.tracer:
             self.tracer = TracerRealTime('trace')
             self.tracer.setBufferSize(self.tracerSize)
-            self.tracer.open('/tmp/','dg_','.dat')
+            log_dir = rospy.get_param("/dynamic_graph/log_dir")
+            self.tracer.open(log_dir,'dg_','.dat')
             # Recompute trace.triger at each iteration to enable tracing.
             self.device.after.addSignal('{0}.triger'.format(self.tracer.name))
 

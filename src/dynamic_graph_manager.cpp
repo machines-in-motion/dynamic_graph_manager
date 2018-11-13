@@ -263,6 +263,7 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   // and in other ros node if needed.
   ros_node_handle.setParam("device_name",
                            params_["device"]["name"].as<std::string>());
+  ros_node_handle.setParam("log_dir", log_dir_);
 
   // we create a python interpreter
   ros_python_interpreter_.reset(
@@ -443,7 +444,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   dg_timer_.dump_measurements(dg_timer_file_);
 
   cond_var_->unlock_scope();
-  std::cout << "DG: Loop stooped" << std::endl;
+  std::cout << "DG: Stop Loop" << std::endl;
 }
 
 void* DynamicGraphManager::hardware_communication_real_time_loop()
@@ -475,7 +476,9 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   while(!is_hardware_communication_stopped() && ros::ok())
   {
     // call the sensors
-    get_sensors_to_map(sensors_map_);
+    if(!is_hardware_communication_stopped() && ros::ok()) {
+      get_sensors_to_map(sensors_map_);
+    }
 
     if (cond_var_->owns() || cond_var_->try_lock()) {
       // write the sensors to the shared memory
@@ -543,14 +546,15 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   // We use this function here because the loop might stop because of ROS
   // and we need the flag to be set to off
   stop_hardware_communication();
+
   std::cout << "HARDWARE: Dump active time measurement" << std::endl;
   hwc_active_timer_.dump_measurements(hwc_active_timer_file_);
   std::cout << "HARDWARE: sleep time measurement" << std::endl;
   hwc_sleep_timer_.dump_measurements(hwc_sleep_timer_file_);
   std::cout << "HARDWARE: hwc time measurement" << std::endl;
   hwc_timer_.dump_measurements(hwc_timer_file_);
-  std::cout << "HARDWARE: Stop loop" << std::endl;
   cond_var_->unlock_scope();
+  std::cout << "HARDWARE: Stop loop" << std::endl;
 }
 
 void DynamicGraphManager::compute_safety_controls()
