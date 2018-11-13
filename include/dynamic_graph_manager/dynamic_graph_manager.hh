@@ -643,6 +643,12 @@ protected:
   std::string hwc_timer_file_;
 
   /**
+   * @brief log_folder_ is the folder where all the data of the current
+   * experiment will be saved.
+   */
+  std::string log_dir_;
+
+  /**
    * @brief dg_timer is the timer for the dynamic graph loop
    */
   real_time_tools::Timer dg_timer_;

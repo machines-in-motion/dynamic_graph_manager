@@ -27,11 +27,6 @@ const std::string DynamicGraphManager::hw_com_ros_node_name_ =
 const std::string DynamicGraphManager::python_log_file_ =
      "/tmp/python_log_dynamic_graph_manager.out";
 
-#define DG_TIMER_FILE "/tmp/dg_timer.dat";
-#define HWC_ACTIVE_TIMER_FILE "/tmp/hwc_active_timer.dat";
-#define HWC_SLEEP_TIMER_FILE "/tmp/hwc_sleep_timer.dat";
-#define HWC_TIMER_FILE "/tmp/hwc_timer.dat";
-
 DynamicGraphManager::DynamicGraphManager()
 {
   // Upon construction the graph is inactive
@@ -63,10 +58,11 @@ DynamicGraphManager::DynamicGraphManager()
   shared_memory::clear_shared_memory(shared_memory_name_);
 
   // files where to dump the timers
-  dg_timer_file_ = DG_TIMER_FILE;
-  hwc_active_timer_file_ = HWC_ACTIVE_TIMER_FILE;
-  hwc_sleep_timer_file_ = HWC_SLEEP_TIMER_FILE;
-  hwc_timer_file_ = HWC_TIMER_FILE;
+  log_dir_ = "/tmp/";
+  dg_timer_file_ = "/tmp/dg_timer.dat";
+  hwc_active_timer_file_ = "/tmp/hwc_active_timer.dat";
+  hwc_sleep_timer_file_ = "/tmp/hwc_sleep_timer.dat";
+  hwc_timer_file_ = "/tmp/hwc_timer.dat";
 }
 
 DynamicGraphManager::~DynamicGraphManager()
@@ -135,17 +131,27 @@ void DynamicGraphManager::initialize(YAML::Node param){
   is_real_robot_ = params_["is_real_robot"].as<bool>();
 
   try{
-    dg_timer_file_ = params_["dg_timer_file"].as<std::string>();
-    hwc_active_timer_file_ = params_["hwc_active_timer_file"].as<std::string>();
-    hwc_sleep_timer_file_ = params_["hwc_sleep_timer_file"].as<std::string>();
-    hwc_timer_file_ = params_["hwc_timer_file"].as<std::string>();
-    dg_timer_file_ = params_["dg_timer_file"].as<std::string>();
+    log_dir_ = params_["log_dir"].as<std::string>();
+    dg_timer_file_ = log_dir_ + params_["dg_timer_file"].as<std::string>();
+    hwc_active_timer_file_ =
+        log_dir_ + params_["hwc_active_timer_file"].as<std::string>();
+    hwc_sleep_timer_file_ =
+        log_dir_ + params_["hwc_sleep_timer_file"].as<std::string>();
+    hwc_timer_file_ = log_dir_ + params_["hwc_timer_file"].as<std::string>();
+    dg_timer_file_ = log_dir_ + params_["dg_timer_file"].as<std::string>();
   }catch(...){
-    dg_timer_file_ = DG_TIMER_FILE;
-    hwc_active_timer_file_ = HWC_ACTIVE_TIMER_FILE;
-    hwc_sleep_timer_file_ = HWC_SLEEP_TIMER_FILE;
-    hwc_timer_file_ = HWC_TIMER_FILE;
+    std::string home_dir = real_time_tools::get_home_dir();
+    std::string app_dir = ".dynamic_graph_manager/";
+    std::string date_dir = real_time_tools::Timer::get_current_date_str() + "/";
+    log_dir_ = home_dir + app_dir + date_dir;
+    real_time_tools::create_directory(home_dir + app_dir);
+    real_time_tools::create_directory(log_dir_);
+    dg_timer_file_ = log_dir_ + "dg_timer.dat";
+    hwc_active_timer_file_ =  log_dir_ + "hwc_active_timer.dat";
+    hwc_sleep_timer_file_ =  log_dir_ + "hwc_sleep_timer.dat";
+    hwc_timer_file_ =  log_dir_ + "hwc_timer.dat";
   }
+  std::cout << "Log will be saved in :" << log_dir_ << std::endl;
 
   // we create and destroy the condition variable to free the shared memory
   // and therefore the associated mutex which must be lockable at this state.
@@ -193,7 +199,7 @@ void DynamicGraphManager::run()
 
 void DynamicGraphManager::wait_start_dynamic_graph()
 {
-  while(is_dynamic_graph_stopped())
+  while(is_dynamic_graph_stopped() and ros::ok())
   {
     usleep(1000);
   }
@@ -201,7 +207,7 @@ void DynamicGraphManager::wait_start_dynamic_graph()
 
 void DynamicGraphManager::wait_stop_dynamic_graph()
 {
-  while(!is_dynamic_graph_stopped())
+  while(!is_dynamic_graph_stopped() && ros::ok())
   {
     usleep(100000);
   }
@@ -332,13 +338,18 @@ void DynamicGraphManager::run_dynamic_graph_process()
 {
   printf("wait to start dynamic graph\n");
   wait_start_dynamic_graph();
-  // launch the real time thread and ros spin
-  real_time_tools::block_memory();
-  thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
-  real_time_tools::create_realtime_thread(
-        *thread_dynamic_graph_,
-        &DynamicGraphManager::dynamic_graph_real_time_loop_helper, this);
-  printf("dynamic graph thread started\n");
+  if(ros::ok())
+  {
+    // launch the real time thread and ros spin
+    real_time_tools::block_memory();
+    thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
+    real_time_tools::create_realtime_thread(
+          *thread_dynamic_graph_,
+          &DynamicGraphManager::dynamic_graph_real_time_loop_helper, this);
+    printf("dynamic graph thread started\n");
+  }else{
+    printf("dynamic graph thread NOT started as ROS has been shutdown.\n");
+  }
 }
 
 void DynamicGraphManager::run_hardware_communication_process()
