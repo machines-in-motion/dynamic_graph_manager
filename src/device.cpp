@@ -50,8 +50,16 @@ Device::Device(const std::string& input_name):
           *this,
           &Device::initialize_from_file,
           dynamicgraph::command::docCommandVoid1(
-            "Initialize the device from a YAML file",
+            "Initialize the device from a YAML file.",
             "string (valid path to the yaml configuration file)")));
+
+  addCommand (
+        "executeGraph",
+        dynamicgraph::command::makeCommandVoid0(
+          *this,
+          &Device::execute_graph,
+          dynamicgraph::command::docCommandVoid0(
+            "Execute the current control graph using the currentsensor signals.")));
 }
 
 void Device::initialize_from_file(const std::string& yaml_file)
@@ -187,6 +195,7 @@ void Device::set_sensors_from_map(const VectorDGMap& sensors)
     sensors_out_[ext_sensor_it->first]->setConstant(ext_sensor_it->second);
   }
 }
+
 
 void Device::execute_graph()
 {

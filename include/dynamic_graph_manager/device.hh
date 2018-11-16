@@ -57,7 +57,7 @@ namespace dynamic_graph {
      * YAML paramters
      * @param params is the yaml file used to initialize the device
      */
-    void initialize(const YAML::Node& params);
+    virtual void initialize(const YAML::Node& params);
 
     /**
      * @brief initialize_from_file is the function that initialize the device
@@ -154,7 +154,3 @@ namespace dynamic_graph {
 
 
 #endif /* #ifndef DEVICE_HH */
-
-
-
-

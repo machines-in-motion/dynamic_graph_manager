@@ -13,6 +13,7 @@ set(EXCEPTION_SRC
 
 add_library(device SHARED
   device.cpp
+  device_simulator.cpp
   periodic-call.cpp
   tools.cpp
   ${EXCEPTION_SRC}

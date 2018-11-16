@@ -35,6 +35,7 @@ target_compile_definitions(demo_single_motor_simu PUBLIC
 # then we build the different entities and install them in devel/lib/plugin folder
 set(LIST_MOTOR_ENTITY
   dgm_single_motor_controller
+  single_motor_device_simulator
 )
 
 foreach(MOTOR_ENTITY ${LIST_MOTOR_ENTITY})
