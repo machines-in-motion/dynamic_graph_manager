@@ -44,6 +44,16 @@ Device::Device(const std::string& input_name):
   // Call the mother class constructor
   Entity(input_name)
 {
+  /*******************************************
+  * Initilize the command upon construction. *
+  ********************************************/
+  // I am not sure why bu this as to take place in the constructor
+
+  // Handle commands and signals called in a synchronous way
+  periodic_call_before_.addSpecificCommands(*this, commandMap, "before.");
+  periodic_call_after_.addSpecificCommands(*this, commandMap, "after.");
+
+  // Add a initialize command to parametrize the device from a yaml file
   addCommand (
         "initialize",
         dynamicgraph::command::makeCommandVoid1(
@@ -93,12 +103,6 @@ void Device::initialize(const YAML::Node& params)
   {
     signalRegistration(*(sig_it->second));
   }
-
-  /***********************************************************
-   * Handle commands and signals called in a synchronous way *
-   ***********************************************************/
-  periodic_call_before_.addSpecificCommands(*this, commandMap, "before.");
-  periodic_call_after_.addSpecificCommands(*this, commandMap, "after.");
 }
 
 Device::~Device()
