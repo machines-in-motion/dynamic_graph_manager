@@ -35,6 +35,19 @@ namespace dynamic_graph {
     DeviceSimulator(const std::string& input_name);
 
     /**
+     * @brief initialize_from_file Initializes the device from the given file.
+     * @param yaml_file The yaml_file to load.
+     */
+    virtual void initialize_from_file(const std::string& yaml_file);
+
+    /**
+     * @brief initialize_from_root_params Initialize the device given the root yaml node
+     * of the yaml file.
+     * @params params The root yaml node of the yaml configuration file.
+     */
+    virtual void initialize_from_root_params(const YAML::Node& params);
+
+    /**
      * @brief get_sensor_from_map Returns the current sensor readings.
      * @param sensors
      */

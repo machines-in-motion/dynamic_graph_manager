@@ -35,13 +35,12 @@ public:
   };
 
   /**
-   * @brief initialize_from_file Initializes the device from the yaml file.
-   * Overloads the default initialize_from_file to parse additional simulation relevant information.
+   * @brief initialize_from_root_params Initializes the device from the yaml file.
+   * Overloads the default initialize_from_root_params to parse additional simulation relevant information.
    */
-  virtual void initialize_from_file(const std::string& yaml_file)
+  virtual void initialize_from_root_params(const YAML::Node& params)
   {
-    YAML::Node params = YAML::LoadFile(yaml_file);
-    initialize(params["device"]);
+    dynamic_graph::DeviceSimulator::initialize_from_root_params(params);
 
     motor_i_ = params["motor_I"].as<double>();
     motor_KT_ = params["motor_KT"].as<double>();
