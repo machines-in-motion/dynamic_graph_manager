@@ -151,7 +151,7 @@ void DynamicGraphManager::initialize(YAML::Node param){
     hwc_sleep_timer_file_ =  log_dir_ + "hwc_sleep_timer.dat";
     hwc_timer_file_ =  log_dir_ + "hwc_timer.dat";
   }
-  std::cout << "Log will be saved in :" << log_dir_ << std::endl;
+  std::cout << "Log will be saved in : \"" << log_dir_ << "\"" << std::endl;
 
   // we create and destroy the condition variable to free the shared memory
   // and therefore the associated mutex which must be lockable at this state.
@@ -177,7 +177,7 @@ void DynamicGraphManager::run()
       run_dynamic_graph_process();
       wait_stop_dynamic_graph();
       ros::waitForShutdown();
-      std::cout << "End of the dynamic graph process." << std::endl;
+      std::cout << "DG: End of the dynamic graph process." << std::endl;
       exit(0);
     }else if(child_pid > 0) // parent process
     {
@@ -211,6 +211,7 @@ void DynamicGraphManager::wait_stop_dynamic_graph()
   {
     usleep(100000);
   }
+  stop_dynamic_graph();
   if(thread_dynamic_graph_)
   {
     cond_var_->notify_all();
