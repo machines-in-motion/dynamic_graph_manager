@@ -1,5 +1,5 @@
 import dynamic_graph as dg
-from dynamic_graph.demos.single_motor.dgm_single_motor_controller import MotorController
+from dynamic_graph_manager.demos.single_motor.dgm_single_motor_controller import MotorController
 
 mc = MotorController("mc")
 

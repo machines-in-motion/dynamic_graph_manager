@@ -65,7 +65,7 @@ namespace dynamic_graph {
      * to initialize itself using the "initialize" method.
      * @param params is the yaml file used to initialize the device
      */
-    void initialize_from_file(const std::string& yaml_file);
+    virtual void initialize_from_file(const std::string& yaml_file);
 
     /**
      * @brief parse_yaml_file fill in the internal maps for sensors and controls.

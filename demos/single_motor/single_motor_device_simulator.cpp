@@ -7,6 +7,8 @@
  * Implements a single motor simulator.
  */
 
+#include <yaml-cpp/yaml_eigen.h>
+
 #include <dynamic-graph/factory.h>
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <dynamic_graph_manager/device_simulator.hh>
@@ -32,11 +34,14 @@ public:
   {
   };
 
-  virtual void initialize(const YAML::Node& params)
+  /**
+   * @brief initialize_from_file Initializes the device from the yaml file.
+   * Overloads the default initialize_from_file to parse additional simulation relevant information.
+   */
+  virtual void initialize_from_file(const std::string& yaml_file)
   {
-    Device::initialize(params);
-
-    printf("Calling initialize\n");
+    YAML::Node params = YAML::LoadFile(yaml_file);
+    initialize(params["device"]);
 
     motor_i_ = params["motor_I"].as<double>();
     motor_KT_ = params["motor_KT"].as<double>();
@@ -44,18 +49,19 @@ public:
     dt_ = params["hardware_communication"]["control_period"].as<double>() / pow(10.0,9.0);
     motor_pos_ = 0.;
     motor_vel_ = 0.;
+    motor_acc_ = 0.;
 
     // Initialize the sensor signals.
     sensors_map_["encoder"][0] = motor_pos_;
     set_sensors_from_map(sensors_map_);
   }
 
-
+  /**
+   * @brief step Reads the current control signals, simulates for one dt step and writes the new
+   * state into the sensor values.
+   */
   virtual void step() {
     get_controls_to_map(motor_controls_map_);
-
-    printf("Calling SingleMotorDeviceSimulator::step()\n");
-    printf("motor_controls_map_[torque][0] = %0.3f, %0.5f\n", motor_controls_map_["torque"][0], motor_i_);
 
     // Perform the simulation.
     motor_pos_ = motor_pos_ + motor_vel_ * dt_ +
