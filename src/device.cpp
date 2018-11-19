@@ -249,11 +249,9 @@ void Device::execute_graph()
   /***********************************************************************
    * Run the graph by accessing the values of the signals inside the map *
    ***********************************************************************/
-  printf("call recompute\n");
   for(DeviceInSignalMap::const_iterator sig_in_it = motor_controls_in_.begin() ;
       sig_in_it != motor_controls_in_.end() ; ++sig_in_it)
   {
-    printf("call recompute on %s\n", sig_in_it->second->shortName().c_str());
     sig_in_it->second->recompute(time+1);
   }
 
