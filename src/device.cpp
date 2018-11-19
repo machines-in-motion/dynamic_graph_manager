@@ -207,8 +207,17 @@ void Device::execute_graph()
    * Get the time of the last sensor reading *
    *******************************************/
   assert(sensors_out_.size() != 0 && "There exist some sensors.");
+  // Here the time is the maximum time of all sensors.
   int time = sensors_out_.begin()->second->getTime();
-  dgDEBUG(25) << "Time : " << time << std::endl;
+  for(DeviceOutSignalMap::const_iterator sig_out_it = sensors_out_.begin() ;
+      sig_out_it != sensors_out_.end() ; ++sig_out_it)
+  {
+    int sig_time = sig_out_it->second->getTime();
+    if(sig_time > time)
+    {
+      time = sig_time;
+    }
+  }
 
   /******************************************************************
    * Run Synchronous commands and evaluate signals outside the main *
@@ -240,10 +249,12 @@ void Device::execute_graph()
   /***********************************************************************
    * Run the graph by accessing the values of the signals inside the map *
    ***********************************************************************/
+  printf("call recompute\n");
   for(DeviceInSignalMap::const_iterator sig_in_it = motor_controls_in_.begin() ;
       sig_in_it != motor_controls_in_.end() ; ++sig_in_it)
   {
-    (*(sig_in_it->second))(time+1);
+    printf("call recompute on %s\n", sig_in_it->second->shortName().c_str());
+    sig_in_it->second->recompute(time+1);
   }
 
   /******************************************************************
