@@ -16,8 +16,6 @@
 
 from __future__ import print_function
 
-import numpy as np
-
 import rospy
 
 from dynamic_graph import plug
@@ -35,7 +33,7 @@ def matrixToTuple(M):
 
 class Robot(object):
     """
-    This class instantiates a Hrp2 robot
+    This class instantiates a robot
     """
 
     init_pos = (0.0)
@@ -87,7 +85,7 @@ class Robot(object):
 
         # Prepare potential ros import/export
         self.ros = Ros(self)
-        self.device.after.addDownsampledSignal('rosPublish.trigger',1);
+        self.device.after.addDownsampledSignal('rosPublish.trigger', 1)
         self.export_device_dg_to_ros()
 
     def __del__(self):
@@ -134,12 +132,12 @@ class Robot(object):
         Import in ROS the signal from the dynamic graph device.
         """
         for sig_name in self.device_signals_names:
-            # arguments: type of data, signal name, rostopic name where to publish
+            # arguments: type of data, signal name, rostopic name where to
+            # publish
             self.ros.rosPublish.add ("vector", sig_name,
                                        "/dynamic_graph/device/" + sig_name)
             plug(self.device.signal(sig_name),
                  self.ros.rosPublish.signal(sig_name))
 
-        #self.ros.rosPublish.displaySignals()
 
 __all__ = ["Robot"]
