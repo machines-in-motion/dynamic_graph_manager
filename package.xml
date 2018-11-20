@@ -43,9 +43,6 @@
   <build_depend> realtime_tools </build_depend>
   <run_depend>   realtime_tools </run_depend>
 
-  <build_depend> blmc_drivers </build_depend>
-  <run_depend>   blmc_drivers </run_depend>
-
 <!--
   <build_depend> eigen </build_depend>
   <run_depend>   eigen </run_depend>
