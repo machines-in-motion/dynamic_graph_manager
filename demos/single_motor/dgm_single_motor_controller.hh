@@ -2,9 +2,6 @@
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
 
-
-#include "single_motor/dgm_single_motor.hh"
-
 namespace dynamic_graph_demo {
     /**
        \brief Feedback controller for an inverted pendulum
