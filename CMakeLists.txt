@@ -24,9 +24,6 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     shared_memory
     real_time_tools
 
-    # TODO to be remove
-    blmc_drivers
-
     # ROS dependencies
     message_generation
     roscpp
