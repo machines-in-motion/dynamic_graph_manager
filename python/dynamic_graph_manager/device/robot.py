@@ -99,11 +99,22 @@ class Robot(object):
             addTrace(self, self.tracer, entityName, signalName)
 
     def initialize_tracer(self):
+        """
+        Initialize the tracer and by default dump the files in
+         ~/.dynamic_graph/[date_time]/
+        """
         if not self.tracer:
             self.tracer = TracerRealTime('trace')
             self.tracer.setBufferSize(self.tracerSize)
-            log_dir = rospy.get_param("/dynamic_graph/log_dir")
-            self.tracer.open(log_dir,'dg_','.dat')
+            try:
+                log_dir = rospy.get_param("/dynamic_graph/log_dir")
+            except KeyError:
+                import os.path
+                import time
+                log_dir = os.path.join(os.path.expanduser("~"),
+                                       ".dynamic_graph_manager",
+                                       time.strftime("%Y_%m_%d_%H_%M_%S"))
+            self.tracer.open(log_dir, 'dg_', '.dat')
             # Recompute trace.triger at each iteration to enable tracing.
             self.device.after.addSignal('{0}.triger'.format(self.tracer.name))
 
