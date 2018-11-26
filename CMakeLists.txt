@@ -41,7 +41,7 @@ foreach(cmake_local_module ${CMAKE_LOCAL_MODULES})
   include(cmake/${cmake_local_module})
 endforeach()
 
-search_for_python(2.7 EXACT REQUIRED)
+search_for_python(2.7 REQUIRED)
 search_for_boost()
 search_for_eigen()
 search_for_pthread()
