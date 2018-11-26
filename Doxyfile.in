@@ -1,6 +1,6 @@
 # see CMakeLists.txt for details
 
-PROJECT_NAME           = "dynamic_graph_manager"
+PROJECT_NAME           = "@PROJECT_NAME@"
 OUTPUT_DIRECTORY       = doc
 JAVADOC_AUTOBRIEF      = YES
 TAB_SIZE               = 4
