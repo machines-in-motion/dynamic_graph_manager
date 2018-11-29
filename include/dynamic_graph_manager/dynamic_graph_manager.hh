@@ -10,15 +10,8 @@
  * usage: see demos and unit tests and documentation
  */
 
-#pragma once
 #ifndef DYNAMIC_GRAPH_MANAGER_HH
 #define DYNAMIC_GRAPH_MANAGER_HH
-
-// used to spawn the real time thread
-#include <real_time_tools/realtime_thread_creation.hpp>
-
-// time measurement
-#include <real_time_tools/timer.hpp>
 
 // used to join the different processes
 #include <unistd.h>
@@ -32,22 +25,29 @@
 // here this is used to use atomic (thread safe objects)
 #include <atomic>
 
-// used to deal with shared memory
-#include <shared_memory/thread_synchronisation.hpp>
-
 // get the yaml configuration
 #include <yaml-cpp/yaml.h>
 
 // ROS includes
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
-#include <dynamic_graph_manager/ros_interpreter.hh>
+
+// used to spawn the real time thread
+#include "real_time_tools/realtime_thread_creation.hpp"
+
+// time measurement
+#include "real_time_tools/timer.hpp"
+
+// used to deal with shared memory
+#include "shared_memory/thread_synchronisation.hpp"
+
+#include "dynamic_graph_manager/ros_interpreter.hh"
 
 // some useful tools like the yaml parsing
-#include <dynamic_graph_manager/tools.hh>
+#include "dynamic_graph_manager/tools.hh"
 
 // the device of the dynamic-graph
-#include <dynamic_graph_manager/device.hh>
+#include "dynamic_graph_manager/device.hh"
 
 namespace dynamic_graph
 {
@@ -341,10 +341,20 @@ public:
   static const std::string hw_com_ros_node_name_;
 
   /**
-   * @brief DGSimpleIntegratorController::LOG_PYTHON
+   * @brief This file will contain the python interpreter output.
    */
   static const std::string python_log_file_;
 
+  /**
+   * @brief This is the application directory in the home directory.
+   */
+  static const std::string app_dir_;
+
+  /**
+   * @brief This is the actual log directory in the app_dir_ and named by the
+   * current time and date.
+   */
+  static const std::string log_dir_;
 
 private:
 

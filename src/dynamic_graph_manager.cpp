@@ -130,27 +130,12 @@ void DynamicGraphManager::initialize(YAML::Node param){
 
   is_real_robot_ = params_["is_real_robot"].as<bool>();
 
-  try{
-    log_dir_ = params_["log_dir"].as<std::string>();
-    dg_timer_file_ = log_dir_ + params_["dg_timer_file"].as<std::string>();
-    hwc_active_timer_file_ =
-        log_dir_ + params_["hwc_active_timer_file"].as<std::string>();
-    hwc_sleep_timer_file_ =
-        log_dir_ + params_["hwc_sleep_timer_file"].as<std::string>();
-    hwc_timer_file_ = log_dir_ + params_["hwc_timer_file"].as<std::string>();
-    dg_timer_file_ = log_dir_ + params_["dg_timer_file"].as<std::string>();
-  }catch(...){
-    std::string home_dir = real_time_tools::get_home_dir();
-    std::string app_dir = ".dynamic_graph_manager/";
-    std::string date_dir = real_time_tools::Timer::get_current_date_str() + "/";
-    log_dir_ = home_dir + app_dir + date_dir;
-    real_time_tools::create_directory(home_dir + app_dir);
-    real_time_tools::create_directory(log_dir_);
-    dg_timer_file_ = log_dir_ + "dg_timer.dat";
-    hwc_active_timer_file_ =  log_dir_ + "hwc_active_timer.dat";
-    hwc_sleep_timer_file_ =  log_dir_ + "hwc_sleep_timer.dat";
-    hwc_timer_file_ =  log_dir_ + "hwc_timer.dat";
-  }
+  log_dir_ = real_time_tools::get_log_dir(".dynamic_graph_manager");
+  dg_timer_file_ = log_dir_ + "dg_timer.dat";
+  hwc_active_timer_file_ =  log_dir_ + "hwc_active_timer.dat";
+  hwc_sleep_timer_file_ =  log_dir_ + "hwc_sleep_timer.dat";
+  hwc_timer_file_ =  log_dir_ + "hwc_timer.dat";
+
   std::cout << "Log will be saved in : \"" << log_dir_ << "\"" << std::endl;
 
   // we create and destroy the condition variable to free the shared memory
