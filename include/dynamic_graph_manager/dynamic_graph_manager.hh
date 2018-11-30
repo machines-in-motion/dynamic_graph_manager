@@ -340,22 +340,6 @@ public:
    */
   static const std::string hw_com_ros_node_name_;
 
-  /**
-   * @brief This file will contain the python interpreter output.
-   */
-  static const std::string python_log_file_;
-
-  /**
-   * @brief This is the application directory in the home directory.
-   */
-  static const std::string app_dir_;
-
-  /**
-   * @brief This is the actual log directory in the app_dir_ and named by the
-   * current time and date.
-   */
-  static const std::string log_dir_;
-
 private:
 
   /**
@@ -657,6 +641,16 @@ protected:
    * experiment will be saved.
    */
   std::string log_dir_;
+
+  /**
+   * @brief This file will contain the python interpreter output.
+   */
+  std::string python_log_file_;
+
+  /**
+   * @brief This is the application directory in the home directory.
+   */
+  std::string app_dir_;
 
   /**
    * @brief dg_timer is the timer for the dynamic graph loop

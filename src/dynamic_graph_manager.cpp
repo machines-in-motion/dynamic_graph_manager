@@ -24,8 +24,6 @@ using namespace dynamic_graph;
 const std::string DynamicGraphManager::dg_ros_node_name_ = "dynamic_graph";
 const std::string DynamicGraphManager::hw_com_ros_node_name_ =
     "hardware_communication";
-const std::string DynamicGraphManager::python_log_file_ =
-     "/tmp/python_log_dynamic_graph_manager.out";
 
 DynamicGraphManager::DynamicGraphManager()
 {
