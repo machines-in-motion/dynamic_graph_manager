@@ -114,6 +114,10 @@ class Robot(object):
                 log_dir = os.path.join(os.path.expanduser("~"),
                                        ".dynamic_graph_manager",
                                        time.strftime("%Y_%m_%d_%H_%M_%S"))
+            except:
+                print("Potentially forgot to launch a roscore?")
+                print("End of program")
+                exit(0)
             self.tracer.open(log_dir, 'dg_', '.dat')
             # Recompute trace.triger at each iteration to enable tracing.
             self.device.after.addSignal('{0}.triger'.format(self.tracer.name))
