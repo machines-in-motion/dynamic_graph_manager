@@ -138,17 +138,20 @@ class Robot(object):
                 self.device.after.rmSignal(s)
             self.tracer = None
 
+    def export_signal_to_ros(self, signal, topic_name=None):
+        if topic_name is None:
+            topic_name = signal.name
+
+        self.ros.rosPublish.add ("vector", topic_name, "/dg__" + topic_name)
+        plug(signal, self.ros.rosPublish.signal(topic_name))
+
     def export_device_dg_to_ros(self):
         """
         Import in ROS the signal from the dynamic graph device.
         """
         for sig_name in self.device_signals_names:
-            # arguments: type of data, signal name, rostopic name where to
-            # publish
-            self.ros.rosPublish.add ("vector", sig_name,
-                                       "/dynamic_graph/device/" + sig_name)
-            plug(self.device.signal(sig_name),
-                 self.ros.rosPublish.signal(sig_name))
+            self.export_signal_to_ros(
+                    self.device.signal(sig_name), 'device__' + sig_name);
 
 
 __all__ = ["Robot"]
