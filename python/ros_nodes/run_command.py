@@ -53,7 +53,7 @@ class RosShell(InteractiveConsole):
         rospy.loginfo('waiting for service' + service_name + '...')
         rospy.wait_for_service(service_name)
         self.scriptClient = rospy.ServiceProxy(service_name, RunPythonFile, True)
-        
+
         # Initialize the python completion
         readline.set_completer(DGCompleter(self.client).complete)
         readline.parse_and_bind("tab: complete")
@@ -61,7 +61,7 @@ class RosShell(InteractiveConsole):
         # Read the existing history if there is one
         if os.path.exists(HISTFILE):
             readline.read_history_file(HISTFILE)
-            
+
         # Set maximum number of items that will be written to the history file
         readline.set_history_length(300)
 
@@ -130,10 +130,13 @@ if __name__ == '__main__':
             if not sh.client:
                 print("Connection to remote server has been lost.")
                 sys.exit(1)
+            print("Executing script at: " + infile)
             response = sh.scriptClient(os.path.abspath(infile))
             if not response:
                 print("Error while file parsing ")
+                sys.exit(-1)
         else:
             print("Provided file does not exist: %s"%(infile))
-    else:
-        sh.interact("Interacting with remote server.")
+            sys.exit(-1)
+
+    sh.interact("Interacting with remote server.")
