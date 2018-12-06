@@ -76,7 +76,7 @@ class RosShell(InteractiveConsole):
                 if not self.client:
                     print("Connection to remote server lost. Reconnecting...")
                     self.client = rospy.ServiceProxy(
-                        'run_command', dynamic_graph_bridge_msgs.srv.RunCommand, True)
+                        'run_command', RunCommand, True)
                     if retry:
                         print("Retrying previous command...")
                         self.cache = source
@@ -91,7 +91,7 @@ class RosShell(InteractiveConsole):
             except rospy.ServiceException, e:
                 print("Connection to remote server lost. Reconnecting...")
                 self.client = rospy.ServiceProxy(
-                    'run_command', dynamic_graph_bridge_msgs.srv.RunCommand, True)
+                    'run_command', RunCommand, True)
                 if retry:
                     print("Retrying previous command...")
                     self.cache = source

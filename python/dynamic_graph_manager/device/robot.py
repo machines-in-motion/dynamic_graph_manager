@@ -108,7 +108,7 @@ class Robot(object):
             self.tracer.setBufferSize(self.tracerSize)
             try:
                 log_dir = rospy.get_param("/dynamic_graph/log_dir")
-            except KeyError:
+            except:
                 import os.path
                 import time
                 log_dir = os.path.join(os.path.expanduser("~"),
