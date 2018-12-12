@@ -134,6 +134,16 @@ void DynamicGraphManager::initialize(YAML::Node param){
   hwc_sleep_timer_file_ =  log_dir_ + "hwc_sleep_timer.dat";
   hwc_timer_file_ =  log_dir_ + "hwc_timer.dat";
 
+  unsigned int debug_timer_history_length = 0;
+  if (YAML::Node parameter = params_["debug_timer_history_length"]) {
+    debug_timer_history_length = parameter.as<unsigned>();
+  }
+
+  dg_timer_.set_memory_size(debug_timer_history_length);
+  hwc_active_timer_.set_memory_size(debug_timer_history_length);
+  hwc_sleep_timer_.set_memory_size(debug_timer_history_length);
+  hwc_timer_.set_memory_size(debug_timer_history_length);
+
   std::cout << "Log will be saved in : \"" << log_dir_ << "\"" << std::endl;
 
   // we create and destroy the condition variable to free the shared memory
