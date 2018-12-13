@@ -535,7 +535,6 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       // send the command to the motors
       set_motor_controls_from_map(motor_controls_map_);
     }
-    hwc_timer_.tac();
   }
   // We use this function here because the loop might stop because of ROS
   // and we need the flag to be set to off
