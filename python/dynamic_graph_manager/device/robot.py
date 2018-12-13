@@ -22,6 +22,7 @@ from dynamic_graph import plug
 from dynamic_graph.tracer_real_time import TracerRealTime
 from dynamic_graph.tools import addTrace
 from dynamic_graph_manager.ros import Ros
+from dynamic_graph.entity import Entity
 
 # Internal helper tool.
 def matrixToTuple(M):
@@ -72,16 +73,11 @@ class Robot(object):
         self.initialize_tracer()
 
         # We trace by default all signals of the device.
-        self.tracedSignals = {'device': []}
         self.device_signals_names = []
         for signal in self.device.signals():
           signal_name = signal.name.split('::')[-1]
-          self.tracedSignals['device'].append(signal_name)
+          self.add_trace(self.device.name, signal_name)
           self.device_signals_names.append(signal_name)
-
-        # Device
-        for s in self.tracedSignals['device']:
-            self.add_trace(self.device.name, s)
 
         # Prepare potential ros import/export
         self.ros = Ros(self)
@@ -94,8 +90,6 @@ class Robot(object):
 
     def add_trace(self, entityName, signalName):
         if self.tracer:
-            self.autoRecomputedSignals.append(
-                '{0}.{1}'.format(entityName, signalName))
             addTrace(self, self.tracer, entityName, signalName)
 
     def _tracer_log_dir(self):
@@ -113,12 +107,11 @@ class Robot(object):
     def initialize_tracer(self):
         """
         Initialize the tracer and by default dump the files in
-         ~/.dynamic_graph/[date_time]/
+         ~/dynamic_graph/[date_time]/
         """
         if not self.tracer:
             self.tracer = TracerRealTime('trace')
             self.tracer.setBufferSize(self.tracerSize)
-            self.tracer.open(self._tracer_log_dir(), 'dg_', '.dat')
 
         # Recompute trace.triger at each iteration to enable tracing.
         self.device.after.addSignal('{0}.triger'.format(self.tracer.name))
@@ -128,6 +121,8 @@ class Robot(object):
         Start the tracer if it has not already been stopped.
         """
         if self.tracer:
+            self.tracer_log_dir = self._tracer_log_dir()
+            self.tracer.open(self.tracer_log_dir, 'dg_', '.dat')
             self.tracer.start()
 
     def stop_tracer(self):
@@ -138,25 +133,36 @@ class Robot(object):
             self.tracer.dump()
             self.tracer.stop()
             self.tracer.close()
-            self.tracer.clear()
+            print("Stored trace in:", self.tracer_log_dir)
+
+            # NOTE: Not calling self.tracer.clear() here, as by default the
+            # tracer should keep it's traced signals attached.
+
+            # Null the tracer object, such that initialize_tracer() will reopen it.
             self.trace = None
 
             self.initialize_tracer()
 
-    def export_signal_to_ros(self, signal, topic_name=None):
-        if topic_name is None:
-            topic_name = signal.name
+    def add_to_ros(self, entityName, signalName, topic_name=None):
+        # Lookup the entity's signal by name
+        signal = Entity.entities[entityName].signal(signalName)
 
-        self.ros.rosPublish.add ("vector", topic_name, "/dg__" + topic_name)
+        if topic_name is None:
+            topic_name = entityName + '__' + signalName
+
+        self.ros.rosPublish.add("vector", topic_name, "/dg__" + topic_name)
         plug(signal, self.ros.rosPublish.signal(topic_name))
+
+    def add_ros_and_trace(self, entityName, signalName, topic_name=None):
+        self.add_trace(entityName, signalName)
+        self.add_to_ros(entityName, signalName, topic_name=None)
 
     def export_device_dg_to_ros(self):
         """
         Import in ROS the signal from the dynamic graph device.
         """
         for sig_name in self.device_signals_names:
-            self.export_signal_to_ros(
-                    self.device.signal(sig_name), 'device__' + sig_name);
+            self.add_to_ros(self.device.name, sig_name, 'device__' + sig_name)
 
 
 __all__ = ["Robot"]
