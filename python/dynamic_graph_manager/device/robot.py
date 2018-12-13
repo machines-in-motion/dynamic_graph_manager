@@ -98,6 +98,18 @@ class Robot(object):
                 '{0}.{1}'.format(entityName, signalName))
             addTrace(self, self.tracer, entityName, signalName)
 
+    def _tracer_log_dir(self):
+        import os
+        import os.path
+        import time
+        log_dir = os.path.join(os.path.expanduser("~"),
+                                ".dynamic_graph_manager",
+                                time.strftime("%Y_%m_%d_%H_%M_%S"))
+
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        return log_dir
+
     def initialize_tracer(self):
         """
         Initialize the tracer and by default dump the files in
@@ -106,17 +118,10 @@ class Robot(object):
         if not self.tracer:
             self.tracer = TracerRealTime('trace')
             self.tracer.setBufferSize(self.tracerSize)
-            try:
-                log_dir = rospy.get_param("/dynamic_graph/log_dir")
-            except:
-                import os.path
-                import time
-                log_dir = os.path.join(os.path.expanduser("~"),
-                                       ".dynamic_graph_manager",
-                                       time.strftime("%Y_%m_%d_%H_%M_%S"))
-            self.tracer.open(log_dir, 'dg_', '.dat')
-            # Recompute trace.triger at each iteration to enable tracing.
-            self.device.after.addSignal('{0}.triger'.format(self.tracer.name))
+            self.tracer.open(self._tracer_log_dir(), 'dg_', '.dat')
+
+        # Recompute trace.triger at each iteration to enable tracing.
+        self.device.after.addSignal('{0}.triger'.format(self.tracer.name))
 
     def start_tracer(self):
         """
@@ -134,9 +139,9 @@ class Robot(object):
             self.tracer.stop()
             self.tracer.close()
             self.tracer.clear()
-            for s in self.autoRecomputedSignals:
-                self.device.after.rmSignal(s)
-            self.tracer = None
+            self.trace = None
+
+            self.initialize_tracer()
 
     def export_signal_to_ros(self, signal, topic_name=None):
         if topic_name is None:
