@@ -128,7 +128,7 @@ void DynamicGraphManager::initialize(YAML::Node param){
 
   is_real_robot_ = params_["is_real_robot"].as<bool>();
 
-  log_dir_ = real_time_tools::get_log_dir(".dynamic_graph_manager");
+  log_dir_ = real_time_tools::get_log_dir("dynamic_graph_manager");
   dg_timer_file_ = log_dir_ + "dg_timer.dat";
   hwc_active_timer_file_ =  log_dir_ + "hwc_active_timer.dat";
   hwc_sleep_timer_file_ =  log_dir_ + "hwc_sleep_timer.dat";

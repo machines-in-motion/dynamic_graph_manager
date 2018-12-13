@@ -103,8 +103,8 @@ class Robot(object):
         import os.path
         import time
         log_dir = os.path.join(os.path.expanduser("~"),
-                                ".dynamic_graph_manager",
-                                time.strftime("%Y_%m_%d_%H_%M_%S"))
+                                "dynamic_graph_manager",
+                                time.strftime("%Y-%m-%d_%H-%M-%S"))
 
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
