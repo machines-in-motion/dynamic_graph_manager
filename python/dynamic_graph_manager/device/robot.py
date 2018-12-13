@@ -48,7 +48,7 @@ class Robot(object):
     """
     How much data will be logged.
     """
-    tracerSize = 2**20
+    tracerSize = 2**22
 
     """
     Automatically recomputed signals through the use
