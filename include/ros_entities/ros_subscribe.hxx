@@ -58,9 +58,8 @@ namespace dynamic_graph
 	boost::format signalName ("RosSubscribe(%1%)::%2%");
 	signalName % RosSubscribe.getName () % signal;
 
-	boost::shared_ptr<signal_t> signal_
-	  (new signal_t (0, signalName.str ()));
-        DgToRos<T>::setDefault(*signal_);
+	boost::shared_ptr<signal_t> signal_ (new signal_t (0, signalName.str ()));
+  DgToRos<T>::setDefault(*signal_);
 	bindedSignal.first = signal_;
 	RosSubscribe.signalRegistration (*bindedSignal.first);
 
