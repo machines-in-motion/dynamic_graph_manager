@@ -19,7 +19,7 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 
 set(CATKIN_PKGS ${CATKIN_PKGS}
-    # local dependencies
+    mpi_cmake_modules
     yaml_cpp
     shared_memory
     real_time_tools
@@ -28,7 +28,7 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     message_generation
     roscpp
     tf
-    tf2_bullet
+    #tf2_bullet
     realtime_tools
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})

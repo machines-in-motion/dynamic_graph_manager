@@ -7,8 +7,9 @@
 # include <ros/time.h>
 # include <std_msgs/Header.h>
 
-# include <LinearMath/btMatrix3x3.h>
-# include <LinearMath/btQuaternion.h>
+// not used?
+//# include <LinearMath/btMatrix3x3.h>
+//# include <LinearMath/btQuaternion.h>
 
 #ifdef MAC_OS
 // On MAC_OS a macro "tolower" when __APPLE__ is defined.
