@@ -119,11 +119,6 @@ add_subdirectory(src)
 #########################
 add_subdirectory(tests)
 
-####################
-# manage the demos #
-####################
-add_subdirectory(demos)
-
 ##########################################
 # export the package as a catkin package #
 ##########################################

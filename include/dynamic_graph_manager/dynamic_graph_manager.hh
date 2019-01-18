@@ -54,7 +54,7 @@ namespace dynamic_graph
 
   /**
    * @brief clock is the std::chrono::high_resolution_clock object. This typedef
-   * is here as a shortcut to simplify the code readibility.
+   * is here as a shortcut to simplify the code readability.
    */
   typedef std::chrono::steady_clock clock;
 
@@ -63,10 +63,10 @@ namespace dynamic_graph
  * The main tasks are:
  *   - [1] Creates the Dynamic Graph device, the python interpreter, and the
  *         Drivers
- *   - [2] Ask the python interpreter to advertize its ROS services
- *   - [3] Ask the drivers to initialize the communucation with the hardware
+ *   - [2] Ask the python interpreter to advertise its ROS services
+ *   - [3] Ask the drivers to initialize the communication with the hardware
  *   - [4] Loads a yaml/urdf config file.
- *   - [5] Advertize the ROS services start/stop dynamic graph
+ *   - [5] Advertise the ROS services start/stop dynamic graph
  *   - [6] Wait for the ROS service start dynamic graph to be called
  *   - [7] Spawn the first real time process that executes the following:
  *      - [7.1] gets  the  sensor  data  using Drivers and  saves  them  in  the
@@ -367,7 +367,7 @@ private:
   }
 
   /**
-   * @brief start_ros_service is the method that advertize the different ros
+   * @brief start_ros_service is the method that advertise the different ros
    * services.
    */
   void start_ros_service(ros::NodeHandle& ros_node_handle);
@@ -482,19 +482,19 @@ protected:
 
   /**
    * @brief pid_dynamic_graph_process_ is the pid of the DynamicGraph process.
-   * It is initialized to 0 and set durning the DynamicGraphManager::run method
+   * It is initialized to 0 and set during the DynamicGraphManager::run method
    */
   pid_t pid_dynamic_graph_process_;
 
   /**
    * @brief pid_hardware_communication_process_ is the pid of the hardware
-   * communication process. It is initialized to 0 and set durning the
+   * communication process. It is initialized to 0 and set during the
    * DynamicGraphManager::run method
    */
   pid_t pid_hardware_communication_process_;
 
   /**
-   * @brief params_ is the pool of paramters in a yaml tree
+   * @brief params_ is the pool of parameters in a yaml tree
    */
   YAML::Node params_;
 
@@ -536,7 +536,7 @@ protected:
 
   /**
    * @brief cond_var_sensors_ this condition variable allow the computation of
-   * the dynamic graph just after the acquisiiton of the sensors
+   * the dynamic graph just after the acquisition of the sensors
    */
   std::unique_ptr<shared_memory::ConditionVariable> cond_var_;
 
@@ -571,7 +571,7 @@ protected:
   double control_period_sec_ ;
 
   /**
-   * @brief control_period_ this is the control period in Nano Seconds.
+   * @brief control_period_ this is the control period in nanoseconds.
    */
   clock::duration control_period_ ;
 
