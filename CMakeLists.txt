@@ -28,7 +28,7 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     message_generation
     roscpp
     tf
-    #tf2_bullet
+    tf2_bullet
     realtime_tools
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})

@@ -81,7 +81,6 @@ class Robot(object):
 
         # Prepare potential ros import/export
         self.ros = Ros(self)
-        self.device.after.addDownsampledSignal('rosPublish.trigger', 1)
         self.export_device_dg_to_ros()
 
     def __del__(self):
@@ -143,15 +142,46 @@ class Robot(object):
 
             self.initialize_tracer()
 
-    def add_to_ros(self, entityName, signalName, topic_name=None):
+    def add_to_ros(self, entityName, signalName, topic_name=None, topic_type=None):
+        """
+        arg: topic_type is a string among:
+              ['double', 'matrix', 'vector', 'vector3', 'vector3Stamped',
+              'matrixHomo', 'matrixHomoStamped', 'twist', 'twistStamped',
+              'joint_states'].
+             Each different strings correspond to a ros message. For rviz
+             support please use joint_states which correspond to the joint
+             states including the potential free flyer joint.
+        """
         # Lookup the entity's signal by name
         signal = Entity.entities[entityName].signal(signalName)
-
+      
         if topic_name is None:
-            topic_name = entityName + '__' + signalName
+            topic_name = "/dg__" + entityName + '__' + signalName
+            new_signal_name = "dg__" + entityName + '__' + signalName
+        if topic_type is None:
+            topic_type = "vector"
 
-        self.ros.rosPublish.add("vector", topic_name, "/dg__" + topic_name)
-        plug(signal, self.ros.rosPublish.signal(topic_name))
+        self.ros.rosPublish.add(topic_type, new_signal_name, topic_name)  
+        plug(signal, self.ros.rosPublish.signal(new_signal_name))
+
+    def add_robot_state_to_ros(self, entity_name, signal_name, base_link_name, joint_names, tf_prefix, joint_state_topic_name):
+        # Lookup the entity's signal by name
+        signal = Entity.entities[entity_name].signal(signal_name)
+        
+        new_signal_name = "dg__" + entity_name + '__' + signal_name
+
+        joint_names_string = ""
+        for s in joint_names:
+            joint_names_string += s + " "
+
+        self.ros.rosRobotStatePublisher.add(
+          base_link_name,
+          joint_names_string,
+          tf_prefix,
+          new_signal_name,
+          joint_state_topic_name,
+        )
+        plug(signal, self.ros.rosRobotStatePublisher.signal(new_signal_name))
 
     def add_ros_and_trace(self, entityName, signalName, topic_name=None):
         self.add_trace(entityName, signalName)
@@ -162,7 +192,7 @@ class Robot(object):
         Import in ROS the signal from the dynamic graph device.
         """
         for sig_name in self.device_signals_names:
-            self.add_to_ros(self.device.name, sig_name, 'device__' + sig_name)
+            self.add_to_ros(self.device.name, sig_name)
 
 
 __all__ = ["Robot"]
