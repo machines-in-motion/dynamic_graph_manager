@@ -36,17 +36,6 @@ DeviceSimulator::DeviceSimulator(const std::string& input_name):
             "Perform one step with the simulator.")));
 }
 
-void DeviceSimulator::initialize_from_file(const std::string& yaml_file)
-{
-  YAML::Node params = YAML::LoadFile(yaml_file);
-  initialize_from_root_params(params);
-}
-
-void DeviceSimulator::initialize_from_root_params(const YAML::Node& params)
-{
-  initialize(params["device"]);
-}
-
 void DeviceSimulator::get_sensors_to_map(VectorDGMap& sensors)
 {
   // check that all map has the same size

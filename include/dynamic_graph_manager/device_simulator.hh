@@ -16,36 +16,22 @@
 #include <dynamic_graph_manager/device.hh>
 
 namespace dynamic_graph {
-  // QUESTION@Revier: Is there a way to import these defines from the
-  // device.hh and avoid reimporting them here?
-  typedef dynamicgraph::Signal<dynamicgraph::Vector,int>  OutSignal;
-  typedef dynamicgraph::SignalPtr<dynamicgraph::Vector,int>  InSignal;
-  typedef std::map<std::string, OutSignal* > DeviceOutSignalMap;
-  typedef std::map<std::string, InSignal* > DeviceInSignalMap;
 
   class DeviceSimulator: public dynamic_graph::Device
   {
   public:
 
     /**
-     * @brief DeviceSimulator is the constructor. The name allow the DynamicGraph to
-     * identify the entity
-     * @param params is the yaml file used to initialize the device
+     * @brief DeviceSimulator is the constructor. The name allow the
+     * DynamicGraph to identify the entity.
+     * @param[in] name is the DynamicGraph identifyer.
      */
     DeviceSimulator(const std::string& input_name);
 
     /**
-     * @brief initialize_from_file Initializes the device from the given file.
-     * @param yaml_file The yaml_file to load.
+     * @brief Destroy the DeviceSimulator object
      */
-    virtual void initialize_from_file(const std::string& yaml_file);
-
-    /**
-     * @brief initialize_from_root_params Initialize the device given the root yaml node
-     * of the yaml file.
-     * @params params The root yaml node of the yaml configuration file.
-     */
-    virtual void initialize_from_root_params(const YAML::Node& params);
+    ~DeviceSimulator(){}
 
     /**
      * @brief get_sensor_from_map Returns the current sensor readings.
@@ -55,9 +41,11 @@ namespace dynamic_graph {
 
 
     /**
-     * @brief set_control_to_map Puts the specified controls into the control map.
+     * @brief set_control_to_map Puts the specified controls into the control
+     * map.
+     * @param controls
      */
-    virtual void set_controls_from_map(const VectorDGMap& sensors);
+    virtual void set_controls_from_map(const VectorDGMap& controls);
 
     /**
      * @Brief step Reads the current control signal values and use them to
