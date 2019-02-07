@@ -47,12 +47,12 @@ void DeviceSimulator::get_sensors_to_map(VectorDGMap& sensors)
       ext_sensor_it != sensors.end(); ++ext_sensor_it)
   {
     assert(sensors_map_.count(ext_sensor_it->first) &&
-           "Device::set_sensors_from_map: All field in the input sensors map\
-            exists in the internal copy");
+           "Device::set_sensors_from_map: All field in the input sensors map"
+           "exists in the internal copy");
     assert(static_cast<unsigned>(ext_sensor_it->second.size()) ==
            sensors_map_[ext_sensor_it->first].size() &&
-           "Device::set_sensors_from_map: the vectors have the same size in the\
-            maps");
+           "Device::set_sensors_from_map: the vectors have the same size in the"
+           "maps");
 
     sensors_map_[ext_sensor_it->first] =
     		sensors_out_[ext_sensor_it->first]->accessCopy();
