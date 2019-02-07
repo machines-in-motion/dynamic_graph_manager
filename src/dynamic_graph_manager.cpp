@@ -176,6 +176,12 @@ void DynamicGraphManager::run()
     {
       pid_dynamic_graph_process_ = child_pid;
       pid_hardware_communication_process_ = getpid();
+      std::cout << "pid of dynamic graph process: "
+                << pid_dynamic_graph_process_
+                << std::endl;
+      std::cout << "pid of hardware communication process: "
+                << pid_hardware_communication_process_
+                << std::endl;
 
       initialize_hardware_communication_process();
       run_hardware_communication_process();
