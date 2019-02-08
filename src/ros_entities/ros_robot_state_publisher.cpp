@@ -64,9 +64,7 @@ RosRobotStatePublisher::RosRobotStatePublisher( const std::string& name ):
         "    - type: string: signal_name\n"
         "    - type: string: joint_state_topic_name\n"
         "\n";
-  addCommand ("add",
-              new command::ros_state_publish::Add
-              (*this, docstring));
+  addCommand (cmd_name, new command::ros_state_publish::Add(*this, docstring));
 }
 
 void RosRobotStatePublisher::add(const std::string& base_link_name,
