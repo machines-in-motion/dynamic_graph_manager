@@ -39,6 +39,9 @@ set(DYNAMIC_GRAPH_MANAGER_SRC
     ros_interpreter.cpp
 )
 add_library(dynamic_graph_manager SHARED ${DYNAMIC_GRAPH_MANAGER_SRC})
+pkg_config_use_dependency(dynamic_graph_manager yaml-cpp)
+pkg_config_use_dependency(dynamic_graph_manager dynamic-graph)
+pkg_config_use_dependency(dynamic_graph_manager dynamic-graph-python)
 target_link_libraries(dynamic_graph_manager
   device
   ${catkin_LIBRARIES}
