@@ -18,67 +18,118 @@
 #include <dynamic_graph_manager/device_simulator.hh>
 
 using namespace std;
-using namespace dynamic_graph;
+
+namespace dynamic_graph{
+
+/**
+ * @brief dynamic_graph::Device::CLASS_NAME must be the name as the actual
+ * device class.
+ */
+DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(DeviceSimulator, "DeviceSimulator");
 
 DeviceSimulator::DeviceSimulator(const std::string& input_name):
   // Call the mother class constructor
   Device(input_name)
 {
-  addCommand (
-        "step",
-        dynamicgraph::command::makeCommandVoid0(
-          *this,
-          // In the case the ::step method is virtual, which version of
-          // step is invoked here? The one of the base class or the of
-          // the *this implementation?
-          &DeviceSimulator::step,
-          dynamicgraph::command::docCommandVoid0(
-            "Perform one step with the simulator.")));
 }
 
-void DeviceSimulator::get_sensors_to_map(VectorDGMap& sensors)
+void DeviceSimulator::initialize(const YAML::Node& params)
 {
-  // check that all map has the same size
-  assert(sensors.size() == sensors_map_.size() &&
-         sensors_map_.size() == sensors_out_.size() &&
-         "Device::get_sensor_from_map: All maps has to be the same size");
-  // we do a copy of the map while checking for sanity
-  for(VectorDGMap::iterator ext_sensor_it = sensors.begin();
-      ext_sensor_it != sensors.end(); ++ext_sensor_it)
+  Device::initialize(params);
+  std::string hardware_name = "";
+  /*******************************
+   * We iterate over the sensors *
+   *******************************/
+  simu_sensors_in_.clear();
+  for (VectorDGMap::const_iterator sensor_it = sensors_map_.begin();
+       sensor_it != sensors_map_.end(); ++sensor_it)
   {
-    assert(sensors_map_.count(ext_sensor_it->first) &&
-           "Device::set_sensors_from_map: All field in the input sensors map"
-           "exists in the internal copy");
-    assert(static_cast<unsigned>(ext_sensor_it->second.size()) ==
-           sensors_map_[ext_sensor_it->first].size() &&
-           "Device::set_sensors_from_map: the vectors have the same size in the"
-           "maps");
+    {
+      hardware_name = sensor_it->first;
+      ostringstream sig_name;
+      sig_name << "Device(" << this->name << ")::"
+               << "input(vector" << sensor_it->second.size() << "d)::"
+               << "simu_in_" 
+               << hardware_name ;
+      simu_sensors_in_[hardware_name] = new InSignal(nullptr, sig_name.str());
+      simu_sensors_in_[hardware_name]->setConstant(sensors_map_[hardware_name]);
+      signalRegistration(*(simu_sensors_in_[hardware_name]));
+    }
+  }
 
-    sensors_map_[ext_sensor_it->first] =
-    		sensors_out_[ext_sensor_it->first]->accessCopy();
-    ext_sensor_it->second = sensors_map_[ext_sensor_it->first];
+  /********************************
+   * We iterate over the controls *
+   ********************************/
+  simu_motor_controls_out_.clear();
+  for (VectorDGMap::const_iterator control_it = motor_controls_map_.begin();
+       control_it != motor_controls_map_.end(); ++control_it)
+  {
+    {
+      hardware_name = control_it->first;
+      ostringstream sig_name;
+      sig_name << "Device(" << this->name << ")::"
+               << "output(vector" << control_it->second.size() << "d)::"
+               << "simu_out_"
+               << hardware_name ;
+      simu_motor_controls_out_[hardware_name] = new OutSignal(sig_name.str());
+      simu_motor_controls_out_[hardware_name]->setConstant(motor_controls_map_[hardware_name]);
+      signalRegistration(*(simu_motor_controls_out_[hardware_name]));
+    }
   }
 }
 
-void DeviceSimulator::set_controls_from_map(const VectorDGMap& motor_controls)
+void DeviceSimulator::initialize_from_file(const std::string& yaml_file)
 {
-  // check that all map has the same size
-  assert(motor_controls.size() == motor_controls_map_.size() &&
-         motor_controls_map_.size() == motor_controls_in_.size() &&
-         "Device::set_controls_to_map: All maps has to be the same size");
-  // we do a copy of the map while checking for sanity
-  for(VectorDGMap::const_iterator ext_control_it = motor_controls.begin();
-      ext_control_it != motor_controls.end(); ++ext_control_it)
-  {
-    assert(motor_controls_map_.count(ext_control_it->first) &&
-           "Device::get_controls_to_map: All field in the input sensors map\
-            exists in the internal copy");
-    assert(static_cast<unsigned>(ext_control_it->second.size()) ==
-           motor_controls_map_[ext_control_it->first].size() &&
-           "Device::get_controls_to_map: the vectors have the same size in the\
-            maps");
+  YAML::Node params = YAML::LoadFile(yaml_file);
+  DeviceSimulator::initialize(params["device"]);
+}
 
-    motor_controls_map_[ext_control_it->first] = ext_control_it->second;
-    motor_controls_in_[ext_control_it->first]->setConstant(ext_control_it->second);
+void DeviceSimulator::execute_graph()
+{
+  /*******************************************
+   * Get the time of the last sensor reading *
+   *******************************************/
+  assert(simu_sensors_in_.size() != 0 && "There exist some sensors.");
+  // Here the time is the maximum time of all sensors.
+  int time = simu_sensors_in_.begin()->second->getTime();
+  for(DeviceInSignalMap::const_iterator sig_in_it = simu_sensors_in_.begin() ;
+      sig_in_it != simu_sensors_in_.end() ; ++sig_in_it)
+  {
+    int sig_time = sig_in_it->second->getTime();
+    if(sig_time > time)
+    {
+      time = sig_time;
+    }
+  }
+
+  /***********************************************
+   * We copy the input sensor in the output ones *
+   ***********************************************/
+  for (VectorDGMap::const_iterator sensor_it = sensors_map_.begin();
+       sensor_it != sensors_map_.end(); ++sensor_it)
+  {
+    simu_sensors_in_[sensor_it->first]->setConstant(
+      sensors_out_[sensor_it->first]->access(time));
+  }
+
+  /**************************************
+   * We call the execution of the graph *
+   **************************************/
+
+  // We execute the mother class method
+  Device::execute_graph();
+
+  /*************************************************
+   * We copy the input control in an output signal *
+   *************************************************/
+  for (VectorDGMap::const_iterator control_it = motor_controls_map_.begin();
+       control_it != motor_controls_map_.end(); ++control_it)
+  {
+    simu_motor_controls_out_[control_it->first]->setConstant(
+      motor_controls_in_[control_it->first]->access(time+1));
   }
 }
+
+} // namespace dynamic_graph
+
+

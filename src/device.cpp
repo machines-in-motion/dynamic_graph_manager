@@ -189,17 +189,16 @@ void Device::set_sensors_from_map(const VectorDGMap& sensors)
       ext_sensor_it != sensors.end(); ++ext_sensor_it)
   {
     assert(sensors_map_.count(ext_sensor_it->first) &&
-           "Device::set_sensors_from_map: All field in the input sensors map\
-            exists in the internal copy");
+           "Device::set_sensors_from_map: All field in the input sensors map"
+            " exists in the internal copy");
     assert(static_cast<unsigned>(ext_sensor_it->second.size()) ==
            sensors_map_[ext_sensor_it->first].size() &&
-           "Device::set_sensors_from_map: the vectors have the same size in the\
-            maps");
+           "Device::set_sensors_from_map: the vectors have the same size in the"
+            " maps");
     sensors_map_[ext_sensor_it->first] = ext_sensor_it->second;
     sensors_out_[ext_sensor_it->first]->setConstant(ext_sensor_it->second);
   }
 }
-
 
 void Device::execute_graph()
 {
@@ -295,12 +294,12 @@ void Device::get_controls_to_map(VectorDGMap& motor_controls)
       ext_control_it != motor_controls.end(); ++ext_control_it)
   {
     assert(motor_controls_map_.count(ext_control_it->first) &&
-           "Device::get_controls_to_map: All field in the input sensors map\
-            exists in the internal copy");
+           "Device::get_controls_to_map: All field in the input sensors map "
+            "exists in the internal copy");
     assert(static_cast<unsigned>(ext_control_it->second.size()) ==
            motor_controls_map_[ext_control_it->first].size() &&
-           "Device::get_controls_to_map: the vectors have the same size in the\
-            maps");
+           "Device::get_controls_to_map: the vectors have the same size in the "
+           "maps");
 
    motor_controls_map_[ext_control_it->first] =
         motor_controls_in_[ext_control_it->first]->accessCopy();
