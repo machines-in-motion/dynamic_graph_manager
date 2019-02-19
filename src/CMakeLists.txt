@@ -18,9 +18,7 @@ add_library(device SHARED
   tools.cpp
   ${EXCEPTION_SRC}
 )
-# pkg_config_use_dependency(device yaml-cpp) yaml-cpp is headers-only...
 pkg_config_use_dependency(device dynamic-graph)
-pkg_config_use_dependency(device dynamic-graph-python)
 target_link_libraries(device ${catkin_LIBRARIES})
 set_target_properties(device PROPERTIES
   PREFIX ""

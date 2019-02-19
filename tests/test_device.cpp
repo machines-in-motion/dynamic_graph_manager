@@ -42,7 +42,7 @@ protected:
    */
   void SetUp() {
     dg_pool_.getInstance();
-    YAML::Node params = YAML::LoadFile(TEST_CONFIG_FOLDER +
+    YAML::Node params = YAML::LoadFile(TEST_CONFIG_PATH +
                             std::string("simple_robot.yaml"));
     params_ = params["device"];
   }
@@ -171,7 +171,7 @@ public:
   SimpleRobot(std::string RobotName):
     Device(RobotName)
   {
-    initialize(YAML::LoadFile(TEST_CONFIG_FOLDER + std::string("simple_robot.yaml")));
+    initialize(YAML::LoadFile(TEST_CONFIG_PATH + std::string("simple_robot.yaml")));
     sig_before_.reset(new OutSignal("SimpleRobot::before::sigbefore"));
     sig_after_.reset(new OutSignal("SimpleRobot::after::sigafter"));
     sig_before_->setConstant(dg::Vector(3));

@@ -1,13 +1,8 @@
-###################################################
-## Set a general config folder path for all tests #
-###################################################
-set(TEST_CONFIG_PATH ${PROJECT_SOURCE_DIR}/tests/config/)
-
 ###################
 ## add unit tests #
 ###################
 
-macro(create_unittest test_name)
+macro(create_dynamic_graph_manager_unittest test_name)
 
 # create the executable
 catkin_add_gtest(test_${test_name}
@@ -25,10 +20,10 @@ pkg_config_use_dependency(test_${test_name} dynamic-graph)
 pkg_config_use_dependency(test_${test_name} dynamic-graph-python)
 # add some preprocessor variable
 target_compile_definitions(test_${test_name} PUBLIC
-  TEST_CONFIG_FOLDER="${TEST_CONFIG_PATH}"
+  TEST_CONFIG_PATH="${PROJECT_SOURCE_DIR}/tests/config/"
 )
 
-endmacro(create_unittest test_name)
+endmacro(create_dynamic_graph_manager_unittest test_name)
 
-create_unittest(dynamic_graph_manager)
-create_unittest(device)
+create_dynamic_graph_manager_unittest(dynamic_graph_manager)
+create_dynamic_graph_manager_unittest(device)
