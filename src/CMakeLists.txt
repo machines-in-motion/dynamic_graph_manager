@@ -18,16 +18,17 @@ add_library(device SHARED
   tools.cpp
   ${EXCEPTION_SRC}
 )
-target_link_libraries(device
-  ${catkin_LIBRARIES}
-)
+# pkg_config_use_dependency(device yaml-cpp) yaml-cpp is headers-only...
+pkg_config_use_dependency(device dynamic-graph)
+pkg_config_use_dependency(device dynamic-graph-python)
+target_link_libraries(device ${catkin_LIBRARIES})
 set_target_properties(device PROPERTIES
   PREFIX ""
   LIBRARY_OUTPUT_DIRECTORY ${DYNAMIC_GRAPH_PLUGIN_DIR}
 )
-dynamic_graph_python_module("device"
-  device
-  device_wrap
+dynamic_graph_python_module("device" # from dynamic_graph_manager.device import *
+  device                             # python wrapper dependencies
+  device_wrap                        # python wrapper target name
 )
 
 ############################################

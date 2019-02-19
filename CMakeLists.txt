@@ -20,7 +20,6 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 set(CATKIN_PKGS ${CATKIN_PKGS}
     mpi_cmake_modules
-    #yaml_cpp
     shared_memory
     real_time_tools
 
@@ -33,14 +32,6 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
 
-set(CMAKE_LOCAL_MODULES
-  dg-dirs.cmake
-  python.cmake
-)
-foreach(cmake_local_module ${CMAKE_LOCAL_MODULES})
-  include(cmake/${cmake_local_module})
-endforeach()
-
 search_for_python(2.7 REQUIRED)
 search_for_boost()
 search_for_eigen()
@@ -50,26 +41,6 @@ search_for_pthread()
 add_required_dependency("yaml-cpp >= 0.5")
 add_required_dependency("dynamic-graph >= 3.0.0")
 add_required_dependency("dynamic-graph-python >= 3.0.0")
-build_prefix_for_pkg("yaml-cpp" yaml_cpp_name)
-build_prefix_for_pkg("dynamic-graph" dg_name)
-build_prefix_for_pkg("dynamic-graph-python" dgp_name)
-set(catkin_INCLUDE_DIRS
-  ${${yaml_cpp_name}_INCLUDE_DIRS}
-  ${${dg_name}_INCLUDE_DIRS}
-  ${${dgp_name}_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-)
-link_directories(
-  ${${yaml_cpp_name}_LIBRARY_DIRS}
-  ${${dg_name}_LIBRARY_DIRS}
-  ${${dgp_name}_LIBRARY_DIRS}
-)
-set(catkin_LIBRARIES
-  ${${yaml_cpp_name}_LIBRARIES}
-  ${${dg_name}_LIBRARIES}
-  ${${dgp_name}_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
 
 ####################################
 # Define the OS to be used locally #
