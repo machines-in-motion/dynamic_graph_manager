@@ -89,18 +89,6 @@ void DeviceSimulator::execute_graph()
   /*******************************************
    * Get the time of the last sensor reading *
    *******************************************/
-  assert(simu_sensors_in_.size() != 0 && "There exist some sensors.");
-  // Here the time is the maximum time of all sensors.
-  int time = simu_sensors_in_.begin()->second->getTime();
-  for(DeviceInSignalMap::const_iterator sig_in_it = simu_sensors_in_.begin() ;
-      sig_in_it != simu_sensors_in_.end() ; ++sig_in_it)
-  {
-    int sig_time = sig_in_it->second->getTime();
-    if(sig_time > time)
-    {
-      time = sig_time;
-    }
-  }
 
   /***********************************************
    * We copy the input sensor in the output ones *
@@ -108,8 +96,8 @@ void DeviceSimulator::execute_graph()
   for (VectorDGMap::const_iterator sensor_it = sensors_map_.begin();
        sensor_it != sensors_map_.end(); ++sensor_it)
   {
-    simu_sensors_in_[sensor_it->first]->setConstant(
-      sensors_out_[sensor_it->first]->access(time));
+    sensors_out_[sensor_it->first]->setConstant(
+      simu_sensors_in_[sensor_it->first]->accessCopy());
   }
 
   /**************************************
@@ -126,7 +114,7 @@ void DeviceSimulator::execute_graph()
        control_it != motor_controls_map_.end(); ++control_it)
   {
     simu_motor_controls_out_[control_it->first]->setConstant(
-      motor_controls_in_[control_it->first]->access(time+1));
+      motor_controls_in_[control_it->first]->accessCopy());
   }
 }
 

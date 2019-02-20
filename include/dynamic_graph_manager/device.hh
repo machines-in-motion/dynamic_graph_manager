@@ -77,8 +77,9 @@ namespace dynamic_graph {
     void initialize_maps(const YAML::Node& sensors_and_controls);
 
     /**
-     * @brief get_sensor_from_map
-     * @param sensors
+     * @brief set_sensors_from_map is a parser that feed the map "sensors" with
+     * the hardware sensor readings.
+     * @param sensors the sensors data.
      */
     virtual void set_sensors_from_map(const VectorDGMap& sensors);
 
@@ -94,9 +95,26 @@ namespace dynamic_graph {
     virtual void execute_graph();
 
     /**
-     * @brief set_control_to_map is a parser that feed the map "controls" with
+     * @brief execute_graph is a fonction that execute the graph.
+     *
+     * In order it does:
+     *  - Execute a first set of synchrounous commands.
+     *  - Execute the graph.
+     *  - Execute a second set of synchronous commands.
+     *
+     */
+    void execute_graph_deprecated()
+    {
+      std::cout << "\"device.executeGraph\" python command is deprecated, "
+                << "please use \"device.execute_graph()\""
+                << std::endl;
+      execute_graph();
+    }
+
+    /**
+     * @brief get_controls_to_map is a parser that feed the map "controls" with
      * the output of the DynamicGraph.
-     * @param controls is the the map containing the controls.
+     * @param controls is the map containing the controls.
      */
     virtual void get_controls_to_map(VectorDGMap& motor_controls);
 
