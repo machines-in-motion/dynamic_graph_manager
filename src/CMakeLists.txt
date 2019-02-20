@@ -18,7 +18,9 @@ add_library(device SHARED
   tools.cpp
   ${EXCEPTION_SRC}
 )
+pkg_config_use_dependency(device yaml-cpp)
 pkg_config_use_dependency(device dynamic-graph)
+
 target_link_libraries(device ${catkin_LIBRARIES})
 set_target_properties(device PROPERTIES
   PREFIX ""
