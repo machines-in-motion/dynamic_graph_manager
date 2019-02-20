@@ -78,7 +78,6 @@ add_message_files(FILES
 # manage python file install #
 ##############################
 catkin_python_setup()
-install_python_files("" "python/dynamic_graph_manager")
 
 #####################################################################
 # Actually generate the language-specific message and service files #
@@ -105,6 +104,12 @@ catkin_package(
   DEPENDS dynamic-graph dynamic-graph-python
   CFG_EXTRAS ${CMAKE_LOCAL_MODULES}
 )
+
+###########################################################################
+# Install the python files located in ```python/dynamic_graph_manager/``` #
+# in ${DYNAMIC_GRAPH_PYTHON_DIR}/```""```                                 #
+###########################################################################
+install_python_files("" "python/dynamic_graph_manager")
 
 ##########################
 # building documentation #
