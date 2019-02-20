@@ -67,6 +67,14 @@ Device::Device(const std::string& input_name):
         "executeGraph",
         dynamicgraph::command::makeCommandVoid0(
           *this,
+          &Device::execute_graph_deprecated,
+          dynamicgraph::command::docCommandVoid0(
+            "Deprecated Execute the current control graph using the currentsensor signals.")));
+
+  addCommand (
+        "execute_graph",
+        dynamicgraph::command::makeCommandVoid0(
+          *this,
           &Device::execute_graph,
           dynamicgraph::command::docCommandVoid0(
             "Execute the current control graph using the currentsensor signals.")));
@@ -207,24 +215,24 @@ void Device::execute_graph()
    *******************************************/
   assert(sensors_out_.size() != 0 && "There exist some sensors.");
   // Here the time is the maximum time of all sensors.
-  int time = sensors_out_.begin()->second->getTime();
+  int local_time = sensors_out_.begin()->second->getTime();
   for(DeviceOutSignalMap::const_iterator sig_out_it = sensors_out_.begin() ;
       sig_out_it != sensors_out_.end() ; ++sig_out_it)
   {
     int sig_time = sig_out_it->second->getTime();
-    if(sig_time > time)
+    if(sig_time > local_time)
     {
-      time = sig_time;
+      local_time = sig_time;
     }
   }
-
+  
   /******************************************************************
    * Run Synchronous commands and evaluate signals outside the main *
    * connected component of the graph.                              *
    ******************************************************************/
   try
   {
-    periodic_call_before_.run(time+1);
+    periodic_call_before_.run(local_time+1);
   }
   catch (std::exception& e)
   {
@@ -251,7 +259,7 @@ void Device::execute_graph()
   for(DeviceInSignalMap::const_iterator sig_in_it = motor_controls_in_.begin() ;
       sig_in_it != motor_controls_in_.end() ; ++sig_in_it)
   {
-    sig_in_it->second->recompute(time+1);
+    sig_in_it->second->recompute(local_time+1);
   }
 
   /******************************************************************
@@ -261,7 +269,7 @@ void Device::execute_graph()
   try
   {
     // TODO: "time" or "time + 1"
-    periodic_call_after_.run(time+1);
+    periodic_call_after_.run(local_time+1);
   }
   catch (std::exception& e)
   {

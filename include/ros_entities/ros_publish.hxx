@@ -12,45 +12,35 @@
 
 namespace dynamic_graph
 {
-  template <>
-  inline void
-  RosPublish::sendData
-  <std::pair<MatrixHomogeneous, Vector> >
-  (boost::shared_ptr
-   <realtime_tools::RealtimePublisher
-   <DgToRos
-   <std::pair<MatrixHomogeneous, Vector> >::ros_t> > publisher,
-   boost::shared_ptr
-   <DgToRos
-   <std::pair<MatrixHomogeneous, Vector> >::signalIn_t> signal,
-   int time)
+  template <> inline void RosPublish::sendData 
+  <std::pair<MatrixHomogeneous, Vector> >(
+    boost::shared_ptr<realtime_tools::RealtimePublisher<DgToRos
+      <std::pair<MatrixHomogeneous, Vector> >::ros_t> > publisher,
+    boost::shared_ptr <DgToRos
+      <std::pair<MatrixHomogeneous, Vector> >::signalIn_t> signal,
+    int time)
   {
-    DgToRos
-      <std::pair
-      <MatrixHomogeneous, Vector> >::ros_t result;
+    DgToRos <std::pair <MatrixHomogeneous, Vector> >::ros_t result;
     if (publisher->trylock ())
-      {
-	publisher->msg_.child_frame_id = "/dynamic_graph/world";
-	converter (publisher->msg_, signal->access (time));
-	publisher->unlockAndPublish ();
-      }
+    {
+      publisher->msg_.child_frame_id = "/dynamic_graph/world";
+      converter (publisher->msg_, signal->access (time));
+      publisher->unlockAndPublish ();
+    }
   }
 
-  template <typename T>
-  void
-  RosPublish::sendData
-  (boost::shared_ptr
-   <realtime_tools::RealtimePublisher
-   <typename DgToRos<T>::ros_t> > publisher,
-   boost::shared_ptr<typename DgToRos<T>::signalIn_t> signal,
-   int time)
+  template <typename T> void RosPublish::sendData(
+    boost::shared_ptr <realtime_tools::RealtimePublisher
+      <typename DgToRos<T>::ros_t> > publisher,
+    boost::shared_ptr<typename DgToRos<T>::signalIn_t> signal,
+    int time)
   {
     typename DgToRos<T>::ros_t result;
     if (publisher->trylock ())
-      {
-	converter (publisher->msg_, signal->access (time));
-	publisher->unlockAndPublish ();
-      }
+    {
+      converter (publisher->msg_, signal->access (time));
+      publisher->unlockAndPublish ();
+    }
   }
 
   template <typename T>
@@ -63,28 +53,21 @@ namespace dynamic_graph
     bindedSignal_t bindedSignal;
 
     // Initialize the publisher.
-    boost::shared_ptr
-      <realtime_tools::RealtimePublisher<ros_t> >
-      pubPtr =
+    boost::shared_ptr<realtime_tools::RealtimePublisher<ros_t> > pubPtr =
       boost::make_shared<realtime_tools::RealtimePublisher<ros_t> >
       (nh_, topic, 1);
 
     // Initialize the signal.
-    boost::shared_ptr<signal_t> signalPtr
-      (new signal_t
-       (0,
-        MAKE_SIGNAL_STRING(name, true, DgToRos<T>::signalTypeName, signal)));
+    boost::shared_ptr<signal_t> signalPtr (new signal_t(0,
+      MAKE_SIGNAL_STRING(name, true, DgToRos<T>::signalTypeName, signal))
+    );
     boost::get<0> (bindedSignal) = signalPtr;
     DgToRos<T>::setDefault(*signalPtr);
     signalRegistration (*boost::get<0> (bindedSignal));
 
     // Initialize the callback.
-    callback_t callback = boost::bind
-      (&RosPublish::sendData<T>,
-       this,
-       pubPtr,
-       signalPtr,
-       _1);
+    callback_t callback = boost::bind(&RosPublish::sendData<T>, this, pubPtr,
+                                      signalPtr, _1);
     boost::get<1> (bindedSignal) = callback;
 
     bindedSignal_[signal] = bindedSignal;

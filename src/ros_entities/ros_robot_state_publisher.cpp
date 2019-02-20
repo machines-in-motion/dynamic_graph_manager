@@ -65,6 +65,9 @@ RosRobotStatePublisher::RosRobotStatePublisher( const std::string& name ):
         "    - type: string: joint_state_topic_name\n"
         "\n";
   addCommand (cmd_name, new command::ros_state_publish::Add(*this, docstring));
+
+  // this way we publish as fast as the dynamic_graph process
+  rate_ = ros::Duration(0.);
 }
 
 void RosRobotStatePublisher::add(const std::string& base_link_name,
@@ -144,12 +147,13 @@ int& RosRobotStatePublisher::trigger(int& dummy, int time)
   typedef std::map<std::string, RosRobotStatePublisherInternal>::iterator
     PubItType;
 
-  ros::Duration dt = ros::Time::now () - last_time_of_publication_;
-  if (dt < rate_)
-  {
-    return dummy;
-  }
-  last_time_of_publication_ = ros::Time::now();
+  // We publish as fast as we can
+  // ros::Duration dt = ros::Time::now () - last_time_of_publication_;
+  // if (dt < rate_)
+  // {
+  //   return dummy;
+  // }
+  // last_time_of_publication_ = ros::Time::now();
 
   for (PubItType pub_it = publishers_.begin () ; pub_it != publishers_.end () ;
        ++pub_it)
