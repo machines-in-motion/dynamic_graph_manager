@@ -75,6 +75,7 @@ set_target_properties(dg_ros_convertion PROPERTIES
 # then we build the different entities and install them in devel/lib/plugin folder
 set(LIST_ROS_ENTITIES
   ros_robot_state_publisher
+  ros_robot_state_publisher_mt
   ros_publish
   ros_subscribe
   ros_queued_subscribe
