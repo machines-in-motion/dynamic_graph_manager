@@ -15,6 +15,7 @@
 #include <deque>
 #include <memory>
 #include <mutex>
+#include <thread>
 
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/factory.h>
