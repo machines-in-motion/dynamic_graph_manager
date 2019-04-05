@@ -19,6 +19,7 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 
 set(CATKIN_PKGS ${CATKIN_PKGS}
+    # MPI-IS dependencies
     mpi_cmake_modules
     shared_memory
     real_time_tools
