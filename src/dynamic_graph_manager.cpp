@@ -8,8 +8,6 @@
  *
  */
 
-// use the realtime spinner to time the loops
-#include <real_time_tools/spinner.hpp>
 // use the realtime checks to measure the loops computation time
 #include <real_time_tools/realtime_check.hpp>
 // use for real_time printf
@@ -465,12 +463,13 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     ctrl->second.fill(0.0);
   }
 
+  // Initialize the time measurements
   hwc_active_timer_.tic();
   hwc_timer_.tic();
 
   // time the loop so it respect the input frequence/period
-  real_time_tools::Spinner spinner;
-  spinner.set_period(control_period_sec_);
+  hwc_spinner_.set_period(control_period_sec_);
+  hwc_spinner_.initialize();
 
   // we start the main loop
   while(!is_hardware_communication_stopped() && ros::ok())
@@ -495,14 +494,24 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       cond_var_->notify_all();
     }
 
+    // predict here the sleeping time in the spinner
+    hwc_predicted_sleeping_time_ = hwc_spinner_.predict_sleeping_time();
+    if (hwc_predicted_sleeping_time_ > 0.0001) // 0.1ms
+    {
+      if(user_commands_.size() > 0)
+      {
+        user_commands_[0]();
+        user_commands_.pop_front();
+      }
+    }
+
     // here is the end of the thread activity
     hwc_active_timer_.tac();
-    hwc_timer_.tac();
-    hwc_timer_.tic();
+    hwc_timer_.tac_tic();
 
     // Sleeps for one period. This clocks the motor process.
     hwc_sleep_timer_.tic();
-    spinner.spin();
+    hwc_spinner_.spin();
     hwc_sleep_timer_.tac();
 
     // here is the beginning of the thread activity

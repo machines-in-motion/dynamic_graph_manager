@@ -19,6 +19,9 @@
 #include <wait.h>
 #endif // __APPLE__
 
+// use of std::bind
+ #include <functional>
+
 // used to synchronise the control loop
 #include <chrono>
 
@@ -34,6 +37,9 @@
 
 // used to spawn the real time thread
 #include "real_time_tools/realtime_thread_creation.hpp"
+
+// use the realtime spinner to time the loops
+#include <real_time_tools/spinner.hpp>
 
 // time measurement
 #include "real_time_tools/timer.hpp"
@@ -306,7 +312,7 @@ public:
   {
     if(device_ != nullptr)
       return *device_;
-    throw(std::runtime_error(std::string("DynamicGraphManager::device():Try") +
+    throw(std::runtime_error("DynamicGraphManager::device():Try"
                              "accessing a device that has not been created"));
   }
 
@@ -680,6 +686,23 @@ protected:
    */
   unsigned memory_buffer_timers_;
 
+  /**
+   * @brief This class allows us to time the real time thread for the hardware
+   * communication.
+   */
+  real_time_tools::Spinner hwc_spinner_;
+
+  /**
+   * @brief This corresponds to the predicted sleeping time for the hardware
+   * communication process. If this time is bigger than a certain threshold
+   * then user commands to the hardware can be sent.
+   */
+  double hwc_predicted_sleeping_time_;
+
+  /**
+   * @brief This is the list of the user commands.
+   */
+  std::deque<std::function<void(void)> > user_commands_;
 };
 
 } // namespace dynamic_graph
