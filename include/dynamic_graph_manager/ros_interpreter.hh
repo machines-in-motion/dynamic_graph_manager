@@ -28,8 +28,8 @@ namespace dynamic_graph
   {
   public:
     /**
-     * @brief run_python_command_callback_t define a boost::function to be used as
-     * callback to the ros::service.
+     * @brief run_python_command_callback_t define a boost::function to be used
+     * as callback to the ros::service.
      *
      * The first argument of "runCommandCallback"
      * (const std::string & command) is bound to

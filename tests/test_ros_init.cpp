@@ -157,22 +157,28 @@ TEST_F(TestRosInit, test_services_shut_down)
  */
 TEST_F(TestRosInit, test_killall_nodes)
 {
-  // // setup
-  // // creates tones of nodes
-  // for(unsigned i=0; i<5000 ; ++i)
-  // {
-  //   std::ostringstream os;
-  //   os << "node_" << i;
-  //   ros_init (os.str());
-  // }
-  // // kill them all
-  // ros_shutdown ();
+  // setup
+  // creates tones of nodes
+  int nb_nodes = 100;
+  for(unsigned i=0; i<nb_nodes ; ++i)
+  {
+    {
+      std::ostringstream os;
+      os << "node_" << i;
+      ros_init (os.str());
+    }
+  }
 
-  // // test if they are all killed
-  // for(unsigned i=0; i<5000 ; ++i)
-  // {
-  //   std::ostringstream os;
-  //   os << "node_" << i;
-  //   ASSERT_FALSE(ros_exist(os.str()));
-  // }
+  // kill them all
+  ros_shutdown ();
+
+  // test if they are all killed
+  for(unsigned i=0; i<nb_nodes ; ++i)
+  {
+    {
+      std::ostringstream os;
+      os << "node_" << i;
+      ASSERT_FALSE(ros_exist(os.str()));
+    }
+  }
 }

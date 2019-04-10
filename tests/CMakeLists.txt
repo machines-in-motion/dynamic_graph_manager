@@ -62,3 +62,4 @@ create_dgm_unittest(device)
 ###############
 create_dgm_rostest(dynamic_graph_manager)
 create_dgm_rostest(ros_init)
+create_dgm_rostest(ros_interpreter)
