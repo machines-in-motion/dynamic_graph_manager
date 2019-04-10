@@ -22,6 +22,12 @@ namespace dynamic_graph
  */
 struct GlobalRos
 {
+  GlobalRos()
+  {
+    node_handle_ = nullptr;
+    async_spinner_ = nullptr;
+  }
+
   /** @brief ~GlobalRos is a specific destructor that stop the ROS activities */
   ~GlobalRos ()
   {
@@ -67,6 +73,11 @@ void ros_shutdown (std::string node_name);
  * @brief ros_shutdown shuts down ros and stop the ros spinners
  */
 void ros_shutdown ();
+
+/**
+ * @brief Check if a node handle has been created or not.
+ */
+bool ros_exist (std::string node_name);
 
 } // end of namespace dynamic_graph.
 

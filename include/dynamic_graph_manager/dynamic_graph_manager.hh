@@ -253,7 +253,7 @@ public:
 
   /**
    * @brief get the status of the dynamic graph (is running or not)
-   * @return the flags is_dynamic_graph_stopped_ value
+   * @return the flag is_dynamic_graph_stopped_ value
    */
   bool is_dynamic_graph_stopped()
   {

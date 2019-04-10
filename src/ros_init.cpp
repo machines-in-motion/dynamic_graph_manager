@@ -31,11 +31,12 @@ namespace dynamic_graph
 
   ros::NodeHandle& ros_init (std::string node_name)
   {
-    if (GLOBAL_ROS_VAR[node_name] == nullptr)
+
+    if (!ros_exist(node_name))
     {
       GLOBAL_ROS_VAR[node_name].reset(new GlobalRos());
     }
-    if (!GLOBAL_ROS_VAR[node_name]->node_handle_)
+    if (GLOBAL_ROS_VAR[node_name]->node_handle_ == nullptr)
     {
       /** call ros::init */
       int argc = 1;
@@ -52,7 +53,7 @@ namespace dynamic_graph
      * ros::init was called before.
      *
      */
-    if (!GLOBAL_ROS_VAR[node_name]->async_spinner_)
+    if (GLOBAL_ROS_VAR[node_name]->async_spinner_ == nullptr)
     {
       /** create the spinner */
       GLOBAL_ROS_VAR[node_name]->async_spinner_ =
@@ -65,21 +66,19 @@ namespace dynamic_graph
   }
 
   ros::AsyncSpinner& ros_spinner (std::string node_name)
-  {   
-    if (!GLOBAL_ROS_VAR[node_name]->async_spinner_)
+  { 
+    if (!ros_exist(node_name))
     {
       dynamic_graph::ros_init(node_name);
     }
+    assert(GLOBAL_ROS_VAR[node_name]->async_spinner_ != nullptr &&
+        "The spinner must have been created by now.");
     return *GLOBAL_ROS_VAR[node_name]->async_spinner_;
   }
 
   void ros_shutdown (std::string node_name)
   {
-    GLOBAL_ROS_VAR[node_name].reset(nullptr);
-    if(ros::ok())
-    {
-      ros::shutdown();
-    }
+    GLOBAL_ROS_VAR.erase(node_name);
   }
 
   void ros_shutdown ()
@@ -89,9 +88,19 @@ namespace dynamic_graph
     {
       it->second.reset(nullptr);
     }
-    if(ros::ok())
+    GLOBAL_ROS_VAR.clear();
+  }
+
+  bool ros_exist (std::string node_name)
+  {
+    if(GLOBAL_ROS_VAR.find(node_name) == GLOBAL_ROS_VAR.end())
     {
-      ros::shutdown();
+      return false;
     }
+    if(GLOBAL_ROS_VAR.at(node_name) == nullptr)
+    {
+      return false;
+    }
+    return true;
   }
 } // end of namespace dynamic_graph.

@@ -1,6 +1,6 @@
 <launch>
-<!-- ci_example_rostest is the name of the test library created in CMakeLists.txt file -->
-<!-- ci_example is the name of this catkin package -->
+<!-- dynamic_graph_manager_rostest is the name of the test library created in CMakeLists.txt file -->
+<!-- dynamic_graph_manager is the name of this catkin package -->
 <test test-name="dynamic_graph_manager_rostest"
       type="dynamic_graph_manager_rostest"
       pkg="dynamic_graph_manager"/>
