@@ -1,7 +1,7 @@
 ##################################
 # this macro define a unit tests #
 ##################################
-macro(create_dgm_unittest test_name)
+macro(create_dgm_unittest test_name dependencies)
 
 # create the executable
 catkin_add_gtest(${test_name}_ut
@@ -10,7 +10,7 @@ catkin_add_gtest(${test_name}_ut
 )
 # link the dependecies to it
 target_link_libraries(${test_name}_ut
-    ${test_name}
+    ${dependencies}
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
 )
@@ -55,7 +55,8 @@ endmacro(create_dgm_rostest test_name)
 ################
 # Add unittest #
 ################
-create_dgm_unittest(device)
+create_dgm_unittest(device device)
+create_dgm_unittest(cpp_features "")
 
 ###############
 # Add rostest #

@@ -1,6 +1,6 @@
 is_real_robot: true
 device:
-  name: "default_device"
+  name: "simple"
   sensors:
     encoders:
       size: 5

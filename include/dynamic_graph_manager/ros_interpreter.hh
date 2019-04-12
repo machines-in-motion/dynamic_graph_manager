@@ -83,7 +83,8 @@ namespace dynamic_graph
      * @brief run_python_file executes the input scripts in the python interpreter
      * @param ifilename is the path to the script to execute
      */
-    void run_python_file(const std::string ifilename);
+    void run_python_file(const std::string ifilename,
+                         std::string& standard_error);
 
     /**
      * @brief start_ros_service advertize the "run_python_command" and "run_python_scripts"

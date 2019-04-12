@@ -48,6 +48,11 @@ pkg_config_use_dependency(dynamic_graph_manager dynamic-graph-python)
 target_link_libraries(dynamic_graph_manager
   device
   ${catkin_LIBRARIES}
+  
+)
+add_dependencies(dynamic_graph_manager
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
 )
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 target_link_libraries(dynamic_graph_manager

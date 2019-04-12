@@ -82,10 +82,10 @@ class RosShell(InteractiveConsole):
                         self.cache = source
                         return self.runcode(code, False)
                 response = self.client(str(source))
-                if response.standardoutput != "":
-                    print response.standardoutput[:-1]
-                if response.standarderror != "":
-                    print response.standarderror[:-1]
+                if response.standard_output != "":
+                    print response.standard_output[:-1]
+                if response.standard_error != "":
+                    print response.standard_error[:-1]
                 elif response.result != "None":
                     print response.result
             except rospy.ServiceException, e:
@@ -135,6 +135,8 @@ if __name__ == '__main__':
             if not response:
                 print("Error while file parsing ")
                 sys.exit(-1)
+            if response.standard_error:
+                print(response.standard_error)
         else:
             print("Provided file does not exist: %s"%(infile))
             sys.exit(-1)

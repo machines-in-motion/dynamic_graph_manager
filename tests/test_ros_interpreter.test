@@ -3,5 +3,7 @@
 <!-- ros_interpreter is the name of this catkin package -->
 <test test-name="ros_interpreter_rostest"
       type="ros_interpreter_rostest"
-      pkg="dynamic_graph_manager"/>
+      pkg="dynamic_graph_manager"
+      args="--text"
+      />
 </launch>

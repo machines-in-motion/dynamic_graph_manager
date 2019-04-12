@@ -3,5 +3,6 @@
 <!-- dynamic_graph_manager is the name of this catkin package -->
 <test test-name="dynamic_graph_manager_rostest"
       type="dynamic_graph_manager_rostest"
-      pkg="dynamic_graph_manager"/>
+      pkg="dynamic_graph_manager"
+      />
 </launch>

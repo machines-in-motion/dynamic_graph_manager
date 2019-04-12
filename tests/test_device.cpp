@@ -98,26 +98,6 @@ TEST_F(TestDevice, test_parse_yaml_file)
 {
   Device device("simple_robot");
   device.initialize(params_);
-//  for(VectorDGMap::const_iterator it=device.sensors_map_.begin() ;
-//      it!=device.sensors_map_.end() ; ++it)
-//  {
-//    std::cout << it->first << " ; " << it->second.transpose() << std::endl;
-//  }
-//  for(VectorDGMap::const_iterator it=device.motor_controls_map_.begin() ;
-//      it!=device.motor_controls_map_.end() ; ++it)
-//  {
-//    std::cout << it->first << " ; " << it->second.transpose() << std::endl;
-//  }
-//  for(DeviceOutSignalMap::const_iterator it=device.sensors_out_.begin() ;
-//      it!=device.sensors_out_.end() ; ++it)
-//  {
-//    std::cout << it->first << " ; " << it->second->accessCopy().transpose() << std::endl;
-//  }
-//  for(DeviceInSignalMap::const_iterator it=device.motor_controls_in_.begin() ;
-//      it!=device.motor_controls_in_.end() ; ++it)
-//  {
-//    std::cout << it->first << " ; " << it->second->accessCopy().transpose() << std::endl;
-//  }
   const Device::SignalMap& sig_map = device.getSignalMap();
   ASSERT_EQ(sig_map.count("encoders"), 1);
   ASSERT_EQ(sig_map.count("imu_accelerometer"), 1);

@@ -22,6 +22,11 @@ using namespace dynamic_graph;
 const std::string DynamicGraphManager::dg_ros_node_name_ = "dynamic_graph";
 const std::string DynamicGraphManager::hw_com_ros_node_name_ =
     "hardware_communication";
+const std::string DynamicGraphManager::sensors_map_name_ = "sensors_map";
+const std::string DynamicGraphManager::motor_controls_map_name_ =
+    "motor_controls_map";
+const std::string DynamicGraphManager::shared_memory_name_ = "DGM_ShM";
+const std::string DynamicGraphManager::cond_var_name_ = "cond_var";
 
 DynamicGraphManager::DynamicGraphManager()
 {
@@ -35,11 +40,6 @@ DynamicGraphManager::DynamicGraphManager()
 
   pid_dynamic_graph_process_ = 0;
   pid_hardware_communication_process_ = 0;
-
-  shared_memory_name_ = "DGM_ShM";
-  sensors_map_name_ = "sensors_map";
-  motor_controls_map_name_ = "motor_controls_map";
-  cond_var_name_ = "cond_var";
 
   sensors_map_.clear();
   motor_controls_map_.clear();
@@ -257,10 +257,11 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   // from here this process becomes a ros node
   ros::NodeHandle& ros_node_handle = ros_init(dg_ros_node_name_);
 
+  std::string robot_name = params_["device"]["name"].as<std::string>();
+
   // export the yaml node to ros so we can access it in the python interpretor
   // and in other ros node if needed.
-  ros_node_handle.setParam("device_name",
-                           params_["device"]["name"].as<std::string>());
+  ros_node_handle.setParam("device_name", robot_name);
   ros_node_handle.setParam("log_dir", log_dir_);
 
   // we create a python interpreter
@@ -269,7 +270,7 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   // we start the ros services for the DGM (python command + start/stop DG)
   start_ros_service(ros_node_handle);
   // we create the device of the DG and implicitly the DG itself
-  device_.reset(new Device(params_["device"]["name"].as<std::string>()));
+  device_.reset(new Device(robot_name));
   device_->initialize(params_["device"]);
   // we build the condition variables after the fork (seems safer this way)
   cond_var_.reset(new shared_memory::ConditionVariable(
@@ -409,7 +410,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   //std::cout << "DG: Locking scope..." << std::endl;
   cond_var_->lock_scope();
 
-  std::cout << "DG: Start loop" << std::endl;
+  std::cerr << "DG: Start loop" << std::endl;
 
   while(!is_dynamic_graph_stopped() && ros::ok())
   {
@@ -438,11 +439,11 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   // we use this function here because the loop might stop because of ROS
   stop_dynamic_graph();
 
-  std::cout << "DG: Dumping time measurement" << std::endl;
+  std::cerr << "DG: Dumping time measurement" << std::endl;
   dg_timer_.dump_measurements(dg_timer_file_);
 
   cond_var_->unlock_scope();
-  std::cout << "DG: Stop Loop" << std::endl;
+  std::cerr << "DG: Stop Loop" << std::endl;
 }
 
 void* DynamicGraphManager::hardware_communication_real_time_loop()

@@ -31,12 +31,7 @@ namespace dynamic_graph
 
   ros::NodeHandle& ros_init (std::string node_name)
   {
-
-    if (!ros_exist(node_name))
-    {
-      GLOBAL_ROS_VAR[node_name].reset(new GlobalRos());
-    }
-    if (GLOBAL_ROS_VAR[node_name]->node_handle_ == nullptr)
+    if(!ros::isInitialized())
     {
       /** call ros::init */
       int argc = 1;
@@ -44,14 +39,20 @@ namespace dynamic_graph
       char* argv[] = {arg0, nullptr};
       ros::init(argc, argv, node_name);
       free (arg0);
-
+    }
+    if (!ros_exist(node_name))
+    {
+      GLOBAL_ROS_VAR[node_name].reset(new GlobalRos());
+    }
+    if (GLOBAL_ROS_VAR[node_name]->node_handle_ == nullptr)
+    {
       /** ros::NodeHandle instanciation */
       GLOBAL_ROS_VAR[node_name]->node_handle_ =
           boost::make_shared<ros::NodeHandle>(node_name);
     }
-    /** If spinner is not created we create it. Here we can safely assume that
+    /** 
+     * If spinner is not created we create it. Here we can safely assume that
      * ros::init was called before.
-     *
      */
     if (GLOBAL_ROS_VAR[node_name]->async_spinner_ == nullptr)
     {

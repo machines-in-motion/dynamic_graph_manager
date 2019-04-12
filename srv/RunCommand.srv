@@ -1,5 +1,5 @@
 string input
 ---
 string result
-string standardoutput
-string standarderror
+string standard_output
+string standard_error

@@ -47,10 +47,10 @@ namespace dynamic_graph
       dynamic_graph_manager::RunCommand::Request& req,
       dynamic_graph_manager::RunCommand::Response& res)
   {
-    interpreter_.python(req.input,
-                        res.result,
-                        res.standardoutput,
-                        res.standarderror);
+    run_python_command(req.input,
+                       res.result,
+                       res.standard_output,
+                       res.standard_error);
     return true;
   }
 
@@ -59,7 +59,7 @@ namespace dynamic_graph
       dynamic_graph_manager::RunPythonFile::Request& req,
       dynamic_graph_manager::RunPythonFile::Response& res)
   {
-    interpreter_.runPythonFile(req.input);
+    run_python_file(req.input, res.standard_error);
     // FIX: It is just an echo, is there a way to have a feedback?
     res.result = "File parsed";
     return true;
@@ -74,8 +74,9 @@ namespace dynamic_graph
     interpreter_.python(command, result, out, err);
   }
 
-  void RosPythonInterpreter::run_python_file(const std::string ifilename ){
-      interpreter_.runPythonFile(ifilename);
+  void RosPythonInterpreter::run_python_file(const std::string ifilename,
+                                             std::string& standard_error){
+      interpreter_.runPythonFile(ifilename, standard_error);
   }
 
 } // end of namespace dynamicgraph.

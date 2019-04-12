@@ -10,11 +10,12 @@
 
 #include <dynamic_graph_manager/tools.hh>
 
+namespace dynamic_graph{
 
-void dynamic_graph::parse_yaml_node(
+void parse_yaml_node(
     const YAML::Node& sensors_and_controls,
-    dynamic_graph::VectorDGMap& out_sensors_map,
-    dynamic_graph::VectorDGMap& out_motor_controls_map)
+    VectorDGMap& out_sensors_map,
+    VectorDGMap& out_motor_controls_map)
 {
   const YAML::Node& sensors = sensors_and_controls["sensors"];
   const YAML::Node& controls = sensors_and_controls["controls"];
@@ -49,3 +50,5 @@ void dynamic_graph::parse_yaml_node(
     out_motor_controls_map[hardware_name].setZero();
   }
 }
+
+} // namespace

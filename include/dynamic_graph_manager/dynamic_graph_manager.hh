@@ -47,6 +47,7 @@
 // used to deal with shared memory
 #include "shared_memory/thread_synchronisation.hpp"
 
+// import the python interpreter ros binding
 #include "dynamic_graph_manager/ros_interpreter.hh"
 
 // some useful tools like the yaml parsing
@@ -346,6 +347,30 @@ public:
    */
   static const std::string hw_com_ros_node_name_;
 
+  /**
+   * @brief shared_memory_name is the name of the shared memory segment to be
+   * used
+   */
+  static const std::string shared_memory_name_;
+
+  /**
+   * @brief sensors_map_name is the name of the sensor map inside the shared
+   * memory segment
+   */
+  static const std::string sensors_map_name_;
+
+  /**
+   * @brief motor_controls_map_name is the name of the motor controls map inside
+   * the shared memory segment
+   */
+  static const std::string motor_controls_map_name_;
+
+  /**
+   * @brief cond_var_sensors_name_ is the name of the condition variable in the
+   * shared memory
+   */
+  static const std::string cond_var_name_;
+
 private:
 
   /**
@@ -511,24 +536,6 @@ protected:
   std::unique_ptr<Device> device_;
 
   /**
-   * @brief shared_memory_name is the name of the shared memory segment to be
-   * used
-   */
-  std::string shared_memory_name_;
-
-  /**
-   * @brief sensors_map_name is the name of the sensor map inside the shared
-   * memory segment
-   */
-  std::string sensors_map_name_;
-
-  /**
-   * @brief motor_controls_map_name is the name of the motor controls map inside
-   * the shared memory segment
-   */
-  std::string motor_controls_map_name_;
-
-  /**
     * @brief sensors_map_ is a map of dynamicgraph::Vector. They represent
     * all the sensors data measured on the robot.
     */
@@ -545,12 +552,6 @@ protected:
    * the dynamic graph just after the acquisition of the sensors
    */
   std::unique_ptr<shared_memory::ConditionVariable> cond_var_;
-
-  /**
-   * @brief cond_var_sensors_name_ is the name of the condition variable in the
-   * shared memory
-   */
-  std::string cond_var_name_;
 
   /**
    * @brief has_been_waken_by_dg_ is a flag that indicates if the hardware
