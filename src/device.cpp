@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "dynamic_graph_manager/yaml_eigen.h"
+#include "yaml_cpp_catkin/yaml_eigen.h"
 
 #include <dynamic-graph/factory.h>
 #include <dynamic-graph/all-commands.h>
