@@ -66,6 +66,7 @@ include_directories(
 add_service_files(FILES
   RunCommand.srv
   RunPythonFile.srv
+  TestUserCmdBool.srv
 )
 
 #########################################

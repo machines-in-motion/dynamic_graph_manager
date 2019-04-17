@@ -9,6 +9,7 @@ set(EXCEPTION_SRC
   exception/exception-dynamic.cpp
   exception/exception-feature.cpp
   exception/exception-task.cpp
+  exception/exception-yaml-cpp.cpp
 )
 
 add_library(device SHARED

@@ -28,6 +28,9 @@
 // here this is used to use atomic (thread safe objects)
 #include <atomic>
 
+// use to protect the add and consumption of the user commands
+#include <mutex>
+
 // get the yaml configuration
 #include <yaml-cpp/yaml.h>
 
@@ -207,9 +210,9 @@ public:
    */
   virtual void get_sensors_to_map(VectorDGMap&)
   {
-    throw(std::runtime_error(std::string("DynamicGraphManager::") +
-                                         "get_sensors_to_map(VectorDGMap&): " +
-                                         "this method needs to be overloaded"));
+    throw(std::runtime_error("DynamicGraphManager::"
+                             "get_sensors_to_map(VectorDGMap&): "
+                             "this method needs to be overloaded"));
   }
 
   /**
@@ -221,8 +224,8 @@ public:
    */
   virtual void set_motor_controls_from_map(const VectorDGMap&)
   {
-    throw(std::runtime_error(std::string("DynamicGraphManager::") +
-                             "set_motor_controls_from_map(const VectorDGMap&): " +
+    throw(std::runtime_error("DynamicGraphManager::"
+                             "set_motor_controls_from_map(const VectorDGMap&): "
                              "this method needs to be overloaded"));
   }
 
@@ -371,6 +374,18 @@ public:
    */
   static const std::string cond_var_name_;
 
+  /**
+   * Method inherited
+   */
+protected:
+  /**
+   * @brief This method allow to simply add a user command
+   */
+  void add_user_command(std::function<void(void)> func);
+
+  /**
+   * Method NOT inherited
+   */
 private:
 
   /**
@@ -525,11 +540,6 @@ protected:
   pid_t pid_hardware_communication_process_;
 
   /**
-   * @brief params_ is the pool of parameters in a yaml tree
-   */
-  YAML::Node params_;
-
-  /**
    * @brief device_ is the DynamicGraph device that manages the computation of
    * the graph.
    */
@@ -570,12 +580,6 @@ protected:
    * max_missed_control_ then we switch to safety mode.
    */
   unsigned max_missed_control_;
-
-  /**
-   * @brief control_period_sec_ this is the control period in Seconds
-   * (S.I. units) for computation.
-   */
-  double control_period_sec_ ;
 
   /**
    * @brief control_period_ this is the control period in nanoseconds.
@@ -701,9 +705,35 @@ protected:
   double hwc_predicted_sleeping_time_;
 
   /**
+   * @brief This the duration during which a user command can be executed.
+   */
+  double maximum_time_for_user_cmd_ ;
+
+  /**
    * @brief This is the list of the user commands.
    */
   std::deque<std::function<void(void)> > user_commands_;
+
+  /**
+   * Attribute shared with the daughter class
+   */
+protected:
+  /**
+   * @brief This is the list of the ros user commands. The class inheriting from
+   * this one can add services for the hardware communication process.
+   */
+  std::deque<ros::ServiceServer> ros_user_commands_;
+
+  /**
+   * @brief control_period_sec_ this is the control period in Seconds
+   * (S.I. units) for computation.
+   */
+  double control_period_sec_ ;
+
+  /**
+   * @brief params_ is the pool of parameters in a yaml tree
+   */
+  YAML::Node params_;
 };
 
 } // namespace dynamic_graph

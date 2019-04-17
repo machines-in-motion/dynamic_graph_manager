@@ -48,6 +48,7 @@ namespace dynamic_graph {
       ,TRACES = 600
       ,TOOLS = 700
       ,PATTERN_GENERATOR= 800
+      ,YAML_CPP_PARSING= 900
     };
 
     static const std::string EXCEPTION_NAME;

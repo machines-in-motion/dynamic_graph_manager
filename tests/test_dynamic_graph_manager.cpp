@@ -15,10 +15,13 @@
 #include <thread>
 
 // We use another class of this package which has an independant unittest.
-#include <dynamic_graph_manager/ros_init.hh>
+#include "dynamic_graph_manager/ros_init.hh"
 
 // The class to test
-#include <dynamic_graph_manager/dynamic_graph_manager.hh>
+#include "dynamic_graph_manager/dynamic_graph_manager.hh"
+
+// Service for the user command unittest
+#include "dynamic_graph_manager/TestUserCmdBool.h"
 
 /**
  * SETUP THE TESTING CLASS
@@ -72,7 +75,9 @@ public:
   /**
    * @brief Construct a new SimpleDGM object
    */
-  SimpleDGM(): dynamic_graph::DynamicGraphManager(){}
+  SimpleDGM(): dynamic_graph::DynamicGraphManager(){
+    boolean_set_by_user_cmd_ = false;
+  }
   /**
    * @brief Destroy the SimpleDGM object
    */
@@ -82,7 +87,14 @@ public:
    * tests.
    */
   void initialize_hardware_communication_process()
-  {/*Nothing to be done*/}
+  {
+    // get the hardware communication ros node handle
+    ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
+      dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
+    /** initialize the user commands */
+    ros_user_commands_.push_back(ros_node_handle.advertiseService(
+        "set_a_boolean", &SimpleDGM::user_command_callback, this));
+  }
   /**
    * @brief Get the sensors to the map object.
    * 
@@ -103,7 +115,79 @@ public:
    */
   void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
   {/*Nothing to be done*/}
+
+  /**
+   * @brief Get the has_user_command_been_executed_ object
+   */
+  bool get_has_user_command_been_executed()
+  {
+    // Here we nee to protect the access to this ressource as it may conflict
+    // with different thread. Please use cond_var_ to make sure everything
+    // is access on its due time.
+    cond_var_->lock_scope();
+    cond_var_->wait();
+    bool ret = boolean_set_by_user_cmd_;
+    cond_var_->unlock_scope();
+    return ret;
+  }
+
+  /**
+   * @brief This service callback parse the ros messages and register and
+   * internal method for further call using the data from the ros message.
+   * 
+   * @param req this is the user argument
+   * @param res this is the feedback of the user command
+   * @return true in case the service hase been properly executed
+   * @return false in case of failure
+   */
+  bool user_command_callback(dynamic_graph_manager::TestUserCmdBool::Request& req,
+                                dynamic_graph_manager::TestUserCmdBool::Response& res)
+  {
+    // parse and register the command for further call.
+    this->add_user_command(std::bind(&SimpleDGM::user_command,
+                           this, req.input_boolean));
+    // return whatever the user want
+    res.sanity_check = true;
+    // the service has been executed properly
+    return true;
+  }
+
+private:
+  /**
+   * @brief The actuall user command called in the real time thread
+   * 
+   * @param user_input is some boolean
+   */
+  void user_command(bool user_input)
+  {
+    // do something with the internal state or with the hardware
+    boolean_set_by_user_cmd_ = user_input;
+  }
+  // some internal hardware class or obect. Here just a simple boolean for
+  // unit testing
+  bool boolean_set_by_user_cmd_;
 };
+
+bool start_user_cmd_ros_service(bool user_input)
+{ 
+  // wait a bit
+  sleep(0.05);
+  // service name
+  std::string service_name = "/hardware_communication/set_a_boolean";
+  // Create a client from a temporary node
+  ros::service::waitForService(service_name, true);
+  // fill the command message
+  dynamic_graph_manager::TestUserCmdBool srv;
+  srv.request.input_boolean = user_input;
+  srv.response.sanity_check = false;
+  // call the service
+  std::cerr << "CALL USER SERVICE" << std::endl;
+  ros::service::call(service_name, srv);
+  // wait a bit
+  sleep(0.05);
+  // return the sanity check
+  return srv.response.sanity_check;
+}
 
 void start_dg_ros_service()
 { 
@@ -367,8 +451,24 @@ TEST_F(TestDynamicGraphManager, test_hwc_process_node_handle_exists)
   dgm.initialize_hardware_communication_process();
 
   /** Test */
-  ASSERT_FALSE(dynamic_graph::ros_exist(dgm.hw_com_ros_node_name_));
+  ASSERT_TRUE(dynamic_graph::ros_exist(dgm.hw_com_ros_node_name_));
 }
+
+/**
+ * Here we check that upon initialization, the hardware communication thread is
+ * not running
+ */
+TEST_F(TestDynamicGraphManager, test_hwc_process_stopped_on_init)
+{
+  /** Setup */
+  SimpleDGM dgm;
+  dgm.initialize(params_);
+  dgm.initialize_hardware_communication_process();
+
+  /** Test */
+  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+}
+
 
 /**
  * Check that the dynamic graph is stopped after initialization.
@@ -518,19 +618,22 @@ TEST_F(TestDynamicGraphManager, test_wait_start_dynamic_graph_rosservice)
   ASSERT_FALSE(dgm.is_dynamic_graph_stopped());
 }
 
+/**
+ * @brief Call start and stop dynamic graph from methods
+ * 
+ * @param a dynamic graph manager 
+ */
 void manage_dg_process(dynamic_graph::DynamicGraphManager* dgm)
 { 
   // wait a bit so the main thread is executed
   sleep(1.0);
 
-  std::cerr << "start dg" << std::endl;
   // start the dynamic graph.
   dgm->start_dynamic_graph();
 
-  std::cerr << "wait" << std::endl;
+  // Sleep a bit so the thread is launched and can spin once
   sleep(2);
 
-  std::cerr << "stop dg" << std::endl;
   // stop the dynamic graph
   dgm->stop_dynamic_graph();
 }
@@ -564,13 +667,132 @@ TEST_F(TestDynamicGraphManager, test_run_dynamic_graph_process)
   start_dg_thread.join();
 
   /** Test */
-  ASSERT_TRUE(dgm.device().motor_controls_map_.at("torques").norm() == 1.0);
+  double norm_torques = dgm.device().motor_controls_map_.at("torques").norm();
+  ASSERT_DOUBLE_EQ(norm_torques, 1.0);
 }
 
+/**
+ * @brief Test if the start and stop of the hardware communication thread
+ * is done nicely
+ */
+TEST_F(TestDynamicGraphManager, test_run_hardware_communication_process)
+{
+  /** Setup */
+  SimpleDGM dgm;
+  dgm.initialize(params_);
+  dgm.initialize_hardware_communication_process();
+  dgm.run_hardware_communication_process();
+  usleep(5000);
+  
+  /** Test */
+  ASSERT_FALSE(dgm.is_hardware_communication_stopped());
+  
+  /** Some other setup */
+  dgm.stop_hardware_communication();
+  dgm.wait_stop_hardware_communication();
+  
+  /** Final test */
+  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+}
 
+/**
+ * @brief Test if the start and stop of the hardware communication thread
+ * is done nicely
+ */
+TEST_F(TestDynamicGraphManager, test_run_user_cmd)
+{
+  /** Setup */
+  std::cerr << "SETUP" << std::endl;
+  SimpleDGM dgm;
+  dgm.initialize(params_);
+  dgm.initialize_hardware_communication_process();
+  dgm.run_hardware_communication_process();
+  usleep(5000);
+  
+  /** Test */
+  std::cerr << "TEST 1" << std::endl;
+  // ASSERT_FALSE(dgm.get_has_user_command_been_executed());
+  
+  std::cerr << "TEST 2" << std::endl;
+  ASSERT_TRUE(start_user_cmd_ros_service(true));
+  // ASSERT_TRUE(dgm.get_has_user_command_been_executed());
+  
+  std::cerr << "TEST 3" << std::endl;
+  /** Final test */
+  ASSERT_TRUE(start_user_cmd_ros_service(false));
+  // ASSERT_FALSE(dgm.get_has_user_command_been_executed());
 
+  /** Tear down */
+  std::cerr << "TEAR DOWN" << std::endl;
+  dgm.stop_hardware_communication();
+  std::cerr << "WAIT OK" << std::endl;
+  dgm.wait_stop_hardware_communication();
+  std::cerr << "EVERYTHING IS FINE" << std::endl;
+}
 
+/**
+ * @brief Test the standard behavior of the DGM until the safety mode is
+ * activated
+ */
+TEST_F(DISABLED_TestDynamicGraphManager, DISABLED_test_complete_run_with_safety_mode_activation)
+{
+  /** Setup */
+  std::cerr << ("main: Setup") << std::endl;
+  SimpleDGM dgm;
+  dgm.initialize(params_);
+  dgm.run();
+  // wait that everything started
+  usleep(5000);
+  // Start the dynamic graph
+  start_dg_ros_service();
+  std::cerr << ("main: Dynamic Graph Started") << std::endl;
+  // wait few iteration of the dynamic_graph
+  sleep(1);
+  // Stop the dynamic graph
+  stop_dg_ros_service();
+  std::cerr << ("main: Dynamic Graph Stopped") << std::endl;
+  std::cerr << ("main: Wait for the DG process to die") << std::endl;
+  kill(dgm.pid_dynamic_graph_process(), SIGKILL);
+  while(!dgm.has_dynamic_graph_process_died())
+  {
+    usleep(1000);
+  }
+  std::cerr << ("main: Dynamic Graph Process Died") << std::endl;
+  std::cerr << ("main: Check that the security mode has been activated")
+            << std::endl;
 
+  /** Test */
+  ASSERT_TRUE(dgm.is_in_safety_mode());
+  
+  
+  /** Tear Down */
+  dgm.stop_hardware_communication();
+  usleep(5000);
+}
+
+/**
+ * WARNING this has to be the last test as we ask for ros::shutdown
+ * Test if ros::shutdown is actually killing the thread
+ */
+TEST_F(TestDynamicGraphManager, test_hwc_process_ros_shutdown)
+{
+  /** Setup */
+  SimpleDGM dgm;
+  dgm.initialize(params_);
+  dgm.initialize_hardware_communication_process();
+  dgm.run_hardware_communication_process();
+  usleep(5000);
+
+  /** First test */
+  ASSERT_FALSE(dgm.is_hardware_communication_stopped());
+
+  /** Some more setup */
+  ros::requestShutdown();
+  dgm.wait_stop_hardware_communication();
+
+  /** Final test */
+  ASSERT_TRUE(dgm.is_hardware_communication_stopped());
+}
 
 
 
