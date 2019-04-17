@@ -232,3 +232,8 @@ TEST_F(TestRosInterpreter, test_call_run_script_standard_error)
   ASSERT_TRUE(found_first_part != std::string::npos);
   ASSERT_TRUE(found_second_part != std::string::npos);
 }
+
+TEST_F(TestRosInterpreter, test_failure)
+{
+  ASSERT_TRUE(false);
+}
