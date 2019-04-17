@@ -219,10 +219,16 @@ TEST_F(TestRosInterpreter, test_call_run_script_standard_error)
   // call the service
   ros::service::call(service_name, run_file_msg);
 
+  // prepare the test
+  std::string error_first_part = "<type 'exceptions.NameError'>: name 'b' is "
+                                 "not defined:   File \"" ;
+  std::string error_second_part = "\", line 1, in <module>\n    a = 1 + 1 + b\n";
+  std::size_t found_first_part = run_file_msg.response.standard_error.find(
+      error_first_part);
+  std::size_t found_second_part = run_file_msg.response.standard_error.find(
+      error_second_part);;
+
   /* test */
-  ASSERT_EQ(run_file_msg.response.standard_error,
-      "<type 'exceptions.NameError'"
-      ">: name 'b' is not defined:   File \"/home/mnaveau/devel/workspace/src/"
-      "catkin/dg_control/dynamic_graph_manager/tests/config/simple_add_fail.py"
-      "\", line 1, in <module>\n    a = 1 + 1 + b\n");
+  ASSERT_TRUE(found_first_part != std::string::npos);
+  ASSERT_TRUE(found_second_part != std::string::npos);
 }
