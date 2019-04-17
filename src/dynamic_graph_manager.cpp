@@ -514,8 +514,8 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   hwc_spinner_.initialize();
 
   // we start the main loop
-  // rt_printf("HARDWARE: Start loop \n");
-  std::cerr << "HARDWARE: Start loop\n" << std::endl;
+  rt_printf("HARDWARE: Start loop \n");
+  hwc_mutex_.lock();
   while(!is_hardware_communication_stopped() && hw_ros_node.ok())
   {
     // call the sensors
@@ -544,10 +544,9 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     {
       if(user_commands_.size() > 0)
       {
-        std::cerr << "HARDWARE: execute user command registerd\n"  << std::endl;
         user_commands_[0]();
         user_commands_.pop_front();
-        std::cerr << "HARDWARE: Executed user command\n"  << std::endl;
+        printf("HARDWARE: Executed user command\n");
       }
     }
 
@@ -557,7 +556,9 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
 
     // Sleeps for one period. This clocks the motor process.
     hwc_sleep_timer_.tic();
+    hwc_mutex_.unlock();
     hwc_spinner_.spin();
+    hwc_mutex_.lock();
     hwc_sleep_timer_.tac();
 
     // here is the beginning of the thread activity
@@ -596,6 +597,8 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       // send the command to the motors
       set_motor_controls_from_map(motor_controls_map_);
     }
+
+
   }
   // We use this function here because the loop might stop because of ROS
   // and we need the flag to be set to off
@@ -608,8 +611,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   rt_printf("HARDWARE: hwc time measurement \n");
   hwc_timer_.dump_measurements(hwc_timer_file_);
   cond_var_->unlock_scope();
-  // rt_printf("HARDWARE: Stop loop \n");
-  std::cerr << "HARDWARE: Stop loop \n" << std::endl;
+  rt_printf("HARDWARE: Stop loop \n");
 }
 
 void DynamicGraphManager::compute_safety_controls()
@@ -648,8 +650,7 @@ void* DynamicGraphManager::single_process_real_time_loop()
 
 void DynamicGraphManager::add_user_command(std::function<void(void)> func)
 {
-  cond_var_->lock_scope();
-  cond_var_->wait();
+  hwc_mutex_.lock();
   user_commands_.push_back(func);
-  cond_var_->unlock_scope();
+  hwc_mutex_.unlock();
 }

@@ -734,6 +734,8 @@ protected:
    * @brief params_ is the pool of parameters in a yaml tree
    */
   YAML::Node params_;
+
+  std::mutex hwc_mutex_;
 };
 
 } // namespace dynamic_graph
