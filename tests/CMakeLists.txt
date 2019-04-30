@@ -57,10 +57,13 @@ endmacro(create_dgm_rostest test_name)
 ################
 create_dgm_unittest(device device)
 create_dgm_unittest(cpp_features "")
+create_dgm_unittest(dynamic_graph_manager dynamic_graph_manager)
+create_dgm_unittest(ros_init dynamic_graph_manager)
+create_dgm_unittest(ros_interpreter dynamic_graph_manager)
 
 ###############
 # Add rostest #
 ###############
-create_dgm_rostest(dynamic_graph_manager)
-create_dgm_rostest(ros_init)
-create_dgm_rostest(ros_interpreter)
+# create_dgm_rostest(dynamic_graph_manager)
+# create_dgm_rostest(ros_init)
+# create_dgm_rostest(ros_interpreter)
