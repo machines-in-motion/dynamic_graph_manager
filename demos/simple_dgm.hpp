@@ -64,7 +64,10 @@ public:
    * @param map of controls
    */
   void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
-  {/*Nothing to be done*/}
+  {
+    desired_torques_ = map.at("torques");
+    desired_positions_ = map.at("positions");
+  }
 
   /**
    * @brief Get the has_user_command_been_executed_ object
@@ -114,6 +117,9 @@ private:
   // some internal hardware class or obect. Here just a simple boolean for
   // unit testing
   std::atomic_bool boolean_set_by_user_cmd_;
+
+  // Control
+  dynamicgraph::Vector desired_torques_, desired_positions_;
 };
 
 } //namespace
