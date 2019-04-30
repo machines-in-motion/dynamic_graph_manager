@@ -103,6 +103,34 @@ public:
     return true;
   }
 
+  /**
+   * @brief is_in_safety_mode check if the dynamic graph is still alive and
+   * sending commands at a descent frequency. Inheriting this method is not
+   * mandatory but recommanded.
+   * @return true if there is a problem
+   */
+  bool is_in_safety_mode()
+  {
+    // here define a check for robot specific stuff.
+    bool check = true;
+    return check || DynamicGraphManager::is_in_safety_mode();
+  }
+
+  /**
+   * @brief compute_safety_controls computes safety controls very fast in case
+   * the dynamic graph is taking to much computation time or has crashed.
+   */
+  void compute_safety_controls()
+  {
+    // fill all controls with zero... Check your robot to imagine what would be
+    // safer in this case.
+    for(dynamic_graph::VectorDGMap::iterator ctrl = motor_controls_map_.begin() ;
+        ctrl != motor_controls_map_.end() ; ++ctrl)
+    {
+      ctrl->second.fill(0.0);
+    }
+  }
+
 private:
   /**
    * @brief The actuall user command called in the real time thread

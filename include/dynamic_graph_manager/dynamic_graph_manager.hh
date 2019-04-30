@@ -332,7 +332,7 @@ public:
    * sending commands at a descent frequency.
    * @return true if there is a problem
    */
-  bool is_in_safety_mode()
+  virtual bool is_in_safety_mode()
   {
     return (missed_control_count_ >= max_missed_control_) ||
         has_dynamic_graph_process_died();
