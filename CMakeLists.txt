@@ -92,6 +92,11 @@ generate_messages(DEPENDENCIES std_msgs)
 ########################################################
 add_subdirectory(src)
 
+####################
+# manage the demos #
+####################
+add_subdirectory(demos)
+
 #########################
 # manage the unit tests #
 #########################
