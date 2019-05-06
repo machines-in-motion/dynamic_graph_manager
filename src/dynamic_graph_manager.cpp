@@ -12,6 +12,8 @@
 #include <real_time_tools/realtime_check.hpp>
 // use for real_time printf
 #include <real_time_tools/realtime_iostream.hpp>
+// fix the each process to one specific cpu
+#include "real_time_tools/process_manager.hpp"
 // use the ROS singleton to initialize and use ROS
 #include <dynamic_graph_manager/ros_init.hh>
 // this file defines the class in this header
@@ -199,6 +201,11 @@ void DynamicGraphManager::run()
       pid_dynamic_graph_process_ = getpid();
       pid_hardware_communication_process_ = getppid();
 
+      // Fix the process to 1 cpu
+      int cpu_affinity = 0; // cpu 0
+      real_time_tools::fix_current_process_to_cpu(
+          cpu_affinity, pid_dynamic_graph_process_);
+
       initialize_dynamic_graph_process();
       run_dynamic_graph_process();
       wait_stop_dynamic_graph();
@@ -215,6 +222,11 @@ void DynamicGraphManager::run()
       std::cout << "pid of hardware communication process: "
                 << pid_hardware_communication_process_
                 << std::endl;
+
+      // Fix the process to 1 cpu
+      int cpu_affinity = 1; // cpu 1
+      real_time_tools::fix_current_process_to_cpu(
+          cpu_affinity, pid_hardware_communication_process_);
 
       initialize_hardware_communication_process();
       run_hardware_communication_process();
