@@ -12,8 +12,6 @@
 #include <real_time_tools/realtime_check.hpp>
 // use for real_time printf
 #include <real_time_tools/realtime_iostream.hpp>
-// fix the each process to one specific cpu
-#include "real_time_tools/process_manager.hpp"
 // use the ROS singleton to initialize and use ROS
 #include <dynamic_graph_manager/ros_init.hh>
 // this file defines the class in this header
@@ -201,11 +199,6 @@ void DynamicGraphManager::run()
       pid_dynamic_graph_process_ = getpid();
       pid_hardware_communication_process_ = getppid();
 
-      // Fix the process to 1 cpu
-      int cpu_affinity = 0; // cpu 0
-      real_time_tools::fix_current_process_to_cpu(
-          cpu_affinity, pid_dynamic_graph_process_);
-
       initialize_dynamic_graph_process();
       run_dynamic_graph_process();
       wait_stop_dynamic_graph();
@@ -222,11 +215,6 @@ void DynamicGraphManager::run()
       std::cout << "pid of hardware communication process: "
                 << pid_hardware_communication_process_
                 << std::endl;
-
-      // Fix the process to 1 cpu
-      int cpu_affinity = 1; // cpu 1
-      real_time_tools::fix_current_process_to_cpu(
-          cpu_affinity, pid_hardware_communication_process_);
 
       initialize_hardware_communication_process();
       run_hardware_communication_process();
@@ -392,12 +380,20 @@ void DynamicGraphManager::run_dynamic_graph_process()
   wait_start_dynamic_graph();
   if(dg_ros_node.ok())
   {
-    // launch the real time thread and ros spin
-    real_time_tools::block_memory();
+    // launch the real time thread
+    std::vector<int> cpu_affinity;
+    cpu_affinity.clear();
+    cpu_affinity.push_back(0); // cpu 0
+    int stack_memory_factor= 50;
+    bool call_block_memory = true;
     thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
     real_time_tools::create_realtime_thread(
           *thread_dynamic_graph_,
-          &DynamicGraphManager::dynamic_graph_real_time_loop_helper, this);
+          &DynamicGraphManager::dynamic_graph_real_time_loop_helper,
+          this,
+          call_block_memory,
+          stack_memory_factor,
+          cpu_affinity);
     printf("dynamic graph thread started\n");
   }else{
     printf("dynamic graph thread NOT started as ROS has been shutdown.\n");
@@ -417,13 +413,20 @@ void DynamicGraphManager::run_hardware_communication_process()
   // allow the hardware thread to run
   start_hardware_communication();
 
-  // launch the real time thread
-  real_time_tools::block_memory();
-  thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
-  real_time_tools::create_realtime_thread(
-        *thread_hardware_communication_,
-        &DynamicGraphManager::hardware_communication_real_time_loop_helper,
-        this);
+  // launch the real time thread and ros spin
+    std::vector<int> cpu_affinity;
+    cpu_affinity.clear();
+    cpu_affinity.push_back(1); // cpu 0
+    int stack_memory_factor= 50;
+    bool call_block_memory = true;
+    thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
+    real_time_tools::create_realtime_thread(
+          *thread_hardware_communication_,
+          &DynamicGraphManager::hardware_communication_real_time_loop_helper,
+          this,
+          call_block_memory,
+          stack_memory_factor,
+          cpu_affinity);
   printf("hardware communication loop started\n");
 }
 
