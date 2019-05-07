@@ -623,8 +623,21 @@ protected:
   bool is_real_robot_;
 
   /**
+   * @brief dg_active_timer_file_ this is the path to the file that will 
+   * contain the computation time of each of the dynamic graph complete
+   * execution.
+   */
+  std::string dg_active_timer_file_;
+
+  /**
+   * @brief dg_sleep_timer_file_ this is the path to the file that will contain
+   * the sleep duration of the dynamic graph thread.
+   */
+  std::string dg_sleep_timer_file_;
+
+  /**
    * @brief dg_timer_file_ this is the path to the file that will contain the
-   * computation time of each of the dynamic graph complete execution.
+   * time of the dynamic graph loop.
    */
   std::string dg_timer_file_;
 
@@ -664,7 +677,20 @@ protected:
   std::string app_dir_;
 
   /**
-   * @brief dg_timer is the timer for the dynamic graph loop
+   * @brief dg_active_timer_ is the timer measuring the computation time of
+   * the dynamic graph loop.
+   */
+  real_time_tools::Timer dg_active_timer_;
+
+  /**
+   * @brief dg_sleep_timer_ is the timer measuring the time during which
+   * the dynamic graph loop sleeps.
+   */
+  real_time_tools::Timer dg_sleep_timer_;
+
+  /**
+   * @brief dg_timer_ is the timer measuring the duration time of the dynamic
+   * graph loop.
    */
   real_time_tools::Timer dg_timer_;
 

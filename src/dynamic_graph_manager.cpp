@@ -57,6 +57,8 @@ DynamicGraphManager::DynamicGraphManager()
 
   // files where to dump the timers
   log_dir_ = "/tmp/";
+  dg_active_timer_file_ = "/tmp/dg_active_timer.dat";
+  dg_sleep_timer_file_ = "/tmp/dg_sleep_timer.dat";
   dg_timer_file_ = "/tmp/dg_timer.dat";
   hwc_active_timer_file_ = "/tmp/hwc_active_timer.dat";
   hwc_sleep_timer_file_ = "/tmp/hwc_sleep_timer.dat";
@@ -162,6 +164,8 @@ void DynamicGraphManager::initialize(YAML::Node param){
   }
 
   log_dir_ = real_time_tools::get_log_dir("dynamic_graph_manager");
+  dg_active_timer_file_ = log_dir_ + "dg_active_timer.dat";
+  dg_sleep_timer_file_ = log_dir_ + "dg_sleep_timer.dat";
   dg_timer_file_ = log_dir_ + "dg_timer.dat";
   hwc_active_timer_file_ =  log_dir_ + "hwc_active_timer.dat";
   hwc_sleep_timer_file_ =  log_dir_ + "hwc_sleep_timer.dat";
@@ -172,6 +176,8 @@ void DynamicGraphManager::initialize(YAML::Node param){
     debug_timer_history_length = parameter.as<unsigned>();
   }
 
+  dg_active_timer_.set_memory_size(debug_timer_history_length);
+  dg_sleep_timer_.set_memory_size(debug_timer_history_length);
   dg_timer_.set_memory_size(debug_timer_history_length);
   hwc_active_timer_.set_memory_size(debug_timer_history_length);
   hwc_sleep_timer_.set_memory_size(debug_timer_history_length);
@@ -419,7 +425,7 @@ void DynamicGraphManager::run_hardware_communication_process()
     cpu_affinity.push_back(1); // cpu 0
     int stack_memory_factor= 50;
     bool call_block_memory = true;
-    thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
+    thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
     real_time_tools::create_realtime_thread(
           *thread_hardware_communication_,
           &DynamicGraphManager::hardware_communication_real_time_loop_helper,
@@ -467,10 +473,18 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   ros::NodeHandle& dg_ros_node = ros_init(dg_ros_node_name_);
 
   rt_printf("DG: Start loop\n");
+
+  // initialize the timers
+  dg_active_timer_.tic();
+  dg_sleep_timer_.tic();
+  dg_timer_.tic();
   
   while(!is_dynamic_graph_stopped() && dg_ros_node.ok())
   {
-    dg_timer_.tic();
+    // measure the complete iteration time
+    dg_timer_.tac_tic();
+    // measure the active time
+    dg_active_timer_.tic();
     // read the sensor from the shared memory
     shared_memory::get(shared_memory_name_, sensors_map_name_, sensors_map_);
 
@@ -483,19 +497,27 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
     shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                        motor_controls_map_);
 
-    dg_timer_.tac();
+    // measure the active time
+    dg_active_timer_.tac();
+    // measure the sleep time
+    dg_sleep_timer_.tic();
 
     // notify the hardware_communication process that the control has been done
     cond_var_->notify_all();
 
     // wait that the hardware_communication process acquiers the data.
     cond_var_->wait();
+
+    // measure the sleep time
+    dg_sleep_timer_.tac();
   }
 
   // we use this function here because the loop might stop because of ROS
   stop_dynamic_graph();
 
   rt_printf("DG: Dumping time measurement\n");
+  dg_active_timer_.dump_measurements(dg_active_timer_file_);
+  dg_sleep_timer_.dump_measurements(dg_sleep_timer_file_);
   dg_timer_.dump_measurements(dg_timer_file_);
 
   cond_var_->unlock_scope();
