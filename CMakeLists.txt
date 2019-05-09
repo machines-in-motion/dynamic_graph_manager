@@ -109,7 +109,6 @@ catkin_package(
   LIBRARIES ${EXPORTED_LIBRAIRIES}
   INCLUDE_DIRS include ${${dg_name}_INCLUDE_DIRS} ${${dgp_name}_INCLUDE_DIRS}
   CATKIN_DEPENDS ${CATKIN_PKGS}
-  DEPENDS dynamic-graph dynamic-graph-python
   CFG_EXTRAS ${CMAKE_LOCAL_MODULES}
 )
 
