@@ -24,7 +24,7 @@
 # include <sensor_msgs/JointState.h>
 # include <tf2_msgs/TFMessage.h>
 # include <realtime_tools/realtime_publisher.h>
-# include <real_time_tools/realtime_thread_creation.hpp>
+# include <real_time_tools/thread.hpp>
 # include <real_time_tools/spinner.hpp>
 
 /**

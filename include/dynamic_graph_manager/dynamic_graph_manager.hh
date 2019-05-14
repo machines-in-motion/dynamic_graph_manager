@@ -35,7 +35,7 @@
 #include <std_srvs/Empty.h>
 
 // used to spawn the real time thread
-#include "real_time_tools/realtime_thread_creation.hpp"
+#include "real_time_tools/thread.hpp"
 
 // use the realtime spinner to time the loops
 #include <real_time_tools/spinner.hpp>

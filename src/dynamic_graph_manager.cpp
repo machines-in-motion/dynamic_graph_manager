@@ -6,10 +6,8 @@
  * @date 2019-05-22
  */
 
-// use the realtime checks to measure the loops computation time
-#include <real_time_tools/realtime_check.hpp>
 // use for real_time printf
-#include <real_time_tools/realtime_iostream.hpp>
+#include <real_time_tools/iostream.hpp>
 // use to set cpu latency.
 #include <real_time_tools/process_manager.hpp>
 // use the ROS singleton to initialize and use ROS
@@ -258,7 +256,7 @@ void DynamicGraphManager::wait_stop_dynamic_graph()
   if(thread_dynamic_graph_)
   {
     cond_var_->notify_all();
-    real_time_tools::join_thread(*thread_dynamic_graph_);
+    thread_dynamic_graph_->join();
   }
 }
 
@@ -273,7 +271,7 @@ void DynamicGraphManager::wait_stop_hardware_communication()
   if(thread_hardware_communication_)
   {
     cond_var_->notify_all();
-    real_time_tools::join_thread(*thread_hardware_communication_);
+    thread_hardware_communication_->join();
   }
 }
 
@@ -390,19 +388,10 @@ void DynamicGraphManager::run_dynamic_graph_process()
   if(dg_ros_node.ok())
   {
     // launch the real time thread
-    std::vector<int> cpu_affinity;
-    cpu_affinity.clear();
-    cpu_affinity.push_back(0); // cpu 0
-    int stack_memory_factor= 50;
-    bool call_block_memory = true;
     thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
-    real_time_tools::create_realtime_thread(
-          *thread_dynamic_graph_,
-          &DynamicGraphManager::dynamic_graph_real_time_loop_helper,
-          this,
-          call_block_memory,
-          stack_memory_factor,
-          cpu_affinity);
+    thread_dynamic_graph_->parameters_.cpu_id_.push_back(0); // cpu 0
+    thread_dynamic_graph_->create_realtime_thread(
+      &DynamicGraphManager::dynamic_graph_real_time_loop_helper, this);
     printf("dynamic graph thread started\n");
   }else{
     printf("dynamic graph thread NOT started as ROS has been shutdown.\n");
@@ -429,13 +418,9 @@ void DynamicGraphManager::run_hardware_communication_process()
     int stack_memory_factor= 50;
     bool call_block_memory = true;
     thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
-    real_time_tools::create_realtime_thread(
-          *thread_hardware_communication_,
-          &DynamicGraphManager::hardware_communication_real_time_loop_helper,
-          this,
-          call_block_memory,
-          stack_memory_factor,
-          cpu_affinity);
+    thread_hardware_communication_->parameters_.cpu_id_.push_back(2); // cpu 2
+    thread_hardware_communication_->create_realtime_thread(
+      &DynamicGraphManager::hardware_communication_real_time_loop_helper, this);
   printf("hardware communication loop started\n");
 }
 
@@ -445,10 +430,8 @@ void DynamicGraphManager::run_single_process()
   wait_start_dynamic_graph();
 
   // launch the real time thread and ros spin
-  real_time_tools::block_memory();
   thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
-  real_time_tools::create_realtime_thread(
-        *thread_dynamic_graph_,
+  thread_dynamic_graph_->create_realtime_thread(
         &DynamicGraphManager::single_process_real_time_loop_helper, this);
 
   printf("single process dynamic graph loop started\n");
