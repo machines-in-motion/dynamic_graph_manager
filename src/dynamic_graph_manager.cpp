@@ -12,6 +12,8 @@
 #include <real_time_tools/realtime_check.hpp>
 // use for real_time printf
 #include <real_time_tools/realtime_iostream.hpp>
+// use to set cpu latency.
+#include <real_time_tools/process_manager.hpp>
 // use the ROS singleton to initialize and use ROS
 #include <dynamic_graph_manager/ros_init.hh>
 // this file defines the class in this header
@@ -120,6 +122,9 @@ void DynamicGraphManager::initialize(YAML::Node param){
   shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                      motor_controls_map_);
   
+  // Set the maximum cpu latency to 0 us. This keeps the CPU from sleeping.
+  real_time_tools::set_cpu_dma_latency(0);
+
   // get the parameter for the hardware communication loop
   std::string error_str = "Fail to parse yaml file. Node is: "
                           "hardware_communication:    ";
@@ -422,7 +427,7 @@ void DynamicGraphManager::run_hardware_communication_process()
   // launch the real time thread and ros spin
     std::vector<int> cpu_affinity;
     cpu_affinity.clear();
-    cpu_affinity.push_back(1); // cpu 0
+    cpu_affinity.push_back(2); // cpu 1
     int stack_memory_factor= 50;
     bool call_block_memory = true;
     thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
