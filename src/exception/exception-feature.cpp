@@ -1,9 +1,9 @@
 /**
- * \file exception-feature.cpp
- * \brief An exception class that provides usefull information in case of bug
- * catch
- * \author Maximilien Naveau
- * \date 2018
+ * @file exception-feature.cpp
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #include <dynamic_graph_manager/exception/exception-feature.hh>

@@ -1,12 +1,16 @@
-#
-# @file prologue.py
-# @brief The robot entity in python
-# @author Maximilien Naveau
-# @date 2018
-#
-# This file prepares the pyhton interpretor so ite contains a pointer to the
-# Device and some tracers
-#
+"""@package dynamic_graph_manager
+
+@file prologue.py
+@author Maximilien Naveau (maximilien.naveau@gmail.com)
+@license License BSD-3-Clause
+@copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+@date 2019-05-22
+
+@brief This file prepares the python interpretor so it contains a pointer to the
+Device and some tracers
+
+"""
+
 from dynamic_graph.entity import PyEntityFactoryClass
 from .robot import Robot
 

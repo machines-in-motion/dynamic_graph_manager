@@ -1,14 +1,10 @@
 /**
  * @file simple_dgm.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
- * @brief 
- * @version 0.1
- * @date 2019-04-30
- * 
- * @copyright Copyright (c) 2019
- * 
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
-
 #include "dynamic_graph_manager/ros_init.hh"
 #include "dynamic_graph_manager/dynamic_graph_manager.hh"
 #include "dynamic_graph_manager/TestUserCmdBool.h"

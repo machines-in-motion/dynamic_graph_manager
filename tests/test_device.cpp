@@ -1,11 +1,9 @@
 /**
- * \file test_device.cpp
- * \brief Device unit tests
- * \author Maximilien Naveau
- * \date 2018
- *
- * This file implements a suit of unit tests for the Device class.
- * @see https://git-amd.tuebingen.mpg.de/amd-clmc/ci_example/wikis/catkin:-how-to-implement-unit-tests
+ * @file test_device.cpp
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #include <ostream>

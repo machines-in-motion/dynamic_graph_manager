@@ -1,8 +1,9 @@
 /**
- * \file ros_interpreter.hh
- * \brief the user interface
- * \author Maximilien Naveau
- * \date 2018
+ * @file ros_interpreter.hh
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  *
  * This file declares a ros bridge on top of Python interpretor. It is used
  * an asynchronuous communcation between the user and the controller.

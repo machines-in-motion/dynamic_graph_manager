@@ -1,11 +1,9 @@
 /**
- * \file dynamic_graph_manager.cpp
- * \brief The Control Manager
- * \author Maximilien Naveau
- * \date 2018
- *
- * Implementation of the DynamicGraphManager class
- *
+ * @file dynamic_graph_manager.cpp
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 // use the realtime checks to measure the loops computation time

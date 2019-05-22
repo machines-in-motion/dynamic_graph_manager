@@ -1,11 +1,9 @@
 ﻿/**
- * \file device.hh
- * \brief an entity helper
- * \author Maximilien Naveau
- * \date 2018
- *
- * This file declares a helper that allow a periodic call of a DynamicGraph
- * signal.
+ * @file periodic-call.hh
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #ifndef PERIODICCALL_HH
