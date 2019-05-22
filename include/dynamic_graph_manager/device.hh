@@ -1,10 +1,9 @@
 /**
- * \file device.hh
- * \brief The robot entity
- * \author Maximilien Naveau
- * \date 2018
- *
- * This file declares the input and output of the DynamicGraph
+ * @file device.hh
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #ifndef DEVICE_HH

@@ -1,10 +1,9 @@
 /**
- * \file device_simulator.cpp
- * \brief The robot entity
- * \author Julian Viereck
- * \date 2018
- *
- * This file describes a base class to expose a simulator.
+ * @file device_simulator.cpp
+ * @author Julian Viereck
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #include <iostream>

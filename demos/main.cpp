@@ -1,14 +1,10 @@
 /**
  * @file main.cpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
- * @brief 
- * @version 0.1
- * @date 2019-04-30
- * 
- * @copyright Copyright (c) 2019
- * 
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
-
 #include "simple_dgm.hpp"
 
 int main(int , char* []) {

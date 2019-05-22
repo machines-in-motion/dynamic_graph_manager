@@ -1,7 +1,10 @@
-///
-/// Copyright 2012 CNRS
-///
-/// Author: Florent Lamiraux
+/**
+ * @file ros_time.cpp
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
+ */
 
 #include <dynamic-graph/factory.h>
 #include <dynamic-graph/signal-caster.h>

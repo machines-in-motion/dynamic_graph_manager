@@ -1,11 +1,9 @@
 /**
- * \file matrix_geometry.hh
- * \brief Definition of simple typdef to ease the code writting and reading
- * \author Maximilien Naveau
- * \date 2018
- *
- * This file declares simple typdef to ease the code writting and reading.
- * usage: see demos and unit tests and documentation
+ * @file matrix_geometry.hh
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #ifndef MATRIX_GEOMETRY_HH

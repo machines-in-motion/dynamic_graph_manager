@@ -1,13 +1,9 @@
 /**
- * \file dynamic_graph_manager.hh
- * \brief The Control Manager
- * \author Maximilien Naveau
- * \date 2018
- *
- * This file declares the DynamicGraphManager class.
- * This code manages the different threads and processes in order to use the
- * DynamicGraph.
- * usage: see demos and unit tests and documentation
+ * @file dynamic_graph_manager.hh
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #ifndef DYNAMIC_GRAPH_MANAGER_HH

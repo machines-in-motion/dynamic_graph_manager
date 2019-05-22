@@ -1,10 +1,9 @@
 /**
- * \file exception-factory.cpp
- * \brief Implement exception for debugging use.
- * \author Maximilien Naveau
- * \date 2018
- *
- * This file implements the input and output of the DynamicGraph
+ * @file exception-factory.cpp
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #include <stdarg.h>

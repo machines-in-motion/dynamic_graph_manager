@@ -1,12 +1,9 @@
 /**
- * @file vicon_entity.hh
+ * @file ros_robot_state_publisher.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
- * @brief 
- * @version 0.1
- * @date 2018-12-18
- * 
- * @copyright Copyright (c) 2018
- * 
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
 
 #ifndef ROS_ROBOT_STATE_PUBLISHER_HPP

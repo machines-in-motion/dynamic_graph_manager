@@ -1,3 +1,11 @@
+/**
+ * @file dg_to_ros.cpp
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
+ */
+
 #include "ros_entities/dg_to_ros.hh"
 
 namespace dynamic_graph

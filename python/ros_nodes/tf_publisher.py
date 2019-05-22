@@ -1,10 +1,20 @@
 #!/usr/bin/env python
-#
-# This script looks for a particular tf transformation
-# and publish it as a TransformStamped topic.
-# This may be useful to insert tf frames into dynamic-graph
-# through dynamic_graph_bridge.
-#
+
+"""@package dynamic_graph_manager
+
+@file __init__.py
+@author Maximilien Naveau (maximilien.naveau@gmail.com)
+@license License BSD-3-Clause
+@copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+@date 2019-05-22
+
+@brief This script looks for a particular tf transformation
+and publish it as a TransformStamped topic.
+This may be useful to insert tf frames into dynamic-graph
+through dynamic_graph_bridge.
+
+"""
+
 
 import rospy
 

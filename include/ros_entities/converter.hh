@@ -1,3 +1,10 @@
+/**
+ * @file converter.hh
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
+ */
 #ifndef DYNAMIC_GRAPH_ROS_CONVERTER_HH
 # define DYNAMIC_GRAPH_ROS_CONVERTER_HH
 

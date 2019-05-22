@@ -16,7 +16,7 @@ make -j8`
 
 ## Usage:
 
-Inherite from the clas DynamicGraphManager and overload the three functions
+Inherite from the class DynamicGraphManager and overload the three functions
 responsible for the hardware:
 
 `virtual void initialize_hardware_communication_process()`

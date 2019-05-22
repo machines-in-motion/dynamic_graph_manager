@@ -3,11 +3,11 @@
   <name>dynamic_graph_manager</name>
   <version>1.0.0</version>
   <description>
-    This project implements a small example when using the dynamic graph
+    This project implements a control architecture based on the dynamic_graph
   </description>
   <author email="mnaveau@tue.mpg.de">Maximilien Naveau</author>
   <maintainer email="mnaveau@tue.mpg.de">Maximilien Naveau</maintainer>
-  <license>TODO</license>
+  <license>BSD 3-Clause</license>
   <buildtool_depend>catkin</buildtool_depend>
 
 <!-- This provide cmake macros to help building the project. -->

@@ -1,11 +1,10 @@
 /**
- * \file exception-abstract.hh
- * \brief An exception class that provides usefull information in case of bug
- * catch.
- * \author Maximilien Naveau
- * \date 2018
+ * @file exception-abstract.hh
+ * @author Maximilien Naveau (maximilien.naveau@gmail.com)
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @date 2019-05-22
  */
-
 #ifndef ABSTRACT_EXCEPTION_HH
 #define ABSTRACT_EXCEPTION_HH
 
