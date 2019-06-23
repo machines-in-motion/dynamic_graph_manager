@@ -1,0 +1,54 @@
+author Maximilien Naveau (maximilien.naveau@gmail.com)
+license License BSD-3-Clause
+copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+date 2019-05-22
+
+/**
+
+\page subpage_robot_properties Implementing a robot in dynamic graph manager
+
+\subpage subsubpage_robot_package
+
+\subpage subsubpage_stl
+
+\subpage subsubpage_stl_to_obj
+
+\subpage subsubpage_urdf
+
+\subpage subsubpage_implement_dgm
+
+*/
+
+
+
+
+
+/**
+
+\page subsubpage_robot_package Create a robot/object/environment package
+
+*/
+
+/**
+
+\page subsubpage_stl How to generate STL files for visualisation
+
+*/
+
+/**
+
+\page subsubpage_stl_to_obj Convert the stl files in obj files
+
+*/
+
+/**
+
+\page subsubpage_urdf HowTo create URDF files
+
+*/
+
+/**
+
+\page subsubpage_implement_dgm Implement the dynamic_graph_manager specific to your robot
+
+*/

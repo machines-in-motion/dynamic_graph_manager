@@ -1,0 +1,93 @@
+author Maximilien Naveau (maximilien.naveau@gmail.com)
+license License BSD-3-Clause
+copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+date 201  9-05-22
+
+/**
+ 
+\mainpage Dynamic Graph Manager
+
+\tableofcontents
+
+\section introduction Introduction
+
+
+\section license License
+
+BSD 3-Clause License
+
+Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+\section structure Structure of the documentation
+
+The installation procedure for this package is available here:
+\subpage subpage_installation
+
+An example to launch can be found here:
+\subpage subpage_launch
+
+In general this package uses one yaml configuration file to define the robot
+properties. A good place to store such file is a robot_properties_[robot_name]
+pacakge. Such packages contain urdf models, meshes, configuration files, etc.
+And tutorial to create such package can be found here:
+\subpage subpage_robot_properties
+
+This package uses the "dynamic graph" for the control. A simple example based on
+sot-core is available in here: 
+\subpage subpage_basic_control_graph
+
+This framework lives in the ROS eco-system. So it profits from the ROS
+community tools such as rqt_plot, rviz. In addition to these tools a plotting
+tools has been develop in order to evaluate data in a dynamic way. Exmaples of
+usage are available here:
+\subpage subpage_plot
+
+Debugging the current implementationa dn specifically the dynamic graph can be
+tedious because of the C++/Python interaction, the spawning of different
+processes, etc. Exmaples of debugging technics can be found here:
+\subpage subpage_debugging
+
+In the following pages you will find how we interface the dynamic graph with a
+dynamical simulator:
+\subpage subpage_robot_simulation
+
+As mention above this framework is part of the ROS eco-system. As such, the rqt
+framework is available. A specialization for the dynamic_graph is available as
+rqt_dynamic_graph. An example on how to create a robot dashboard using rqt is
+available here:
+\subpage subpage_robot_dashboard
+
+This page present the steps exeuted during the continuous integration build.
+\subpage subpage_ci
+
+In the following page you will find the motivation behind the implementation
+of such framework:
+\subpage subpage_motivation_history
+
+*/
