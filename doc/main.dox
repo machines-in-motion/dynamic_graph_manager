@@ -9,42 +9,144 @@ date 201  9-05-22
 
 \tableofcontents
 
-\section introduction Introduction
+\section intro_sec_introduction 1/ Introduction
+
+The pupose of this pacakge is to provide a simple interface between the drivers
+of a robots and a controller based on the dynamic-graph LAAS-CNRS framework.
+This documentation page is therefore based on
+http://stack-of-tasks.github.io/documentation/e_api.html.
+Please visit this web site if you have code question about the LAAS
+packages.
+A talk that present this page is available here:
+http://replay.vidyo.tuebingen.mpg.de/replay/showRecordingExternal.
+html?key=KEnam4DBoewz76u
+
+If anything is not clear in this documentation please ask Maximilien
+Naveau or Vincent Berenz.
+
+\section intro_sec_dg_general_knowledge 2/ General knowledge about the dynamic graph
+
+\subsection intro_subsec_graph 2.1/ The dynamic-graph is ... a graph
+
+\image html figures/robot_state_reference_from_slider.jpeg "Figure 1: Example of a graph based on https://git-amd.tuebingen.mpg.de/amd-clmc/dg_demos/blob/master/python/dg_demos/filter_graph.py." width=4cm
+
+The above figure depicts a simple graph that takes as input a vector of 4
+dimension containing 4 doubles (e.g. user inputs from some slider) and output a
+desired configuration for a quadruped robot. First step consist in filtering it 
+and scale it to the desired reference. Then we define the hip joints to be the 
+reference from the scaled_slider. The knee are a scaled version of the hip 
+(knee_joint = hip_joint * (-2)). Then we concatenate the signals back to one 
+simple vector which will be the reference state of fro a quadruped robot.
+
+The idea of having a graph is that once a part of the graph works, it can
+be concatenated and can be seen as a simple node.
+The other powerful thing about graphs is that they can be conceptually
+easy to understand (not easy to use nor debug but everyone knows
+what a graph is ^^).
+The dynamic graph IS therefore a GRAPH, so it has inputs and outputs.
+Typically the inputs of the graph we will use are the robot sensors, and
+its outputs are the motor controls.
+Which boils down to the definition of a controller. For example, a simple
+graph would read the robot joint states and velocities and compute a PD
+controller resulting in a torque output.
+The concept is actually more general: A control graph is made up of no
+des , which consume and emit signals. For instance, it is also possible
+to implement a filter.
+Such a filter would consume the current robot state and perform a
+smoothing on the state measurements.
+
+In the next section we will describe the vocabulary that is used with the
+dynamic-graph.
+
+\subsection intro_subsec_vocabulary 2.2/ A bit of vocabulary
+
+\image html figures/vocabulary_graph.png "Figure 2: This simple graph shows the vocabulary associated with the dynamic graph."
+
+Figure 2 summarizes the different notions used in the dynamic graph.
+There definitions are the following:
+  - Signals: These are arrows (see figure 1 and figure2)
+  - Input signals: These are sockets for a node. These represent
+object where an output signal can be plugged in. Nodes
+defines only there own sockets during the setup time.
+output signals: These are signal emitting from a node. Nodes
+defines only there own output signals during the setup time.
+  - Entity: An entity a node of the graph. Each node executes a bit
+of code.
+Control Graph: A structure of Entities and signals plugged
+together is a controller.
+  - User command: A command is a non-real time punctual list of
+instructions. It is used to interact with entities and modify their
+inner states.
+Setup time: This is time during which the user sets up the
+graph. The graph **IS NOT / MUST NOT BE** running yet.
+  - Plug: The fact of plugging an input signal with an output signal
+allow the user to define dynamically the flow of information in
+the graph.
 
 
-\section license License
+\subsection intro_subsec_use 2.3/ Typical use of the dynamic graph / Hardware communication
 
-BSD 3-Clause License
+The "outside" of the graph is typically considered as the robot hardware.
+An abstraction of this "hardware", which can be virtually anything, is
+done by configuring the sensors and controls as signals.
+So in essence we create an entity that will access the hardware sensors
+and feed them to the graph as output signals and get back the controls
+as input signals.
+In order to configure automatically this entity we used a YAML file. We
+are thinking about a way to create this class from a YAML file, which
+would be more consistent because the urdf format is very standard.
 
-Copyright (c) 2019, New York University and Max Planck Gesellshaft.
-All rights reserved.
+\section intro_sec_how_it_works 3/ How does it works?
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+The dynamic graph uses the concept of singletons
+(https://en.wikipedia.org/wiki/Singleton_pattern):
 
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
+```
+Wikipedia definition:
 
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
+In software engineering, the singleton pattern is a software
+design pattern that restricts the instantiation of a class to one
+"single" instance. This is useful when exactly one object is
+needed to coordinate actions across the system. The term
+comes from the mathematical concept of a singleton.
+```
 
-3. Neither the name of the copyright holder nor the names of its
-   contributors may be used to endorse or promote products derived from
-   this software without specific prior written permission.
+The concept of singleton is also useful to define a unique global variable
+with a specific API.
+Meaning that all pieces of the code can have access to the same object
+(a global variable), but are able to interact with it only with a specific API.
+The pool of entities is a singleton which manages the memory of all
+the entities.
+The pool defines each instances by an identifier (a string) and stores it.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+WARNING:
 
-\section structure Structure of the documentation
+Which is why one cannot create 2 entities with the same name.
+```
+
+The pool has therefore the capabilities of extracting the pointer to your
+instances and give it back to you if you lost this pointer.
+
+```
+WARNING:
+
+Therefore all instances of entities can be considered as "global variables"
+```
+
+\subsection intro_subsec_pool_entities 3.1/ The pool of entities
+
+\subsection intro_subsec_back_propagation 3.2/ Back propagation of the signal call
+
+\subsection intro_subsec_commands 3.3/ The concept of a command
+
+\subsection intro_subsec_python 3.4/ C++ controller, but dynamic Python setup
+
+
+\section intro_sec_dgm 4/ The dynamic_graph_manager
+
+
+\section intro_sec_structure 5/ Structure of the documentation
 
 The installation procedure for this package is available here:
 \subpage subpage_installation
@@ -89,5 +191,37 @@ This page present the steps exeuted during the continuous integration build.
 In the following page you will find the motivation behind the implementation
 of such framework:
 \subpage subpage_motivation_history
+
+\section intro_sec_license 6/ License
+
+BSD 3-Clause License
+
+Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
