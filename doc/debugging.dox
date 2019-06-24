@@ -4,6 +4,49 @@ copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
 date 2019-05-22
 
 /**
-\page subpage_debugging Debugging the implementation
+\page subpage_debugging 6/ Debugging the implementation
+
+\section debug_sec_entity_impl 6.1/ Debugging Entity / Controller implementations
+
+There are few ways to debug the controller before running anything on the real
+robot:
+  -# <b> Creating a simulation device using the robot yaml file (Recommended) </b>
+    -# Create a robot device using the yaml file of the robot (found in robot_properties/robot_name/config/robot_name.yaml)
+    -# initialize your control graph and set up your control graph with all its entities.
+    -# run a loop executing the graph to verify the output from the controller.
+    -# An example of this implementation is available here : https://git-amd.tuebingen.mpg.de/amd-clmc/dg_blmc_robots/blob/master/demos/quadruped/quad_simu.py
+      -# Copy the robot init part before your control graph and change the name to the robot being used (initializes the robot device.)
+      -# copy the robot simulation part after your control graph and modify the code to make it suitable for the robot.yaml. (change number of joint, etc...)
+      -# run the python file along with roscore to debug.
+  -# <b> Using Pybullet </b> (available for quadruped and Teststand)
+    -# example simulations for teststand are available here : https://git-amd.tuebingen.mpg.de/amd-clmc/dg_blmc_robots/tree/master/demos/teststand/simulations
+    -# example simulations for quadruped are available here : https://git-amd.tuebingen.mpg.de/amd-clmc/dg_blmc_robots/tree/master/demos/quadruped/simulations
+  -# <b> Create the entity alone in python and feed it with constant vectors </b>
+
+
+\section debug_sec_dgm 6.2/ Debugging Dynamic Graph Manager
+
+To debug the low-level of dynamic graph manager, use GDB.
+```
+INFORMATION:
+
+To avoid SIGINT to get caught by GDB, execute the line handle SIGINT nostop pass on the GDB command line.
+```
+
+<b> When to use GDB </b> :
+  -# Segmentation faults
+  -# python terminal displays following : (This is seen in the terminal in which the python script is run)
+```
+Connection to remote server lost. Reconnecting...
+Retrying previous command...
+Connection to remote server lost. Reconnecting...
+```
+
+<b> GDB for Python </b>:
+
+To debug python files using gdb use the following command: 
+```
+gdb -ex r --args python <programname>.py <arguments>
+```
 
 */

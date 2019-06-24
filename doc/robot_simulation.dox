@@ -4,6 +4,59 @@ copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
 date 2019-05-22
 
 /**
-\page subpage_robot_simulation Interfacing with a robot simulator
+\page subpage_robot_simulation 7/ Interfacing with a robot simulator
 
+A robot implemented with dynamic graph manager doesn't come with a simulator by 
+default. There are  multiple ways and at different levels to implement a 
+simulator:
+  - Implement a simulator in C++ and start it as dynamic graph manager from the
+console
+  - Create a device in python and use another simulator from python
+
+\section simu_sec_cpp 7.1/ Simulator implementation in C++
+
+For an example, see 
+https://git-amd.tuebingen.mpg.de/amd-clmc/dynamic_graph_manager/blob/master/demos/single_motor/single_motor_device_simulator.cpp.
+
+\section simu_sec_python 7.2/ Device in python
+
+To test a dynamic graph implementation, one way is to create a Device object in 
+python. This device object is created using the same / a similar robot-yaml file
+as for the dynamic graph manger's real robot. At every integration step of the 
+simulation, the sensor values must be stored on the sensor signals of the device
+and the dynamic graph is executed. Last, the control commands must be forwarded 
+to a simulator, the simulator is stepped and the next cycle begins.
+
+The following code shows how to create a device and robot. It also scatches how 
+to do the simulation loop.
+```
+from dynamic_graph_manager.device import Device
+from dynamic_graph_manager.device.robot import Robot
+ 
+# Create the device and robot object.
+device = Device("your_robot_name")
+device.initialize("path_to_the_robot_yaml_file.yaml")
+robot = Robot(name=local_device.name, device=local_device)
+ 
+# This creates the controllers and plugs the sensor to the control signals etc.
+setup_controller(robot)
+ 
+# Setup your simulator. This might be pybullet etc.
+sim = create_simulator()
+ 
+# Do the simulation loop. Here, we assume to simulate 4000 steps
+for it in range(4000):
+  # Fill all the sensor signals based on the simulator values.
+  robot.device.<join_positions>.value = sim.get_joint_positions()
+  ...
+ 
+  # Execute the dynamic graph. This computes the control output.
+  robot.device.executeGraph()
+ 
+  # Pass the computed control signals to the simulator.
+  sim.control(robot.device.<ctrl_commands>.value)
+ 
+  # Step the simulator by one dt.
+  sim.step()
+```
 */

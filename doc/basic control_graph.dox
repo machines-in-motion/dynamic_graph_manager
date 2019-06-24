@@ -4,6 +4,76 @@ copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
 date 2019-05-22
 
 /**
-\page subpage_basic_control_graph Basic Control Graph
+\page subpage_basic_control_graph 5/ Basic Control Graph
+
+\section control_sec_intro 5.1/ Good practice
+
+@todo Create a pacckage like ci_integration that depends on Dynamic Graph and 
+show the implementation of the dg_ci_example.
+
+```
+WARNING:
+
+Please make sure to read the following page first: 4/ Implementing a robot in 
+dynamic graph manager
+```
+
+If possible, controllers and helper functions should be implemented in
+"dg_tools". Please refer to the project's readme about the desired code
+structure.
+
+@todo cleanly split between a simulated example (currently shown with stuggihop)
+and a hardware example (currently at the bottom with a single motor...).
+
+\section control_sec_simple_entity 5.2/ Writing a simple entity
+
+In dynamic graph, an entity is an object that consumes input signals and 
+provides output signals. For instance, a P-controller might consume the current 
+position of a motor as input signal and provide as output a torque command to 
+move the motor position towards a desired position.
+
+To control a robot / simulator using dynamic graph manager, the following is 
+necessary:
+  - Implement a controller as a dynamic graph entity.
+  - Example:
+    - https://git-amd.tuebingen.mpg.de/amd-clmc/dg_tools/blob/master/src/control/control_pd.cpp
+    - https://git-amd.tuebingen.mpg.de/amd-clmc/dg_tools/blob/master/include/dg_tools/control/control_pd.hpp
+  - Expose the entity using a few lines in CMakeList.txt
+  - Example:
+      - https://git-amd.tuebingen.mpg.de/amd-clmc/dg_tools/blob/master/src/CMakeLists.txt
+  - In the python interpreter of the dynamic graph manager, create the control graph, connect it to the robot device and run configurations if needed
+  - Example (TODO: make an example contained in dg_tools):
+      - https://git-amd.tuebingen.mpg.de/amd-clmc/dg_blmc_robots/blob/master/demos/stuggihop/simulations/dg_stuggihop_simu_basic.py
+
+\section control_sec_expose_entity 5.3/ Expose the entities to Python
+
+Once you have defined the  controller in C++, you need to expose it to python. 
+This is done by adding a few lines into the CMakeList.txt file.
+
+For an example, please refer to
+https://git-amd.tuebingen.mpg.de/amd-clmc/dg_tools/blob/master/src/CMakeLists.txt.
+  - First add your entities here:
+\image html figures/control/create_lib.png
+  - Secondly export the python bindings:
+\image html figures/control/expose_python.png
+
+```
+WARNING:
+
+one need the following lines at the beginning of the CMakeLists.txt because 
+otherwise the python bindings will not link to your library and will not find 
+your entities.
+```
+\image html figures/control/cmake_header.png
+
+\section control_sec_load_graph 5.4/ Create the control graph entries and connect them to the robot
+
+An example on how a simple control graph using the MotorController with the 
+robot.device is shown in single_motor_main.py. Note that `robot.device` is 
+provided by the Dynamic Graph Manager automatically and initialized to talk to 
+the real/simulated hardware. The robot.device is created from the yaml file's 
+device specification. Especially, all the input and output signals are created 
+on the `robot.device` as described in the `sensor` and `control` part of the 
+yaml file.
 
 */

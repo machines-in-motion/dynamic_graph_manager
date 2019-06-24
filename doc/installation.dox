@@ -137,7 +137,7 @@ git clone git@github.com:machines-in-motion/treep_machines_in_motion.git
 treep --clone DYNAMIC_GRAPH
 ```
 At this point you should see something like this:
-\image html figures/treep-clone-dg.png
+\image html figures/install/treep-clone-dg.png
     - If you decided to clone every package it would look like this:
 ```
 mkdir devel # or your favorite development folder
@@ -146,14 +146,14 @@ git clone git@github.com:machines-in-motion/treep_machines_in_motion.git
 treep --clone ALL_LAAS
 ```
 At this point you should see something like this:
-\image html figures/treep-clone-laas.png
+\image html figures/install/treep-clone-laas.png
   -# Now let us assume you have something clone in your workspace/src folder.
     - The next step is to generate the compilation script.
 ```
 treep --compilation-script
 ```
 The ouput:
-\image html figures/treep-compile-script.png
+\image html figures/install/treep-compile-script.png
 At this point treep generated a compilation script in bash
 that you need to \b execute anytime you do the compilation.
     - If the compilation script is not an executable you should do a

@@ -4,6 +4,13 @@ copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
 date 2019-05-22
 
 /**
-\page subpage_ci Continuous integration
+\page subpage_ci 9/ Continuous integration
+
+In order to compute the coverage in terms of unittest of your catkin workspace,
+please do the following:
+
+```
+catkin_make -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_SHARED_LINKER_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage -DCMAKE_BUILD_TYPE=Debug .. && catkin_make run_tests && gcovr -r .
+```
 
 */

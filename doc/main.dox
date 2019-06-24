@@ -30,7 +30,7 @@ Naveau or Vincent Berenz.
 
 \subsubsection intro_subsec_graph 1.2.1/ The dynamic-graph is ... a graph
 
-\image html figures/robot_state_reference_from_slider.jpeg "Figure 1: Example of a graph based on https://git-amd.tuebingen.mpg.de/amd-clmc/dg_demos/blob/master/python/dg_demos/filter_graph.py."
+\image html figures/intro/robot_state_reference_from_slider.jpeg "Figure 1: Example of a graph based on https://git-amd.tuebingen.mpg.de/amd-clmc/dg_demos/blob/master/python/dg_demos/filter_graph.py."
 
 The above figure depicts a simple graph that takes as input a vector of 4
 dimension containing 4 doubles (e.g. user inputs from some slider) and output a
@@ -62,7 +62,7 @@ dynamic-graph.
 
 \subsubsection intro_subsec_vocabulary 1.2.2/ A bit of vocabulary
 
-\image html figures/vocabulary_graph.png "Figure 2: This simple graph shows the vocabulary associated with the dynamic graph."
+\image html figures/intro/vocabulary_graph.png "Figure 2: This simple graph shows the vocabulary associated with the dynamic graph."
 
 Figure 2 summarizes the different notions used in the dynamic graph.
 There definitions are the following:
@@ -140,7 +140,7 @@ Therefore all instances of entities can be considered as "global variables"
 
 \subsubsection intro_subsec_back_propagation 1.3.2/ Back propagation of the signal call
 
-\image html figures/robot_state_reference_from_slider_zoom.jpeg "Figure 3:  Zoom of the end of the graph depicted in figure 1"
+\image html figures/intro/robot_state_reference_from_slider_zoom.jpeg "Figure 3:  Zoom of the end of the graph depicted in figure 1"
 
 Consider the graph above (figure 3). In this graph the output signal of
 robot_des_state is not represented but in this particular case let us call it
@@ -262,9 +262,13 @@ available here:
 This page present the steps exeuted during the continuous integration build.
 \subpage subpage_ci
 
+*/ This part is "commented" from doxygen
+
 In the following page you will find the motivation behind the implementation
 of such framework:
 \subpage subpage_motivation_history
+
+/**
 
 \subsection intro_sec_license 1.6/ License
 

@@ -4,6 +4,42 @@ copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
 date 2019-05-22
 
 /**
-\page subpage_robot_dashboard Robot dashboard
+\page subpage_robot_dashboard 8/ Robot dashboard
+
+\section dashbaord_sec_create 8.1/ Creating a dashboard
+
+In order to create a dash board just source you ros environment and run:
+```
+rqt
+```
+Then you will have this kind of window:
+\image html figures/dashboard/rqt.png
+In the plugins tab you have the list of loadable plugins you want. Meaning all 
+the ROS ecosystem at your disposal and on GUI.
+
+Example:
+\image html figures/dashboard/dashboard.png
+
+Enjoy!
+\section dashbaord_sec_launch 8.2/ Launching the dashboard
+
+In order to launch it you need:
+  - The rqt_dynamic_graph plugin from my fork though. There is a lot to do 
+before this plugin is robust enough to be merge in the LAAS master.
+```
+git clone --recursive https://github.com/MaximilienNaveau/rqt_dynamic_graph.git
+```
+  - A dynamic_graph_manager main running: for simple testing you can run:
+```
+rosrun dynamic_graph_manager demo_dynamic_graph_manager
+```
+  - Run the dashboard from the robot_properties package of your choice:
+```
+roslaunch robot_properties_quadruped quadruped_dashboard.launch
+```
+or
+```
+roslaunch robot_properties_teststand teststand_dashboard.launch
+```
 
 */
