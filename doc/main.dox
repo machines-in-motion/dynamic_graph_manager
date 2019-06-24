@@ -28,7 +28,7 @@ Naveau or Vincent Berenz.
 
 \subsection intro_subsec_graph 2.1/ The dynamic-graph is ... a graph
 
-\image html figures/robot_state_reference_from_slider.jpeg "Figure 1: Example of a graph based on https://git-amd.tuebingen.mpg.de/amd-clmc/dg_demos/blob/master/python/dg_demos/filter_graph.py." width=4cm
+\image html figures/robot_state_reference_from_slider.jpeg "Figure 1: Example of a graph based on https://git-amd.tuebingen.mpg.de/amd-clmc/dg_demos/blob/master/python/dg_demos/filter_graph.py."
 
 The above figure depicts a simple graph that takes as input a vector of 4
 dimension containing 4 doubles (e.g. user inputs from some slider) and output a
@@ -98,6 +98,8 @@ would be more consistent because the urdf format is very standard.
 
 \section intro_sec_how_it_works 3/ How does it works?
 
+\subsection intro_subsec_pool_entities 3.1/ The pool of entities
+
 The dynamic graph uses the concept of singletons
 (https://en.wikipedia.org/wiki/Singleton_pattern):
 
@@ -134,16 +136,86 @@ WARNING:
 Therefore all instances of entities can be considered as "global variables"
 ```
 
-\subsection intro_subsec_pool_entities 3.1/ The pool of entities
-
 \subsection intro_subsec_back_propagation 3.2/ Back propagation of the signal call
+
+\image html figures/robot_state_reference_from_slider_zoom.jpeg "Figure 3:  Zoom of the end of the graph depicted in figure 1"
+
+Consider the graph above (figure 3). In this graph the output signal of
+robot_des_state is not represented but in this particular case let us call it
+"sout" like "signal out".
+In order to execute the complete graph in figure 1 one needs to call for
+an update of the final output signal.
+Meaning that one will call:
+```
+robot_des_state.sout.recompute(current_time)
+```
+This will trigger a the evaluation of a callback method in the robot_des_
+state entity if current_time>last_recomputed_time.
+This time management allows you to change the period of reevaluation
+of each signals.
+
+Let us now assume we triggered the evaluation of robot_des_state.sout
+with a big enough time \"<b>T</b>\" number so the callback function is evaluated.
+This callback function needs to acquire the value of
+<em>robot_des_state.sin1</em> and <em>robot_des_state.sin2</em> at time \b T.
+The fact that front_legs_state.sout is plugged to robot_des_state.sin1
+imply that when robot_des_state.sin1 data is accessed front_legs_state.
+sout will be recomputed at time T to provide the data.
+
+```
+INFORMATION:
+
+Therefore the evaluation of one output signal recursively
+trigger the "Left part of the graph"
+```
 
 \subsection intro_subsec_commands 3.3/ The concept of a command
 
+So far the idea is that the last output signal provides the command to the
+robot which supposed to happen periodically. The purpose of a
+command is to manage asynchronous event. Typically a user command.
+For example on has implemented a filter like in figure 2. A user
+command will be helpful for 2 things:
+  -# The user needs a specific initialization, like setting the size of
+the filter buffer (resize command in green in figure 2).
+  -# The user needs to punctually access internal values of an
+entity.
+
+In the first case the command will modify the inner structure of the
+entity.
+In the second case the command will just read the internal structure of
+the entity.
+
 \subsection intro_subsec_python 3.4/ C++ controller, but dynamic Python setup
+
+In dynamic graph (DG) the \b entities are implemented using \b C++. So the
+final graph which is the controller runs all in fast C++.
+This is the reason why we can run it in <b> real time </b> on 
+<b> real hardware </b>. From these C++ \b entities , there is an automatic way
+to generate corresponding python classes.
+These classes are then instantiated in the python interpreter to construct
+the control graph.
+
+So in summary one can implement <b> fast complex controllers </b> with
+elementary blocks and <b> prototype it in Python </b>.
+
+The C++ API contains C Macros that allows you to <b>define Commands
+very simply</b>. Signals are <b>automatically bounded</b> in Python.
 
 
 \section intro_sec_dgm 4/ The dynamic_graph_manager
+
+\image html dynamic_graph_manager_architecture.png "Figure 4: This picture depicts the interaction between all the component of the robot controller."
+
+A simple demo on how to implement such a DynamicGraphManager for
+one robot can be seen in the demo folder of the
+dynamic_graph_manager package.
+In theses files there are examples on the creation of the
+DynamicGraphManager daughter class, as well as the hardware
+asynchronous commands and the communication with the hardware.
+
+More details on how things are running and implemented comes in the
+following pages.
 
 
 \section intro_sec_structure 5/ Structure of the documentation
