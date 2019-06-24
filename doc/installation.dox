@@ -4,7 +4,255 @@ copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
 date 2019-05-22
 
 /**
-\page subpage_installation Installation Procedure
+\page subpage_installation 2/ Installation Procedure
 
+\tableofcontents
+
+\section install_sec_introduction 2.1/ Introduction
+
+In here we are going to explain the different way of obtaining the code base.
+And in particular the dependencies. We <b> highly recommand </b> a binary
+installation of the dependencies.
+
+\section install_sec_binary 2.2/ Binary Installation
+
+\subsection install_subsec_official_image 2.2.1/ Install using the official image on UBUNTU 16.04
+
+First clone the official image git repository.
+```
+git clone https://git-amd.tuebingen.mpg.de/amd-clmc/ubuntu_installation_scripts
+```
+The repositories contains convenience installation scripts for ubuntu.
+The most useful script is "official/setup_ubuntu". This script is meant to
+be called after a fresh installation of ubuntu, and install all typical
+dependencies required for programming robots. These include ROS,
+dynamic graph and related "robot-pkg" software (e.g stack of task and
+pinocchio). Only 16.04 is fully supported. The script will also work on
+14.04, but mostly ROS and dependencies related to SL will be installed.
+Usage:
+```
+cd ubuntu_installation_scripts/official
+sudo ./setup_ubuntu install
+```
+This setup script is sometimes updated. You may run it again:
+```
+cd ubuntu_installation_scripts/official
+sudo ./setup_ubuntu update
+```
+To see the list of software this script install (and how it install it), visit the
+related dockerfile (e.g. for 16.04 :
+https://git-amd.tuebingen.mpg.de/amd-clmc/ubuntu_installation_scripts/blob/master/official/ubuntu_16_04/docker/Dockerfile).
+
+With this process a file in /opt/openrobots/setup.bash should have been created.
+In order to use the binary installation you \b MUST source this file:
+```
+source /opt/openrobots/setup.bash
+```
+one can add this line to its ".bashrc"
+
+\subsection install_subsec_binary 2.2.2/ Do the same as the official image but install uniquely the dynamic graph.
+
+First get the robotpkg PPA. Assuming you are using Ubuntu 16.04,
+if not, please adjust the "xenial" to the output of `lsb_release -c`:
+```
+sudo sh -c "echo 'deb [arch=amd64] http://robotpkg.openrobots.org/wip/packages/debian/pub xenialrobotpkg\ndeb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub xenial robotpkg' > /etc/apt/sources.list.d/robotpkg.list"
+curl http://robotpkg.openrobots.org/packages/debian
+/robotpkg.key | sudo apt-key add -
+sudo apt-get update
+```
+
+Install the following packages from robotpkg using apt-get:
+
+```
+sudo apt-get install -y robotpkg-dynamic-graph-v3 `# The dynamic graph` \
+                        robotpkg-py27-dynamic-graph-v3 `# Thedynamic graph python bindings` \
+                        robotpkg-tsid `# AndreaDelprete Task Space Inverse Dynamics` \
+                        robotpkg-pinocchio `# Eigenbased rigid body dynamics library` \
+                        robotpkg-hpp-fcl `# collision detection for pinocchio` \
+                        robotpkg-libccd `# notsure` \
+                        robotpkg-octomap `# notsure` \
+                        robotpkg-parametric-curves `# Splineand polynomes library` \
+                        robotpkg-simple-humanoid-description `# Simplehumanoid robot_properties package` \
+                        robotpkg-eigen-quadprog `# Quadprog package` \
+                        robotpkg-sot-core-v3 `# DynamicGraph Utilities` \
+                        robotpkg-sot-tools-v3 `# DynamicGraph Utilities` \
+                        robotpkg-sot-dynamic-pinocchio-v3 `# DGwrapper around pinocchio` \
+                        robotpkg-sot-torque-control `# AndreaDelprete dynamic graph entities` \
+                        robotpkg-py27-eigenpy `# Pythonbindings` \
+                        robotpkg-py27-pinocchio `# Pythonbindings` \
+                        robotpkg-py27-parametric-curves `# Pythonbindings` \
+                        robotpkg-py27-sot-core-v3 `# Pythonbindings` \
+                        robotpkg-py27-sot-torque-control `# Pythonbindings` \
+                        robotpkg-py27-sot-dynamic-pinocchio-v3 `# Pythonbindings` \
+                        robotpkg-py27-qt4-gepetto-viewer-corba `# LAAS 3Drobot viewer network client/server` ;
+```
+
+Export the following environment variables e.g. by adding exports in ~/.
+bashrc file:
+
+```
+export PATH=/opt/openrobots/bin:$PATH
+export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
+export LD_LIBRARY_PATH=/opt/openrobots/lib:/opt/openrobots/lib/plugin:$LD_LIBRARY_PATH
+export PYTHONPATH=/opt/openrobots/lib/python2.7/site-packages:$PYTHONPATH
+export ROS_PACKAGE_PATH="/opt/openrobots/share:$ROS_PACKAGE_PATH"
+```
+
+\subsection install_subsec_troubleshooting 2.2.3/ Troubleshooting
+
+  -# <b>Python 3</b>: When using python3 and you installed packages with prefix
+/opt/openrobots/, you have to remove the python2.7 path and
+add the python3.5 one.
+  -# Compilation problem: upon catkin_make the package "dynamic-graph" is not found.
+    -#  make sure the environment variable concerning /opt/openrobots has been set.
+See the previous paragraph. In order to verify this one can run:
+```
+env | grep openrobots
+```
+    -# The folder /opt/openerobots does belong to roor and/or does not have the
+correct permissions. In order to fix this one can do:
+```
+sudo chown root:root -R /opt/openerobots
+sudo chmod 755 -R /opt/openerobots
+```
+
+\section install_sec_source 2.3/ From source Installation
+
+\subsection install_subsec_python2 2.3.1/ For python2
+
+  -# first make sure you have treep installed.
+```
+pip2 install --user treep
+```
+or
+```
+pip3 install --user treep
+```
+  -# Then clone the different packages.
+    - For just the dynamic graph:
+```
+mkdir devel # or your favorite development folder
+cd devel
+git clone git@github.com:machines-in-motion/treep_machines_in_motion.git
+treep --clone DYNAMIC_GRAPH
+```
+At this point you should see something like this:
+\image html figures/treep-clone-dg.png
+    - If you decided to clone every package it would look like this:
+```
+mkdir devel # or your favorite development folder
+cd devel
+git clone git@github.com:machines-in-motion/treep_machines_in_motion.git
+treep --clone ALL_LAAS
+```
+At this point you should see something like this:
+\image html figures/treep-clone-laas.png
+  -# Now let us assume you have something clone in your workspace/src folder.
+    - The next step is to generate the compilation script.
+```
+treep --compilation-script
+```
+The ouput:
+\image html figures/treep-compile-script.png
+At this point treep generated a compilation script in bash
+that you need to \b execute anytime you do the compilation.
+    - If the compilation script is not an executable you should do a
+```
+chmod +x compilation.sh
+```
+The compilation script is based on the python script in the
+treep_dynamic_manager package. A quick glance should
+allow you to tune the installation folder and type of
+compilation (Debug/Release/...)
+A "dynamic_graph_setup.bash" is generated as well in
+the installation folder. If you source it you will tell your
+system to use the installed binary.
+  -# Launch the compilation:
+```
+./compilation.sh
+```
+This should build and install all the repositories.
+    - Troubleshooting with "sphinx"
+```
+sudo -H pip2 install sphinx
+```
+
+\subsection install_subsec_python2_3 2.3.2/ For using python3 alongside python2
+
+Installing the eigenpy and pinocchio libraries into the same folder
+creates problem when loading the libraries. Instead of using the
+boost_python-py35 library, eigenpy also tries to load the boost_python-
+py27 library. To avoid this, it is recommended to
+  - create a separate "devel" folder for the python3 installation like
+devel_py35
+  - make sure to source the corresponding "dynamic_graph_setu
+p.bash". And to edit the
+```
+export PYTHONPATH=/opt/openrobots_py35/lib/python3.5/site-packages:$PYTHONPATH
+```
+Otherwise, eigenpy tries to load boost_python-py27 libraries. This boils down
+to using separate functions to source either python2 or python3:
+```
+source_devel_py27() {
+  # robotpkg installation.
+  export PATH=/opt/openrobots/bin:$PATH
+  export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
+  export LD_LIBRARY_PATH=/opt/openrobots/lib::/opt/openrobots/lib/plugin:$LD_LIBRARY_PATH
+  export PYTHONPATH=/opt/openrobots/lib/python2.7/site-packages:$PYTHONPATH
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+}
+source_devel_py35() {
+  export PATH=/opt/openrobots_py35/bin:$PATH
+  export PKG_CONFIG_PATH=/opt/openrobots_py35/lib/pkgconfig:$PKG_CONFIG_PATH
+  export LD_LIBRARY_PATH=/opt/openrobots_py35/lib:/opt/openrobots_py35/lib/plugin:$LD_LIBRARY_PATH
+  export PYTHONPATH=/opt/openrobots_py35/lib/python3.5/site-packages:$PYTHONPATH
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+}
+```
+In order to build the pacakges for Python 3, use the cmake configuration as:
+```
+cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=`which python3` -DCMAKE_INSTALL_PREFIX=/path/to/your/devel_py35/workspace/devel
+```
+For using the catkin project using python3, install the following packages
+```
+pip3 install rospkg catkin_pkg
+```
+and build the catkin workspace with python3 (make sure you have source the 
+python3 environment variables using source_openrobots_py35)
+```
+catkin_make -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE="`which python3`"
+```
+
+\section install_sec_dgm 2.4/ Installation of dynamic graph manager
+
+  -# First make sure you have treep installed.
+```
+pip2 install --user treep
+```
+or
+```
+pip3 install --user treep
+```
+  -# Clone the repository manager "treep_machines_in_motion". All actions on the
+repositories can be done via the "treep" executable.
+```
+cd
+mkdir devel # devel could be also devel_dg or your favorite cat name
+cd devel
+git clone git@github.com:machines-in-motion/treep_machines_in_motion.git
+treep --clone DYNAMIC_GRAPH_MANAGER
+cd workspace
+```
+If you do not have the ssh key allowing you to download it,
+please contact Maximilien Naveau (maximilien.naveau@gmail.com) or Vincent Berenz
+(vberenz@tue.mpg.de).
+  -# Source "ros". Pick your favorite one (On ubuntu16.04 kinetic is the one used):
+```
+source /opt/ros/kinetic/setup.bash
+```
+  -# Finally run the build process by calling the catkin executable.
+```
+catkin_make install
+```
 
 */
