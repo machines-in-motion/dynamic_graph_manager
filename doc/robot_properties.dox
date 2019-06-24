@@ -5,7 +5,9 @@ date 2019-05-22
 
 /**
 
-\page subpage_robot_properties Implementing a robot in dynamic graph manager
+\page subpage_robot_properties 4/ Implementing a robot in dynamic graph manager
+
+In order to create the robot one must follow the procedure described in the pages below:
 
 \subpage subsubpage_robot_package
 
@@ -25,30 +27,477 @@ date 2019-05-22
 
 /**
 
-\page subsubpage_robot_package Create a robot/object/environment package
+\page subsubpage_robot_package 4.1/ Create a robot/object/environment package
+
+\section robot_properties_context 4.1.1/ Context
+There is no real convention about the naming of these package, certain groups 
+will call them robot_properties_[robot name] others [robot name]_description.
+
+Lab convention:
+  - For robots the package name will be called: robot_properties_[robot name]
+  - For other things like objects, environment, ...: [object/environment name]_description
+
+In the following we will talk about creating of these packages which are typically called robot_properties_[robot name] in our case.
+The following description is valid for both name conventions.
+
+\section robot_properties_ci 4.1.2/ Continuous integration:
+
+First of all these packages are catkin packages, so they follow the classic
+packaging from the Continuous Integration. Typically follow the packaging of the
+python package located in https://git-amd.tuebingen.mpg.de/amd-clmc/ci_example.
+The folder structure is the following:
+
+- robot_properties_[robot name]
+  - config/
+    - [robot_name].yaml {Contains some parameters of the robot for specific application like the dynamic_graph_manager }
+    - other.yaml        {More yaml parameters}
+    - other.ext         {More exotics parameter files}
+  - launch/             {This contains the typical roslaunch one might use to load the robot 
+description in ros/rviz/...}
+  - meshes/             {Contains all the necessary meshes one may need}
+    - stl/
+      - body_link.stl
+    - obj/ {gepetto-viewer, rviz and pybullet obj files works}
+      - body_link.obj
+    - dae/
+      - body_link.dae
+    - ...
+  - nodes/
+    - executables       {There are executables that one can launch using rosrun}
+  - rqt/                {This folder contain the potential robot specific rqt perspectives}
+  - rviz/               {This folder contain the robot specific rviz environment}
+  - python/
+    - robot_properties_[robot_name]/ {Please follow this naming convention!!!}
+      - \__init__.py
+      - other.py
+  - xacro/ {This contains the xacro files that correspond to the urdfs. These are the only files one need to
+modify, An automatic generation urdf files from these is present in the CMakeLists.txt so that all have the last generated urdf file from the
+urdf.}
+  - CMakelists.txt {https://git-amd.tuebingen.mpg.de/amd-clmc/robot_properties_quadruped/blob/master/CMakeLists.txt}
+  - package.xml {https://git-amd.tuebingen.mpg.de/amd-clmc/robot_properties_quadruped/blob/master/package.xml}
+  - setup.py {https://git-amd.tuebingen.mpg.de/amd-clmc/robot_properties_quadruped/blob/master/setup.py}
 
 */
 
 /**
 
-\page subsubpage_stl How to generate STL files for visualisation
+\page subsubpage_stl 4.2/ How to generate STL files for visualisation
+
+<table>
+<caption id="simplify_cad"></caption>
+<tr><th colspan="2">Simplify your CAD files
+<tr><td> Original CAD assembly. <td> \image html figures/meshes/upper_leg_1.jpg
+<tr><td> Remove all unecessary component. <td> \image html figures/meshes/upper_leg_2.jpg
+<tr><td> Remove all unnecessary features. <td> \image html figures/meshes/upper_leg_3.jpg
+<tr><td> Simplify and remodel sub-assemblies. <td> \image html figures/meshes/upper_leg_4.jpg
+</table>
+
+
+<table>
+<caption id="coordinate_system"></caption>
+<tr><th colspan="2">Set your coordinate system to match the conventions
+<tr><td> Quadruped Coordinate System Convention
+
+X→ Forward
+
+Y → Left
+
+Z → Upwards
+<td> \image html figures/meshes/coordinate_system_4.jpg
+
+<tr><td> Quadruped Subcomponent Convention
+
+In the zero position of the robot all the coordinate systems need to have the same orientation! (see picture on the right)
+
+For the quadruped this means that two versions (right side and left side) of the upper leg and the lower leg have to be created.
+
+The subcomponent coordinate systems have to be placed on the joint rotation axes and the connecting face.
+<td> \image html figures/meshes/coordinate_system_8.jpg
+<tr><td> If the Solidworks part origin is in the right location you will need to generate 3 axes that intersect at the origin. Got to next step.
+
+
+If the Solidworks part origin is not in the right location you will have to do another intermediate step.
+
+Generate an assembly and insert the part.
+
+Use the mates funtion to align the part such that the origin of the assembly is in the desired location.
+
+Generate three axes that intersect at the origin.
+
+Go to next step.
+
+```
+Why is this necessary?
+
+It seems that Solidworks always places the coordinate systems at the origin. So if the origin is not in the desired location of the coordinate system that has to be corrected first.
+If there is a better solution to this please update this page.
+```
+<td> \image html figures/meshes/coordinate_system_5.jpg
+<tr><td> Choose "Reference Geometry".
+
+Choose Coordinate System.
+
+Select the correct axes and confirm.
+<td> \image html figures/meshes/coordinate_system_1.jpg 
+\image html figures/meshes/coordinate_system_7.jpg
+
+\image html figures/meshes/coordinate_system_6.jpg
+</table>
+
+
+<table>
+<caption id="save_stl_files"></caption>
+<tr><th colspan="2">Save as STL file
+<tr><td colspan="2">
+STL File naming conventions:
+
+  - file name in small letters → no capital letters
+  - no space or characters like # \ /  in name
+  - no dashes in name
+  - preferably underscore between words
+
+Example: quadruped_robot_body.stl
+
+<tr><td>
+  - Choose File→ Save as → STL
+  - Select unit → Meters
+  - Select resolution → Coarse
+  - Make sure to check the box "STL Ausgabedaten nicht auf positiven Raum übertragen".
+(otherwise the coordinate system will be placed randomly)
+  - Select the coordinate system that you created.
+  - Confirm and save the file as STL
+<td> \image html figures/meshes/coordinate_system_3.jpg
+<tr><td>
+  - Solidworks uses capital letters for the file extension for some reason → . STL
+  - Use the file browser to change the file extension from .STL to .stl
+<td>
+<tr><td>
+  - Upload the STL files to your Wiki page.
+  - Document the distances between the coordinate systems of the parts on the Wiki.
+<td> \image html figures/meshes/quadruped_coordinate_system_2.jpg
+\image html figures/meshes/quadruped_coordinate_system_1.jpg
+</table>
 
 */
 
 /**
 
-\page subsubpage_stl_to_obj Convert the stl files in obj files
+\page subsubpage_stl_to_obj 4.3/ Convert the stl files in obj files
+
+\section stl_obj_sec_download 4.3.1/ Download the scripts
+
+Download the following package using the package manager:
+```
+mkdir devel # if not done already
+cd devel
+git clone git@git-amd.tuebingen.mpg.de:amd-clmc/treep_amd_clmc.git
+treep --clone model_tools
+```
+This should clone the repository in "workspace/src/catkin/utilities/model_tools"
+from https://git-amd.tuebingen.mpg.de/amd-clmc/model_tools with the following
+output:
+\image html figures/stl_conversion/clone.png
+
+\section stl_obj_sec_compilation 4.3.2/ Compile the package with catkin
+
+This compilation will tell catkin where to find the python scripts the binaries depends on.
+In order to do so change directory to your catkin workspace and run:
+```
+catkin_make
+```
+
+\section stl_obj_sec_run 4.3.3/ Run the conversion script
+
+The conversion tools is located in model_tools/nodes/stl_to_obj.
+Though in order to run this tools you need to be in the active directory because
+the input path will local in order to makes things easy for the user.
+This is the reason why this binary is available through ros:
+```
+rosrun model_tools stl_to_obj --input_stl_dir [path to a stl folder] --output_obj_dir [path to a obj folder]
+```
+I strongly suggest you check the "–help" or "-h" output:
+```
+rosrun model_tools stl_to_obj -h
+```
+Last output known (28/02/2019) for the above instruction:
+\image html figures/stl_conversion/usage.png
+
+\section stl_obj_sec_usage 4.3.3/ Typical use.
+
+Change directory to your [robot_name]_description/meshes or your 
+robot_properties_[robot_name]/meshes where you saved the stl files in stl:
+```
+  - robot_properties_[robot_name]:
+    - meshes:
+    - stl:
+      - body.stl
+      - arm.stl
+      ...
+```
+in the meshes folder you can typically run:
+```
+rosrun model_tools stl_to_obj -i stl/ -o obj/
+```
 
 */
 
 /**
 
-\page subsubpage_urdf HowTo create URDF files
+\page subsubpage_urdf 4.4/ HowTo create URDF files
+
+The URDF file encodes all the information regarding dimensions, weight, inertias
+and meshes that are required for realistic simulation.
+
+<table>
+<caption id="urdf"></caption>
+<tr><th> Steps <th> Screenshots
+<tr><td> For calculating the inertias in Solidworks the mass properties have to 
+be set correctly for all of the subcomponents.
+
+For parts with constant density set the material properties to the right material.
+
+For the 3d printed parts I use the following materials:
+  - Fortus PC or Duraform HST → Solidworks Material ABS PC with density of 1070 kg/m3
+  - Projet MX3 Material → PMMA with density of 1190 kg/m3
+  - Stainless Steel Screws → 1.4000 X6CR13 with density of 7700 kg/m3
+<td> \image html figures/urdf/upper_leg.jpg
+\image html figures/urdf/sw_urdf_1.jpg
+<tr><td> For parts made from different material or unknown density you can
+override the mass calculation and set the total weight manually.
+
+Determine the weight of all the parts with a weight scale.
+
+In Solidworks choose → Evaluate → Mass Properties → Override Mass Properties and
+input the correct mass.
+
+Example: The motor rotor consists of an aluminum frame with steel magnets.
+
+Therefore the weight has to be measured and set correctly in Solidworks.
+<td> \image html figures/urdf/motor_rotor.jpg
+\image html figures/urdf/sw_urdf_2.jpg
+<tr><td> Once the weight of all of the subcomponents is set open the assembly
+and verify that the combined weight is correct.
+
+In the case of the upper leg the total weight is 149g.
+<td> \image html figures/urdf/upper_leg_2.jpg
+\image html figures/urdf/sw_urdf_3.jpg
+<tr><td> Create a coordinate system according to your conventions.
+
+The coordinate systems has to match the one from the STL files. Quadruped STL 
+files for Visualisation
+
+Choose Evaluate → Mass Properties and set the output coordinate system to the 
+one you created!
+
+For the quadruped robot we need a right and left version of the coordinate 
+system.
+<td> \image html figures/urdf/sw_urdf_4.jpg
+<tr><td> Set the units to Meters and Kilogramms.
+
+Set the precision to 8 decimal spaces.
+<td> \image html figures/urdf/sw_urdf_6.jpg
+<tr><td> Copy and record the weight, the center of mass position and the inertia matrix.
+
+Use the second inertia matrix that Solidworks calculates. (Lxx / Lxy / Lxz / ...)
+
+That is the inertia of all the parts with respect to the center of mass and aligned to the coordinate system that you have defined.
+
+
+The URDF data required for the upper leg would be the following:
+
+Mass:
+0.14853845 Kilogramm
+
+Center of Mass Position [m]:
+X = -0.00001377
+Y = -0.01936299
+Z = -0.07871217
+
+Inertia Matrix:
+
+Trägheitsmomente: ( Kilogramm * Quadratmeter )
+Bezogen auf den Massenmittelpunkt und ausgerichtet auf das Ausgabekoordinatensystem.
+Lxx = 0.00041100 Lxy = 0.00000000 Lxz = -0.00000009
+Lyx = 0.00000000 Lyy = 0.00041184 Lyz = 0.00004668
+Lzx = -0.00000009 Lzy = 0.00004668 Lzz = 0.00003022
+
+
+Document all of the data on the Wiki.
+<td> \image html figures/urdf/sw_urdf_5.jpg
+</table>
 
 */
 
 /**
 
-\page subsubpage_implement_dgm Implement the dynamic_graph_manager specific to your robot
+\page subsubpage_implement_dgm 4.5/ Implement the dynamic_graph_manager specific to your robot
+
+\section dgm_impl_sec_reminder 4.4.1/ Reminder
+
+This page content is heavily based on the concepts described before so please 
+read at least the Section 1. In the following we will describe the practical 
+aspects of the implementation.
+
+\section dgm_impl_sec_impl_details 4.4.2/ Implementation details
+
+Files discussed here are in the dynamic_graph_manager repository. To control a 
+robot using the dynamic graph manager, you need to provide:
+  - A YAML file
+  - A class inheriting from the dynamic graph manager
+  - A main executable that will fetch the YAML file, instantiate you dynamic_graph_manager daughter class and launch everything.
+
+We will discuss in more details the creation of such files in the paragraphs.
+The sensor and control definitions on the YAML file specify the input and 
+outputs of the robot. Based on this specification, a python Device object is 
+constructed.
+
+\subsection dgm_impl_sec_yaml_file 4.4.2.1/ The YAML file and the Device.
+
+This YAML file contains the definition of the Device sensors and control 
+signals. In practice this file is supposed to be in the 
+robot_properties_[robot name]/config folder. Please refer to the "create a robot
+package" section in this wiki for a better understanding. This paragraph assume
+you read it all.
+
+For the purpose of this demo we decided to not create a specific 
+robot_properties package as this demo is not robot specific. Hence the YAML 
+file is define here: simple_robot.yaml:
+\image html figures/dgm/yaml.png
+
+Notice the following nodes:
+  - "is_real_robot" defines if we are running a simulation or not. If yes the
+DGM will run a single process.
+  - "device" is the node that will define the input/output dynamic graph signal
+and the memory stored in the shared memory.
+    - this device has a "name" which is used in the infrastructure. Please use
+something meaningful and the SAME as the one in your URDF file.
+    - "sensors" contains the list of the sensor name. These names are joined 
+with a "size" node which define the size of the data vector.
+    - "controls" is the same as the "sensors" but containing the controls name 
+signal.
+  - "hardware_communication" is the node containing:
+    - "control_period" in Nano Seconds.
+    - "max_missed_control" which is the control loop done without update from 
+the dynamic graph. If this "missed control iteration" > "max_missed_control" 
+then the DGM enter in safe control mode (sending 0 torques) which can be 
+overwritten (see below).
+    - "maximum_time_for_user_cmd" This is the maximum time a hardware 
+asynchronous command MUST take. The hardware communication check if he has the 
+time to execute the command and if possible he does it.
+
+\subsection dgm_impl_sec_hineritance 4.4.2.2/ The class inheriting from the DynamicGraphManager
+
+A subclass of the dynamic graph manager, where you initialize the robot 
+hardware, read the sensor values from the hardware into an output map and send 
+the commands to the robot. These maps are strict copies of the YAML files. So 
+in order to add field or remove fields, just modify the YAML file.
+Example: "simple_dgm.hpp"
+
+In this files there are key method to analyze:
+
+The first is "initialize_hardware_communication_process".
+\image html figures/dgm/initialize_hwc.png
+This method is here for you to:
+  - setup the hardware if needed. Of course this particular class does not have 
+any hardware linked so it does not initialize anything.
+  - setup the hardware asynchronous command. Typically user defined command on 
+the hardware. Like "what is you IP?" or "Here are gains you must apply!". This
+mechanism rely on ROS services. Hence one can see here the initialization of the
+ROS service: "set_a_boolean". Again this class does not have hardware so here is
+just a simple toy example. Notice the acquisition of the ros::NodeHandle using 
+"ros_init" and the "hw_com_ros_node_name", this will allow your user command to
+ be part of the same namespace as the hardware_communication node.
+
+Next method is "get_sensors_to_map".
+\image html figures/dgm/sensor_to_map.png
+In this method we can notice that:
+  - the map has already keys assigned to it. These keys are automatically 
+generated using the YAML described above. Notice in the YAML file, the nodes 
+"sensors" which contains the nodes "encoders", "imu_accelerometer", 
+"imu_gyroscope" and  "imu". Recognize this names in std::map keys.
+  - The map is filled using the sensor data. In our case sensor data are pure
+noise.
+  - The data from this map are going to be written in the shared memory for the 
+controller to read them.
+
+
+The third Method is "set_motor_controls_from_map".
+\image html figures/dgm/motor_from_map.png
+In this method we can notice:
+  - Again we have the map that comes in which has been defined by default from
+the YAML file. Notice now the nodes under "device" and under "controls". Notice 
+the "torques" and the "positions" nodes in the method and in the YAML file.
+  - The data read from this map are acquired from the shared memory which in 
+turn is filled by the dynamic graph controller. So one just need to map these 
+controls to the hardware API. In this case, again, we have nothing to do because
+we have no hardware.
+
+
+\subsection dgm_impl_sec_main 4.4.2.3/ The main file
+
+a main c++ file, which is the entry point for your program:
+Example: main.cpp
+\image html figures/dgm/main.png
+In this one can notice:
+  - The instantiation of the SimpleDGM class and its trivial use.
+  - The TEST_CONFIG_PATH is the path to the config folder in
+https://git-amd.tuebingen.mpg.de/amd-clmc/dynamic_graph_manager/tree/master/tests/config.
+The YAML we use for this demo is the one used also used for the unit tests. 
+The SimpleDGM is also the class used for the unit tests. So this demo should 
+run without glitches.
+
+\section dgm_impl_sec_hwc_commands 4.4.3/ The hardware asynchronous commands:
+
+In this paragraph we are going to explain in details the mechanism behind the
+user command. First one need to create a ROS service that will perform the 
+asynchronous call. This service is initialized by the user either in the 
+SimpleDGM constructor either in the "initialize_hardware_communication_process" 
+(see paragraph 3.4.2.2/ The class inheriting from the DynamicGraphManager). In 
+order to define a ROS service please refer to http://wiki.ros.org/Services.
+
+This ROS service will use a specific callback method: user_command_callback
+\image html figures/dgm/user_command_callback.png
+In this code one recognize:
+  - the ROS declaration of a callback method.
+  - the results of the service saved in "res.XXXX". Here "res.sanity_check".
+  - the fact that if everything went fine the method returns "true", which is 
+again a ROS related requirement.
+  - finally the call to "add_user_command()". It works in the following way:
+      - This method takes a pointer to a method with the following prototype:
+"void method(void);".
+      - In this example we generate this pointer using std::bind. This manages
+the arguments of the function. In our case this std::bind says that the function
+to be called "SimpleDGM::user_command" is gonna be called using
+"req.input_boolean" as argument.
+
+This convoluted behavior is here to ensure safety between real time and non
+real time behavior. The methods used by ROS are part of the non real time
+system. Though the hardware user command needs to be executed in the real time
+thread. This mechanism basically save the user command call into a buffer until
+the hardware communication process has enough time to execute it.
+
+Please refer to the YAML file once more to notice the node
+"maximum_time_for_user_cmd" expressed in nano seconds as an integer. In this 
+example we set this time to be 0.1ms. Which means that if the hardware 
+communication thread is sleeping more than 0.1ms then the user command can be 
+executed safely.
+
+Because this system rely on ROS service calls I suggest that the developer of 
+the robot hardware propose a nicer python interface in order to use these 
+commands. See 
+https://git-amd.tuebingen.mpg.de/amd-clmc/dynamic_graph_manager/blob/master/demos/simple_dgm_hwd_client.py
+
+\section dgm_impl_sec_safety_mode 4.4.3/ The safety mode:
+
+As explain in the YAML file description paragraph one can modify when the DGM 
+enter into safe mode and what behavior it should have.
+
+These behavior are also define this demo: is_in_safety_mode and 
+compute_safety_controls:
+\image html figures/dgm/is_in_safe_mode.png
+
+One can identify the inheritance of the detection method as well as the method 
+that computes the safety control.
+
 
 */

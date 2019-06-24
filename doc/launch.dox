@@ -4,6 +4,53 @@ copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
 date 2019-05-22
 
 /**
-\page subpage_launch Start a Dynamic Graph Manager Executable
+\page subpage_launch 3/ Start a Dynamic Graph Manager Executable
 
+This tutorial is only here to show how the launch of the dynamic_graph_manager
+executable is done. For further instruction on how to implement and load
+controller please read the next documentation pages.
+
+Spawn 4 terminal with the catkin workspace are sourced.
+  -# Launch roscore (if not running yet):
+```
+roscore
+```
+  -# Launch the entry/main() executable:
+    -# Run the executable:
+```
+rosrun <package of your robot> <name of executable file>
+```
+For instance:
+```
+rosrun dynamic_graph_manager demo_dynamic_graph_manager
+```
+  -# In another terminal, connect to the python interpreter via ROS:
+    -# Startup Dynamic Graph Python client
+```
+rosrun dynamic_graph_manager run_command <python-file>
+```
+or
+```
+rosrun dynamic_graph_manager run_command
+```
+The first call will execute the python file given and fall back to an
+interactive python terminal. The second call will just fallback to the
+interactive python terinal. In this terminal you can have access to a global
+object called "robot". And in particular "robot.device". This device is the 
+link between the (extremely simple) hardware implemented in the
+demo_dynamic_graph_manager and the dynamic-graph. You can already explore what
+has been implemented by executing:
+```
+>>> robot.device.displaySignals()
+```
+    -# Setup your control graph by executing python commands or use `execfile(...)` to execute a python script
+  -# In a last terminal you can start or stop the dynamic graph by executing the following ROS services:
+    -# Start dynamic graph
+```
+rosservice call /dynamic_graph/start_dynamic_graph
+```
+    -# Stop dynamic graph
+```
+rosservice call /dynamic_graph/stop_dynamic_graph
+```
 */
