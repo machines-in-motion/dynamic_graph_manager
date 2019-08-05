@@ -3,7 +3,7 @@
 @file ros.py
 @author Maximilien Naveau (maximilien.naveau@gmail.com)
 @license License BSD-3-Clause
-@copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+@copyright Copyright (c) 2019, New York University and Max Planck Gesellschaft.
 @date 2019-05-22
 
 @brief This file defines a class that create ros entities for the interaction
