@@ -330,8 +330,23 @@ public:
    */
   virtual bool is_in_safety_mode()
   {
-    return (missed_control_count_ >= max_missed_control_) ||
-        has_dynamic_graph_process_died();
+    bool too_much_missed_control = (missed_control_count_ >= max_missed_control_);
+    static bool once_tmmc = false;
+    if(too_much_missed_control && !once_tmmc)
+    {
+      rt_printf("HARDWARE: Too much missed control (%d/%d), going in safe mode\n",
+                missed_control_count_, max_missed_control_);
+      once_tmmc = true;
+    }
+
+    bool dg_died = has_dynamic_graph_process_died();
+    static bool once_hdgd = false;
+    if(dg_died && !once_hdgd)
+    {
+      rt_printf("HARDWARE: Dynamic Graph process died, going in safe mode\n");
+      once_hdgd = true;
+    }
+    return too_much_missed_control || dg_died;
   }
 
   /**
