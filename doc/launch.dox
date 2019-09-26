@@ -44,7 +44,7 @@ has been implemented by executing:
 >>> robot.device.displaySignals()
 ```
     -# Setup your control graph by executing python commands or use `execfile(...)` to execute a python script
-  -# In a last terminal you can start or stop the dynamic graph by executing the following ROS services:
+    -# In a last terminal you can start or stop the dynamic graph by executing the following ROS services:
     -# Start dynamic graph
 ```
 rosservice call /dynamic_graph/start_dynamic_graph
