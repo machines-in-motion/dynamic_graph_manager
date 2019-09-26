@@ -189,11 +189,9 @@ void DynamicGraphManager::initialize(YAML::Node param){
   // we create and destroy the condition variable to free the shared memory
   // and therefore the associated mutex which must be lockable at this state.
   {
-    shared_memory::ConditionVariable(shared_memory_name_,
-                                     cond_var_name_);
+    shared_memory::LockedConditionVariable(
+        shared_memory_name_, cond_var_name_, true);
   }
-
-
 }
 
 void DynamicGraphManager::run()
@@ -319,9 +317,8 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   device_.reset(new Device(robot_name));
   device_->initialize(params_["device"]);
   // we build the condition variables after the fork (seems safer this way)
-  cond_var_.reset(new shared_memory::ConditionVariable(
-                            shared_memory_name_,
-                            cond_var_name_));
+  cond_var_.reset(new shared_memory::LockedConditionVariable(
+      shared_memory_name_, cond_var_name_, false));
   // we call the prologue of the python interpreter
   // we *NEED* to do this *AFTER* the device is created to fetch its pointer
   // in the python interpreter
@@ -404,9 +401,8 @@ void DynamicGraphManager::run_hardware_communication_process()
   ros::NodeHandle& hw_ros_node = ros_init(hw_com_ros_node_name_);
 
   // we build the condition variables after the fork (seems safer this way)
-  cond_var_.reset(new shared_memory::ConditionVariable(
-                            shared_memory_name_,
-                            cond_var_name_));
+  cond_var_.reset(new shared_memory::LockedConditionVariable(
+      shared_memory_name_, cond_var_name_, true));
 
   // allow the hardware thread to run
   start_hardware_communication();
@@ -415,8 +411,6 @@ void DynamicGraphManager::run_hardware_communication_process()
     std::vector<int> cpu_affinity;
     cpu_affinity.clear();
     cpu_affinity.push_back(2); // cpu 1
-    int stack_memory_factor= 50;
-    bool call_block_memory = true;
     thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
     thread_hardware_communication_->parameters_.cpu_id_.push_back(2); // cpu 2
     thread_hardware_communication_->create_realtime_thread(
