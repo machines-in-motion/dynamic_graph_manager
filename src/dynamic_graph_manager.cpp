@@ -17,6 +17,8 @@
 // in order to throw hand made exception
 #include <dynamic_graph_manager/exception/exception-yaml-cpp.hpp>
 
+#define DYNAMIC_GRAPH_MANAGER_VERBOSE 0
+
 using namespace dynamic_graph;
 
 const std::string DynamicGraphManager::dg_ros_node_name_ = "dynamic_graph";
@@ -289,8 +291,11 @@ bool DynamicGraphManager::has_dynamic_graph_process_died()
   }
   else
   {
-    printf("DynamicGraphManager::has_dynamic_graph_process_died():"
-           " waitpid failed\n");
+    if(DYNAMIC_GRAPH_MANAGER_VERBOSE)
+    {
+        printf("DynamicGraphManager::has_dynamic_graph_process_died():"
+               " waitpid failed\n");
+    }
     is_dg_proc_dead = true;
   }
   return is_dg_proc_dead;
