@@ -44,7 +44,7 @@
 #include "real_time_tools/timer.hpp"
 
 // used to deal with shared memory
-#include "shared_memory/thread_synchronisation.hpp"
+#include "shared_memory/locked_condition_variable.hpp"
 
 // import the python interpreter ros binding
 #include "dynamic_graph_manager/ros_interpreter.hh"
@@ -572,7 +572,7 @@ protected:
    * @brief cond_var_sensors_ this condition variable allow the computation of
    * the dynamic graph just after the acquisition of the sensors
    */
-  std::unique_ptr<shared_memory::ConditionVariable> cond_var_;
+  std::unique_ptr<shared_memory::LockedConditionVariable> cond_var_;
 
   /**
    * @brief has_been_waken_by_dg_ is a flag that indicates if the hardware
