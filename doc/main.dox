@@ -259,8 +259,11 @@ rqt_dynamic_graph. An example on how to create a robot dashboard using rqt is
 available here:
 \subpage subpage_robot_dashboard
 
-This page present the steps exeuted during the continuous integration build.
+This page present the steps executed during the continuous integration build.
 \subpage subpage_ci
+
+This page shows you how to run the demo in this package.
+\subpage subpage_demos
 
 */ This part is "commented" from doxygen
 

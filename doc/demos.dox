@@ -1,0 +1,18 @@
+author Maximilien Naveau (maximilien.naveau@gmail.com)
+license License BSD-3-Clause
+copyright Copyright (c) 2019, New York University and Max Planck Gesellschaft.
+date 2019-05-22
+
+/**
+\page subpage_demos 10/ Demos
+
+Here we implemented a very simple DGM class:
+\example simple_dgm.hpp
+
+The correponding hardware python client is seen here:
+\example simple_dgm_hwd_client.py
+
+And we integrated it in this main executable:
+\example main.cpp
+
+*/
