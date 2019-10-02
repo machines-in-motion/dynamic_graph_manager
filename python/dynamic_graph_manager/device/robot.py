@@ -78,7 +78,7 @@ class Robot(object):
 
         # Prepare potential ros import/export
         self.ros = Ros(self)
-        self.export_device_dg_to_ros()
+        # self.export_device_dg_to_ros()
 
     def __del__(self):
         if self.tracer:

@@ -568,7 +568,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
       {
         user_commands_[0]();
         user_commands_.pop_front();
-        printf("HARDWARE: Executed user command\n");
+        rt_printf("HARDWARE: Executed user command\n");
       }
     }
 
@@ -602,6 +602,11 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     }
 
     if (is_in_safety_mode()) {
+      static bool once = false;
+      if(!once){
+        rt_printf("HARDWARE: Warning enter into safe_mode\n");
+        once = true;
+      }
       compute_safety_controls();
       // we write the safety command in the shared memory in order to perform
       // some potential interpolation in the control graph
