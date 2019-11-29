@@ -634,7 +634,7 @@ protected:
   bool is_real_robot_;
 
   /**
-   * @brief dg_active_timer_file_ this is the path to the file that will 
+   * @brief dg_active_timer_file_ this is the path to the file that will
    * contain the computation time of each of the dynamic graph complete
    * execution.
    */

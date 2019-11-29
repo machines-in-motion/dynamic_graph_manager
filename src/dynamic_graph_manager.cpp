@@ -119,7 +119,7 @@ void DynamicGraphManager::initialize(YAML::Node param){
   shared_memory::set(shared_memory_name_, sensors_map_name_, sensors_map_);
   shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                      motor_controls_map_);
-  
+
   // Set the maximum cpu latency to 0 us. This keeps the CPU from sleeping.
   real_time_tools::set_cpu_dma_latency(0);
 
@@ -149,7 +149,7 @@ void DynamicGraphManager::initialize(YAML::Node param){
     std::cerr << e.what() << std::endl;
     throw ExceptionYamlCpp(ExceptionYamlCpp::PARSING_DOUBLE,
       error_str + "control_period");
-  } 
+  }
   try{
     maximum_time_for_user_cmd_ = params_["hardware_communication"]
       ["maximum_time_for_user_cmd"].as<double>() * std::pow(10,-9);
@@ -413,14 +413,14 @@ void DynamicGraphManager::run_hardware_communication_process()
   start_hardware_communication();
 
   // launch the real time thread and ros spin
-    std::vector<int> cpu_affinity;
-    cpu_affinity.clear();
-    cpu_affinity.push_back(2); // cpu 1
-    thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
-    thread_hardware_communication_->parameters_.cpu_id_.push_back(2); // cpu 2
-    thread_hardware_communication_->create_realtime_thread(
-      &DynamicGraphManager::hardware_communication_real_time_loop_helper, this);
-  printf("hardware communication loop started\n");
+  std::vector<int> cpu_affinity;
+  cpu_affinity.clear();
+  cpu_affinity.push_back(2); // cpu 1
+  thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
+  thread_hardware_communication_->parameters_.cpu_id_.push_back(2); // cpu 2
+  thread_hardware_communication_->create_realtime_thread(
+    &DynamicGraphManager::hardware_communication_real_time_loop_helper, this);
+  printf("Hardware communication loop started.\n");
 }
 
 void DynamicGraphManager::run_single_process()
@@ -463,7 +463,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   dg_active_timer_.tic();
   dg_sleep_timer_.tic();
   dg_timer_.tic();
-  
+
   while(!is_dynamic_graph_stopped() && dg_ros_node.ok())
   {
     // measure the complete iteration time
@@ -542,7 +542,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   hwc_spinner_.initialize();
 
   // we start the main loop
-  rt_printf("HARDWARE: Start loop \n");
+  rt_printf("HARDWARE: Starting main loop.\n");
   hwc_mutex_.lock();
   while(!is_hardware_communication_stopped() && hw_ros_node.ok())
   {
