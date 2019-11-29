@@ -223,7 +223,7 @@ void DynamicGraphManager::run()
                 << pid_hardware_communication_process_
                 << std::endl;
 
-      initialize_hardware_communication_process();
+      // initialize_hardware_communication_process();
       run_hardware_communication_process();
     }else
     {
@@ -500,17 +500,23 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   // we use this function here because the loop might stop because of ROS
   stop_dynamic_graph();
 
-  rt_printf("DG: Dumping time measurement\n");
+  rt_printf("DG: Dumping time measurement.\n");
   dg_active_timer_.dump_measurements(dg_active_timer_file_);
   dg_sleep_timer_.dump_measurements(dg_sleep_timer_file_);
   dg_timer_.dump_measurements(dg_timer_file_);
 
   cond_var_->unlock_scope();
-  rt_printf("DG: Stop Loop\n");
+  rt_printf("DG: Stop Loop.\n");
 }
 
 void* DynamicGraphManager::hardware_communication_real_time_loop()
 {
+  // HACK: For the master-board communication, initializing the robot on the
+  // main thread and then use it from the hardware rt thread causes issues.
+  // Not sure if this is due to some non-rt <-> rt thread interaction or we
+  // are hitting some timeout.
+  initialize_hardware_communication_process();
+
   // we acquiere the lock on the condition variable here
   cond_var_->lock_scope();
 
