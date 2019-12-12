@@ -191,8 +191,7 @@ void DynamicGraphManager::initialize(YAML::Node param){
   // we create and destroy the condition variable to free the shared memory
   // and therefore the associated mutex which must be lockable at this state.
   {
-    shared_memory::LockedConditionVariable(
-        shared_memory_name_, cond_var_name_, true);
+    shared_memory::LockedConditionVariable(cond_var_name_, true);
   }
 }
 
@@ -262,7 +261,7 @@ void DynamicGraphManager::wait_stop_dynamic_graph()
 
 void DynamicGraphManager::wait_stop_hardware_communication()
 {
-  ros::NodeHandle& hw_com_ros_node = ros_init(hw_com_ros_node_name_);
+  ros_init(hw_com_ros_node_name_);
   while(!is_hardware_communication_stopped()/** && hw_com_ros_node.ok()*/)
   {
     usleep(100000);
@@ -323,7 +322,7 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
   device_->initialize(params_["device"]);
   // we build the condition variables after the fork (seems safer this way)
   cond_var_.reset(new shared_memory::LockedConditionVariable(
-      shared_memory_name_, cond_var_name_, false));
+      cond_var_name_, false));
   // we call the prologue of the python interpreter
   // we *NEED* to do this *AFTER* the device is created to fetch its pointer
   // in the python interpreter
@@ -403,11 +402,11 @@ void DynamicGraphManager::run_dynamic_graph_process()
 void DynamicGraphManager::run_hardware_communication_process()
 {
   // from here on this process is a ros node
-  ros::NodeHandle& hw_ros_node = ros_init(hw_com_ros_node_name_);
+  ros_init(hw_com_ros_node_name_);
 
   // we build the condition variables after the fork (seems safer this way)
   cond_var_.reset(new shared_memory::LockedConditionVariable(
-      shared_memory_name_, cond_var_name_, true));
+      cond_var_name_, true));
 
   // allow the hardware thread to run
   start_hardware_communication();
@@ -507,6 +506,8 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
 
   cond_var_->unlock_scope();
   rt_printf("DG: Stop Loop\n");
+
+  return THREAD_FUNCTION_RETURN_VALUE;
 }
 
 void* DynamicGraphManager::hardware_communication_real_time_loop()
@@ -639,6 +640,8 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
   hwc_timer_.dump_measurements(hwc_timer_file_);
   cond_var_->unlock_scope();
   rt_printf("HARDWARE: Stop loop \n");
+
+  return THREAD_FUNCTION_RETURN_VALUE;
 }
 
 void DynamicGraphManager::compute_safety_controls()
@@ -673,6 +676,8 @@ void* DynamicGraphManager::single_process_real_time_loop()
   stop_dynamic_graph();
   //printf("dynamic graph thread stopped\n");
   std::cout << "DG: Stop loop" << std::endl;
+
+  return THREAD_FUNCTION_RETURN_VALUE;
 }
 
 void DynamicGraphManager::add_user_command(std::function<void(void)> func)
