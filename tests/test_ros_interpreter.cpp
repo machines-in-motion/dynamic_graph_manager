@@ -218,9 +218,8 @@ TEST_F(TestRosInterpreter, test_call_run_script_standard_error)
   ros::service::call(service_name, run_file_msg);
 
   // prepare the test
-  std::string error_first_part = "<type 'exceptions.NameError'>: name 'b' is "
-                                 "not defined:   File \"" ;
-  std::string error_second_part = "\", line 1, in <module>\n    a = 1 + 1 + b\n";
+  std::string error_first_part = "a = 1 + 1 + b" ;
+  std::string error_second_part = "NameError: name 'b' is not defined" ;
   std::size_t found_first_part = run_file_msg.response.standard_error.find(
       error_first_part);
   std::size_t found_second_part = run_file_msg.response.standard_error.find(
