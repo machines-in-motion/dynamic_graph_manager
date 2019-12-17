@@ -145,7 +145,7 @@ public:
     res.sanity_check = true;
     
     // the service has been executed properly
-    return true;
+    return res.sanity_check;
   }
 
 private:
@@ -184,21 +184,12 @@ protected:
   /**
    * @brief TearDown, is executed after the unit tests
    */
-  void TearDown() {
-    dgm_->stop_hardware_communication();
-    dgm_->wait_stop_hardware_communication();
-    dynamic_graph::ros_shutdown();
-  }
+  void TearDown() {}
 
   /**
    * @brief Params of the DGM
    */
   YAML::Node params_;
-
-  /**
-   * @brief a pointer for the test
-   */
-  std::unique_ptr<SimpleDGM> dgm_;
 };
 
 bool start_user_cmd_ros_service(bool user_input)
@@ -736,24 +727,26 @@ TEST_F(TestDynamicGraphManagerHWC, test_run_user_cmd)
   /** Setup */
   ros::NodeHandle& node = dynamic_graph::ros_init(
     dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
-  dgm_.reset(new SimpleDGM());
-  dgm_->initialize(params_);
-  dgm_->initialize_hardware_communication_process();
-  dgm_->run_hardware_communication_process();
+  SimpleDGM dgm;
+  dgm.initialize(params_);
+  dgm.initialize_hardware_communication_process();
+  dgm.run_hardware_communication_process();
   
   /** Test 1 */
-  ASSERT_FALSE(dgm_->get_has_user_command_been_executed());
+  ASSERT_FALSE(dgm.get_has_user_command_been_executed());
 
   /** Test 2 */
   ASSERT_TRUE(start_user_cmd_ros_service(true));
-  ASSERT_TRUE(dgm_->get_has_user_command_been_executed());
+  ASSERT_TRUE(dgm.get_has_user_command_been_executed());
   
   /** Test 3 */
   ASSERT_TRUE(start_user_cmd_ros_service(false));
-  ASSERT_FALSE(dgm_->get_has_user_command_been_executed());
+  ASSERT_FALSE(dgm.get_has_user_command_been_executed());
 
   /** Tear down */
-  // see TestDynamicGraphManagerHWC::TearDown
+  dgm.stop_hardware_communication();
+  dgm.wait_stop_hardware_communication();
+  dynamic_graph::ros_shutdown();
 }
 
 /**
