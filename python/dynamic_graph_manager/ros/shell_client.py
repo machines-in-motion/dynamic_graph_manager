@@ -114,7 +114,6 @@ class RosShell(code.InteractiveConsole):
         """
         Call the rosservice of the current running dynamic graph manager
         """
-        print (code_string)
         if code_string == "" or code_string == "\n":
             return
 
@@ -199,8 +198,8 @@ class RosShell(code.InteractiveConsole):
             else:
                 return True
         except SyntaxError, OverflowError:
-            # self.showsyntaxerror()
-            # self.lined_pushed = ""
+            self.showsyntaxerror()
+            self.lined_pushed = ""
             return False
 
     def push(self, line):
