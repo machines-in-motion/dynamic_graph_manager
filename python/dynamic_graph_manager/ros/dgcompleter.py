@@ -55,16 +55,12 @@ class DGCompleter:
         readline.set_completer(Completer(client).complete)
         """
         self.client=client
-        astr="import readline"
-        self.client(astr)
-        astr="from rlcompleter import Completer"
-        self.client(astr)
-        astr="aCompleter=Completer()"
-        self.client(astr)
-        astr="readline.set_completer(aCompleter.complete)"
-        self.client(astr)
-        astr="readline.parse_and_bind(\"tab: complete\")"
-        self.client(astr)
+        
+        self.client.rosservice_call_run_python_command("import readline")
+        self.client.rosservice_call_run_python_command("from rlcompleter import Completer")
+        self.client.rosservice_call_run_python_command("aCompleter=Completer()")
+        self.client.rosservice_call_run_python_command("readline.set_completer(aCompleter.complete)")
+        self.client.rosservice_call_run_python_command("readline.parse_and_bind(\"tab: complete\")")
 
     def complete(self, text, state):
         """Return the next possible completion for 'text'.readline.parse_and_bind("tab: complete")
@@ -75,13 +71,6 @@ class DGCompleter:
 
         """
         astr="aCompleter.complete(\""+text+"\","+str(state)+")"
-        response=self.client(astr);
-        res2=ast.literal_eval(response.result)
-        return res2
-
-
-
-
-
-
-
+        response = self.client.rosservice_call_run_python_command(astr)
+        response_str = ast.literal_eval(response.result)
+        return response_str
