@@ -143,6 +143,10 @@ public:
    */
   void initialize_dynamic_graph_process();
 
+  void initialize_shared_memory();
+
+  void fork_dynamic_graph_process();
+
   /**
    * @brief run_python_command
    * @param file is the logging file to log the entry
@@ -350,10 +354,20 @@ public:
   }
 
   /**
+   * @brief Reset the safety mode if possible.
+   *
+   * @return True if safety mode was reset, otherwise false.
+   */
+  virtual bool reset_safety_mode()
+  {
+      return true;
+  }
+
+  /**
    * @brief dg_ros_node_name_ this is the ros node name of the dynamic graph
    * process
    */
-  static const std::string dg_ros_node_name_;
+  std::string dg_ros_node_name_;
 
   /**
    * @brief hw_com_ros_node_name_ this is the ros node name of the harware
@@ -365,7 +379,7 @@ public:
    * @brief shared_memory_name is the name of the shared memory segment to be
    * used
    */
-  static const std::string shared_memory_name_;
+  std::string shared_memory_name_;
 
   /**
    * @brief sensors_map_name is the name of the sensor map inside the shared
@@ -383,7 +397,7 @@ public:
    * @brief cond_var_sensors_name_ is the name of the condition variable in the
    * shared memory
    */
-  static const std::string cond_var_name_;
+  std::string cond_var_name_;
 
   /**
    * Method inherited
@@ -500,6 +514,13 @@ protected:
    * Only used in the dynamic_graph process.
    */
   ros::ServiceServer ros_service_stop_dg_;
+
+  /**
+   * @brief ros_service_restart_dg_ Allows to restart the dynamic graph process.
+   * This launches a new dynamic graph process. The hardware process will start
+   * interacting with this hardware process afterwards.
+   */
+  ros::ServiceServer ros_service_restart_dg_;
 
   /**
    * @brief is_dynamic_graph_stopped_ is the flag reflecting the state of the
@@ -634,7 +655,7 @@ protected:
   bool is_real_robot_;
 
   /**
-   * @brief dg_active_timer_file_ this is the path to the file that will 
+   * @brief dg_active_timer_file_ this is the path to the file that will
    * contain the computation time of each of the dynamic graph complete
    * execution.
    */
