@@ -89,21 +89,16 @@ class RosPythonInterpreter(object):
                 self._connect_to_rosservice_run_python_script(
                     self.timeout_connection)
                 return
-
-            print("Executing script at: " + filename)
             response = self.script_client(os.path.abspath(filename))
-
-            if not response:
-                print("Error while parsing file.")
-            else:
-                if response.standard_error:
-                    print(response.standard_error)
+            print(response)
+            return response
 
         except rospy.ServiceException as ex:
             print(ex)
             print("Connection to remote server lost. Reconnecting...")
             self.script_client = self._connect_to_rosservice_run_python_script(
                 self.timeout_connection)
+            return
 
     @staticmethod
     def _connect_to_rosservice(service_name, rosservice, timeout):
@@ -139,4 +134,4 @@ class RosPythonInterpreter(object):
             self.command_client.close()
 
         if self.script_client:
-            self.script_client .close()
+            self.script_client.close()
