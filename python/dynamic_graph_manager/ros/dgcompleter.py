@@ -38,11 +38,13 @@ its input.
 import __builtin__
 import __main__
 import ast
+from dynamic_graph_manager.ros.ros_client import RosPythonInterpreter
 
 __all__ = ["DGCompleter"]
 
+
 class DGCompleter:
-    def __init__(self, client):
+    def __init__(self):
         """Create a new completer for the command line.
 
         Completer([client]) -> completer instance.
@@ -54,23 +56,31 @@ class DGCompleter:
 
         readline.set_completer(Completer(client).complete)
         """
-        self.client=client
-        
-        self.client.rosservice_call_run_python_command("import readline")
-        self.client.rosservice_call_run_python_command("from rlcompleter import Completer")
-        self.client.rosservice_call_run_python_command("aCompleter=Completer()")
-        self.client.rosservice_call_run_python_command("readline.set_completer(aCompleter.complete)")
-        self.client.rosservice_call_run_python_command("readline.parse_and_bind(\"tab: complete\")")
+        self.client = RosPythonInterpreter()
+
+        cmd = (["import sys"] +
+               ["import ast"] +
+               ["import readline"] +
+               ["from rlcompleter import Completer"] +
+               ["local_completer=Completer()"] +
+               ["readline.set_completer(local_completer.complete)"] +
+               ["readline.parse_and_bind(\"tab: complete\")"])
+        for python_command in cmd:
+            self.client.run_python_command(python_command)
+
+        self.buffer = []
 
     def complete(self, text, state):
         """Return the next possible completion for 'text'.readline.parse_and_bind("tab: complete")
 
-
         This is called successively with state == 0, 1, 2, ... until it
-        returns None.  The completion should begin with 'text'.
-
+        returns None. The completion should begin with 'text'.
         """
-        astr="aCompleter.complete(\""+text+"\","+str(state)+")"
-        response = self.client.rosservice_call_run_python_command(astr)
-        response_str = ast.literal_eval(response.result)
-        return response_str
+        cmd = "local_completer.complete(\""+text+"\","+str(state)+")"
+        response = self.client.run_python_command(cmd)
+        if response is "":
+            response = None
+            self.buffer = []
+        else:
+            self.buffer += [response]
+        return response
