@@ -119,7 +119,7 @@ void DynamicGraphManager::initialize(YAML::Node param){
   shared_memory::set(shared_memory_name_, sensors_map_name_, sensors_map_);
   shared_memory::set(shared_memory_name_, motor_controls_map_name_,
                      motor_controls_map_);
-  
+
   // Set the maximum cpu latency to 0 us. This keeps the CPU from sleeping.
   real_time_tools::set_cpu_dma_latency(0);
 
@@ -149,7 +149,7 @@ void DynamicGraphManager::initialize(YAML::Node param){
     std::cerr << e.what() << std::endl;
     throw ExceptionYamlCpp(ExceptionYamlCpp::PARSING_DOUBLE,
       error_str + "control_period");
-  } 
+  }
   try{
     maximum_time_for_user_cmd_ = params_["hardware_communication"]
       ["maximum_time_for_user_cmd"].as<double>() * std::pow(10,-9);
@@ -222,7 +222,6 @@ void DynamicGraphManager::run()
                 << pid_hardware_communication_process_
                 << std::endl;
 
-      initialize_hardware_communication_process();
       run_hardware_communication_process();
     }else
     {
@@ -462,7 +461,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
   dg_active_timer_.tic();
   dg_sleep_timer_.tic();
   dg_timer_.tic();
-  
+
   while(!is_dynamic_graph_stopped() && dg_ros_node.ok())
   {
     // measure the complete iteration time
@@ -512,6 +511,8 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
 
 void* DynamicGraphManager::hardware_communication_real_time_loop()
 {
+  initialize_hardware_communication_process();
+
   // we acquiere the lock on the condition variable here
   cond_var_->lock_scope();
 
