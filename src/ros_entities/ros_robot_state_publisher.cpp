@@ -175,8 +175,8 @@ void RosRobotStatePublisher::send_data(
   const Vector& robot_state = pub.robot_state_input_signal_->access(time);
   int joint_state_size = joint_state_msg.position.size();
 
-  assert(robot_state.size() == joint_state_size ||
-         robot_state.size() == joint_state_size + 7 &&
+  assert((robot_state.size() == joint_state_size ||
+         robot_state.size() == joint_state_size + 7) &&
          "Input signal has the wrong size. The expected size is: number joint, or"
          " the number of joint + 7 (base pose and base quaternion)");
 
@@ -211,7 +211,7 @@ void RosRobotStatePublisher::send_data(
   if(pub.joint_state_publisher_->trylock())
   {
     pub.joint_state_publisher_->msg_.header.stamp = ros::Time::now ();
-    for(int i=0 ; i<pub.joint_state_publisher_->msg_.position.size() ; ++i)
+    for(unsigned int i=0 ; i<pub.joint_state_publisher_->msg_.position.size() ; ++i)
     {
       pub.joint_state_publisher_->msg_.position[i] = robot_state(index + i);
     }

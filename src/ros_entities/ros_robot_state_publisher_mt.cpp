@@ -206,8 +206,8 @@ void RosRobotStatePublisherMt::send_data(
     publisher.mutex_.unlock();
     int joint_state_size = joint_state_msg.position.size();
 
-    assert(robot_state.size() == joint_state_size ||
-          robot_state.size() == joint_state_size + 7 &&
+    assert((robot_state.size() == joint_state_size ||
+          robot_state.size() == joint_state_size + 7) &&
           "Input signal has the wrong size. The expected size is: number joint, or"
           " the number of joint + 7 (base pose and base quaternion)");
 
@@ -242,7 +242,7 @@ void RosRobotStatePublisherMt::send_data(
     if(publisher.joint_state_publisher_->trylock())
     {
       publisher.joint_state_publisher_->msg_.header.stamp = ros::Time::now ();
-      for(int i=0 ; i<publisher.joint_state_publisher_->msg_.position.size() ; ++i)
+      for(unsigned int i=0 ; i<publisher.joint_state_publisher_->msg_.position.size() ; ++i)
       {
         publisher.joint_state_publisher_->msg_.position[i] = robot_state(index + i);
       }
