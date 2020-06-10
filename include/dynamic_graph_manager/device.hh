@@ -2,7 +2,8 @@
  * @file device.hh
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellschaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellschaft.
  * @date 2019-05-22
  */
 
@@ -11,23 +12,23 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <dynamic-graph/linear-algebra.h>
-#include <dynamic-graph/entity.h>
 #include <dynamic-graph/all-signals.h>
+#include <dynamic-graph/entity.h>
+#include <dynamic-graph/linear-algebra.h>
 
 #include <dynamic_graph_manager/periodic-call.hh>
 #include <dynamic_graph_manager/tools.hh>
 
-namespace dynamic_graph {
-  typedef dynamicgraph::Signal<dynamicgraph::Vector,int>  OutSignal;
-  typedef dynamicgraph::SignalPtr<dynamicgraph::Vector,int>  InSignal;
-  typedef std::map<std::string, OutSignal* > DeviceOutSignalMap;
-  typedef std::map<std::string, InSignal* > DeviceInSignalMap;
+namespace dynamic_graph
+{
+typedef dynamicgraph::Signal<dynamicgraph::Vector, int> OutSignal;
+typedef dynamicgraph::SignalPtr<dynamicgraph::Vector, int> InSignal;
+typedef std::map<std::string, OutSignal*> DeviceOutSignalMap;
+typedef std::map<std::string, InSignal*> DeviceInSignalMap;
 
-  class Device: public dynamicgraph::Entity
-  {
-  public:
-
+class Device : public dynamicgraph::Entity
+{
+public:
     /**
      * @brief This is the name of the classe that is used to store the object
      * in the dynamic graph
@@ -39,8 +40,9 @@ namespace dynamic_graph {
      * It is used to access the class name and do
      * @return the name of the device class
      */
-    virtual const std::string& getClassName(void) const {
-      return CLASS_NAME;
+    virtual const std::string& getClassName(void) const
+    {
+        return CLASS_NAME;
     }
 
     /**
@@ -71,7 +73,8 @@ namespace dynamic_graph {
     virtual void initialize_from_file(const std::string& yaml_file);
 
     /**
-     * @brief parse_yaml_file fill in the internal maps for sensors and controls.
+     * @brief parse_yaml_file fill in the internal maps for sensors and
+     * controls.
      */
     void initialize_maps(const YAML::Node& sensors_and_controls);
 
@@ -104,10 +107,9 @@ namespace dynamic_graph {
      */
     void execute_graph_deprecated()
     {
-      std::cout << "\"device.executeGraph\" python command is deprecated, "
-                << "please use \"device.execute_graph()\""
-                << std::endl;
-      execute_graph();
+        std::cout << "\"device.executeGraph\" python command is deprecated, "
+                  << "please use \"device.execute_graph()\"" << std::endl;
+        execute_graph();
     }
 
     /**
@@ -128,9 +130,9 @@ namespace dynamic_graph {
     DeviceOutSignalMap sensors_out_;
 
     /**
-      * @brief sensors_map_ is a map of dynamicgraph::Vector. They represent
-      * all the sensors data measured on the robot.
-      */
+     * @brief sensors_map_ is a map of dynamicgraph::Vector. They represent
+     * all the sensors data measured on the robot.
+     */
     VectorDGMap sensors_map_;
 
     /*******************************************************
@@ -145,12 +147,12 @@ namespace dynamic_graph {
     DeviceInSignalMap motor_controls_in_;
 
     /**
-     * @brief motor_controls_map_ is a map of dynamicgraph::Vector. They represent
-      * all the controls to be sent to the robot.
+     * @brief motor_controls_map_ is a map of dynamicgraph::Vector. They
+     * represent all the controls to be sent to the robot.
      */
     VectorDGMap motor_controls_map_;
 
-  protected:
+protected:
     /**
      * @brief periodic_call_before_ handle the *synchronous* command call on the
      * device between getting the sensor data and sending the commands.
@@ -169,9 +171,8 @@ namespace dynamic_graph {
      * @brief params is a YAML node that allow the creation of a modular device
      */
     YAML::Node params_;
-  };
+};
 
-} // namespace dynamic_graph
-
+}  // namespace dynamic_graph
 
 #endif /* #ifndef DEVICE_HH */

@@ -2,7 +2,8 @@
  * @file exception-dynamic.hh
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellschaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellschaft.
  * @date 2019-05-22
  */
 
@@ -13,45 +14,48 @@
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-
 #include <dynamic_graph_manager/exception/exception-abstract.hh>
 
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph {
-
-  /** \brief ExceptionDynamic */
-  class ExceptionDynamic: public ExceptionAbstract
-  {
-  public:
+namespace dynamic_graph
+{
+/** \brief ExceptionDynamic */
+class ExceptionDynamic : public ExceptionAbstract
+{
+public:
     enum ErrorCodeEnum
     {
-      GENERIC = ExceptionAbstract::DYNAMIC
+        GENERIC = ExceptionAbstract::DYNAMIC
 
-      ,CANT_DESTROY_SIGNAL
-      ,JOINT_RANK
-      ,DYNAMIC_JRL
-      ,JOINT_SIZE
-      ,INTEGRATION
+        ,
+        CANT_DESTROY_SIGNAL,
+        JOINT_RANK,
+        DYNAMIC_JRL,
+        JOINT_SIZE,
+        INTEGRATION
     };
 
     static const std::string EXCEPTION_NAME;
-    virtual const std::string& getExceptionName( void ) const { return EXCEPTION_NAME; }
+    virtual const std::string& getExceptionName(void) const
+    {
+        return EXCEPTION_NAME;
+    }
 
-  public:
-
-    ExceptionDynamic ( const ExceptionDynamic::ErrorCodeEnum& errcode,
-                       const std::string & msg = "" );
-    ExceptionDynamic( const ExceptionDynamic::ErrorCodeEnum& errcode,
-                      const std::string & msg,const char* format, ... );
-    virtual ~ExceptionDynamic( void ) throw() {}
-
-
-  };
+public:
+    ExceptionDynamic(const ExceptionDynamic::ErrorCodeEnum& errcode,
+                     const std::string& msg = "");
+    ExceptionDynamic(const ExceptionDynamic::ErrorCodeEnum& errcode,
+                     const std::string& msg,
+                     const char* format,
+                     ...);
+    virtual ~ExceptionDynamic(void) throw()
+    {
+    }
+};
 } /* namespace dynamic_graph */
-
 
 #endif /* #ifndef DYNAMIC_EXCEPTION_HH */
 

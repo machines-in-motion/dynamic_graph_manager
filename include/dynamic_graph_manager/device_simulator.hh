@@ -2,7 +2,8 @@
  * @file device_simulator.hh
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellschaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellschaft.
  * @date 2019-05-22
  */
 
@@ -14,12 +15,11 @@
 #include <dynamic-graph/entity.h>
 #include <dynamic_graph_manager/device.hh>
 
-namespace dynamic_graph {
-
-  class DeviceSimulator: public dynamic_graph::Device
-  {
-  public:
-
+namespace dynamic_graph
+{
+class DeviceSimulator : public dynamic_graph::Device
+{
+public:
     /**
      * @brief This is the name of the classe that is used to store the object
      * in the dynamic graph
@@ -36,7 +36,9 @@ namespace dynamic_graph {
     /**
      * @brief Destroy the DeviceSimulator object
      */
-    ~DeviceSimulator(){}
+    ~DeviceSimulator()
+    {
+    }
 
     /**
      * @brief This method is hinerited from the Device class. "initialize" is
@@ -55,7 +57,7 @@ namespace dynamic_graph {
     virtual void initialize_from_file(const std::string& yaml_file);
 
     /**
-     * @brief This method is hinerited from the Device class. 
+     * @brief This method is hinerited from the Device class.
      * "execute_graph" is the method that execute the graph.
      *
      * In order it does:
@@ -84,9 +86,8 @@ namespace dynamic_graph {
      * process crash.
      */
     DeviceInSignalMap simu_sensors_in_;
-  };
+};
 
-} // namespace dynamic_graph
-
+}  // namespace dynamic_graph
 
 #endif /* #ifndef DEVICE_SIMULATOR_HH */

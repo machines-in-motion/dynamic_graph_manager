@@ -2,7 +2,8 @@
  * @file test_ros_init.cpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellschaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellschaft.
  * @date 2019-05-22
  */
 
@@ -20,7 +21,9 @@ using namespace dynamic_graph;
 /**
  * @brief This is the test environment
  */
-class TestRosInit : public ::testing::Test{};
+class TestRosInit : public ::testing::Test
+{
+};
 
 /*****************
  * Start Testing *
@@ -31,12 +34,12 @@ class TestRosInit : public ::testing::Test{};
  */
 TEST_F(TestRosInit, test_create_node)
 {
-  // setup
-  std::string node_name = "my_global_node";
-  ros::NodeHandle& n = ros_init(node_name);
+    // setup
+    std::string node_name = "my_global_node";
+    ros::NodeHandle& n = ros_init(node_name);
 
-  // test
-  ASSERT_TRUE(ros_exist(node_name));
+    // test
+    ASSERT_TRUE(ros_exist(node_name));
 }
 
 /**
@@ -44,11 +47,11 @@ TEST_F(TestRosInit, test_create_node)
  */
 TEST_F(TestRosInit, test_global_variable)
 {
-  // setup
-  std::string node_name = "my_global_node";
-  
-  // test
-  ASSERT_TRUE(ros_exist(node_name));
+    // setup
+    std::string node_name = "my_global_node";
+
+    // test
+    ASSERT_TRUE(ros_exist(node_name));
 }
 
 /**
@@ -56,12 +59,12 @@ TEST_F(TestRosInit, test_global_variable)
  */
 TEST_F(TestRosInit, test_delete_global_variable)
 {
-  // setup
-  std::string node_name = "my_global_node";
-  ros_shutdown(node_name);
+    // setup
+    std::string node_name = "my_global_node";
+    ros_shutdown(node_name);
 
-  // test
-  ASSERT_FALSE(ros_exist(node_name));
+    // test
+    ASSERT_FALSE(ros_exist(node_name));
 }
 
 /**
@@ -69,12 +72,12 @@ TEST_F(TestRosInit, test_delete_global_variable)
  */
 TEST_F(TestRosInit, test_spinner)
 {
-  // setup
-  std::string node_name = "my_global_node";
-  ros::AsyncSpinner& spinner = ros_spinner(node_name);
+    // setup
+    std::string node_name = "my_global_node";
+    ros::AsyncSpinner& spinner = ros_spinner(node_name);
 
-  // test
-  ASSERT_TRUE(&spinner != nullptr);
+    // test
+    ASSERT_TRUE(&spinner != nullptr);
 }
 
 /**
@@ -82,26 +85,22 @@ TEST_F(TestRosInit, test_spinner)
  */
 TEST_F(TestRosInit, test_multiple_shutdown_call)
 {
-  // setup
-  std::string node_name = "my_global_node";
+    // setup
+    std::string node_name = "my_global_node";
 
-  // test
-  ASSERT_NO_THROW(
-    for(unsigned i=0 ; i<200 ; ++i)
-    {
-      ros_shutdown(node_name);
-    }
-  );
+    // test
+    ASSERT_NO_THROW(
+        for (unsigned i = 0; i < 200; ++i) { ros_shutdown(node_name); });
 }
 
 /**
  * @brief Dummy function to be called as ros services
- * 
+ *
  * @return true
  */
-bool simple_service(std_srvs::Empty::Request& , std_srvs::Empty::Response& )
+bool simple_service(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 {
-  return true;
+    return true;
 }
 
 /**
@@ -109,20 +108,21 @@ bool simple_service(std_srvs::Empty::Request& , std_srvs::Empty::Response& )
  */
 TEST_F(TestRosInit, test_services_available)
 {
-  // setup
-  // create a node and a service
-  ros::NodeHandle& n0 = ros_init ("node_0");
-  std::string service_name = "/simple_service";
-  ros::ServiceServer server = n0.advertiseService(service_name, &simple_service);
-  std_srvs::Empty srv;
+    // setup
+    // create a node and a service
+    ros::NodeHandle& n0 = ros_init("node_0");
+    std::string service_name = "/simple_service";
+    ros::ServiceServer server =
+        n0.advertiseService(service_name, &simple_service);
+    std_srvs::Empty srv;
 
-  // test
-  ros::ServiceClient client = n0.serviceClient<std_srvs::Empty>(service_name);
-  ASSERT_TRUE(client.waitForExistence());
-  ASSERT_TRUE(ros::service::exists(service_name, true));
+    // test
+    ros::ServiceClient client = n0.serviceClient<std_srvs::Empty>(service_name);
+    ASSERT_TRUE(client.waitForExistence());
+    ASSERT_TRUE(ros::service::exists(service_name, true));
 
-  // tear down
-  ros_shutdown ("node_0");
+    // tear down
+    ros_shutdown("node_0");
 }
 
 /**
@@ -130,24 +130,24 @@ TEST_F(TestRosInit, test_services_available)
  */
 TEST_F(TestRosInit, test_services_shut_down)
 {
-  // setup
-  // create a node and a service and shutdown the node
-  ros::NodeHandle& n0 = ros_init ("node_0");
-  n0.advertiseService("simple_service", &simple_service);
-  ros_shutdown ("node_0");
+    // setup
+    // create a node and a service and shutdown the node
+    ros::NodeHandle& n0 = ros_init("node_0");
+    n0.advertiseService("simple_service", &simple_service);
+    ros_shutdown("node_0");
 
-  // create a client to this service
-  ros::NodeHandle& n1 = ros_init ("node_1");
-  std_srvs::Empty srv;
-  ros::ServiceClient simple_service_client = 
-    n1.serviceClient<std_srvs::Empty>("/node_0/simple_service");
-  
-  // test
-  ASSERT_FALSE(simple_service_client.waitForExistence(ros::Duration(0.0009)));
-  ASSERT_FALSE(simple_service_client.call(srv));
+    // create a client to this service
+    ros::NodeHandle& n1 = ros_init("node_1");
+    std_srvs::Empty srv;
+    ros::ServiceClient simple_service_client =
+        n1.serviceClient<std_srvs::Empty>("/node_0/simple_service");
 
-  // tear down
-  ros_shutdown ("node_1");
+    // test
+    ASSERT_FALSE(simple_service_client.waitForExistence(ros::Duration(0.0009)));
+    ASSERT_FALSE(simple_service_client.call(srv));
+
+    // tear down
+    ros_shutdown("node_1");
 }
 
 /**
@@ -155,28 +155,28 @@ TEST_F(TestRosInit, test_services_shut_down)
  */
 TEST_F(TestRosInit, test_killall_nodes)
 {
-  // setup
-  // creates tones of nodes
-  int nb_nodes = 100;
-  for(unsigned i=0; i<nb_nodes ; ++i)
-  {
+    // setup
+    // creates tones of nodes
+    int nb_nodes = 100;
+    for (unsigned i = 0; i < nb_nodes; ++i)
     {
-      std::ostringstream os;
-      os << "node_" << i;
-      ros_init (os.str());
+        {
+            std::ostringstream os;
+            os << "node_" << i;
+            ros_init(os.str());
+        }
     }
-  }
 
-  // kill them all
-  ros_shutdown ();
+    // kill them all
+    ros_shutdown();
 
-  // test if they are all killed
-  for(unsigned i=0; i<nb_nodes ; ++i)
-  {
+    // test if they are all killed
+    for (unsigned i = 0; i < nb_nodes; ++i)
     {
-      std::ostringstream os;
-      os << "node_" << i;
-      ASSERT_FALSE(ros_exist(os.str()));
+        {
+            std::ostringstream os;
+            os << "node_" << i;
+            ASSERT_FALSE(ros_exist(os.str()));
+        }
     }
-  }
 }
