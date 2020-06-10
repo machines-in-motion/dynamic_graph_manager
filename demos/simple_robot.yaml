@@ -1,0 +1,24 @@
+is_real_robot: true
+device:
+  name: "simple"
+  sensors:
+    encoders:
+      size: 5
+      joint_equipped: [1, 1, 1, 1, 1]
+    imu_accelerometer:
+      size: 3
+    imu_gyroscope:
+      size: 3
+    imu:
+      size: 6
+  controls:
+    torques:
+      size: 5
+    positions:
+      size: 5
+hardware_communication:
+  maximum_time_for_user_cmd: 100000
+  max_missed_control: 10
+  control_period: 1000000
+  debug_timer_history_length: 10000 # Optional
+
