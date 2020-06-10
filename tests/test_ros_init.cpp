@@ -36,7 +36,7 @@ TEST_F(TestRosInit, test_create_node)
 {
     // setup
     std::string node_name = "my_global_node";
-    ros::NodeHandle& n = ros_init(node_name);
+    ros_init(node_name);
 
     // test
     ASSERT_TRUE(ros_exist(node_name));
@@ -157,8 +157,8 @@ TEST_F(TestRosInit, test_killall_nodes)
 {
     // setup
     // creates tones of nodes
-    int nb_nodes = 100;
-    for (unsigned i = 0; i < nb_nodes; ++i)
+    unsigned int nb_nodes = 100;
+    for (unsigned int i = 0; i < nb_nodes; ++i)
     {
         {
             std::ostringstream os;
@@ -171,7 +171,7 @@ TEST_F(TestRosInit, test_killall_nodes)
     ros_shutdown();
 
     // test if they are all killed
-    for (unsigned i = 0; i < nb_nodes; ++i)
+    for (unsigned int i = 0; i < nb_nodes; ++i)
     {
         {
             std::ostringstream os;

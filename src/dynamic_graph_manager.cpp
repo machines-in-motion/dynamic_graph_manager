@@ -197,7 +197,7 @@ void DynamicGraphManager::initialize(YAML::Node param)
     hwc_timer_file_ = log_dir_ + "hwc_timer.dat";
 
     unsigned int debug_timer_history_length = 0;
-    YAML::ReadParameter(params_["hardware_communication"],
+    YAML::ReadParameter(params_,
                         "debug_timer_history_length",
                         debug_timer_history_length,
                         true);

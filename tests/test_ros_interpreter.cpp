@@ -113,7 +113,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_result)
     // let use wait for the existance of the services
     ros::service::waitForService(service_name, ros::Duration(0.5));
     // fetch the node handle reference
-    ros::NodeHandle& node_handle = ros_init(node_name_);
+    ros_init(node_name_);
     // Prepare a simple python operation
     dynamic_graph_manager::RunCommand run_com_msg;
     run_com_msg.request.input = "1 + 1";
@@ -135,7 +135,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_standard_output)
     // let use wait for the existance of the services
     ros::service::waitForService(service_name, ros::Duration(0.5));
     // fetch the node handle reference
-    ros::NodeHandle& node_handle = ros_init(node_name_);
+    ros_init(node_name_);
     // Prepare a simple python operation
     dynamic_graph_manager::RunCommand run_com_msg;
     run_com_msg.request.input = "print(\"Banana\")";
@@ -159,7 +159,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_standard_error)
     // let use wait for the existance of the services
     ros::service::waitForService(service_name, ros::Duration(0.5));
     // fetch the node handle reference
-    ros::NodeHandle& node_handle = ros_init(node_name_);
+    ros_init(node_name_);
     // Prepare a simple python operation
     dynamic_graph_manager::RunCommand run_com_msg;
     run_com_msg.request.input = "a";
@@ -184,7 +184,7 @@ TEST_F(TestRosInterpreter, test_call_run_script_result)
     // let use wait for the existance of the services
     ros::service::waitForService(service_name, ros::Duration(0.5));
     // fetch the node handle reference
-    ros::NodeHandle& node_handle = ros_init(node_name_);
+    ros_init(node_name_);
     // Prepare a simple python operation
     dynamic_graph_manager::RunPythonFile run_file_msg;
     run_file_msg.request.input =
@@ -207,7 +207,7 @@ TEST_F(TestRosInterpreter, test_call_run_script_standard_error)
     // let use wait for the existance of the services
     ros::service::waitForService(service_name, ros::Duration(0.5));
     // fetch the node handle reference
-    ros::NodeHandle& node_handle = ros_init(node_name_);
+    ros_init(node_name_);
     // Prepare a simple python operation
     dynamic_graph_manager::RunPythonFile run_file_msg;
     run_file_msg.request.input =

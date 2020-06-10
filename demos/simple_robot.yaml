@@ -1,4 +1,8 @@
+# Common parameters
+debug_timer_history_length: 10000 # Optional
 is_real_robot: true
+
+# Dynamic graph device:
 device:
   name: "simple"
   sensors:
@@ -16,9 +20,9 @@ device:
       size: 5
     positions:
       size: 5
+
+# Hardware communication process
 hardware_communication:
   maximum_time_for_user_cmd: 100000
   max_missed_control: 10
   control_period: 1000000
-  debug_timer_history_length: 10000 # Optional
-
