@@ -9,7 +9,7 @@ project(dynamic_graph_manager)
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-as-needed")
 endif()
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -W -Wno-unused-parameter -Wextra")
 
 # ensuring path to libraries are set during install
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
