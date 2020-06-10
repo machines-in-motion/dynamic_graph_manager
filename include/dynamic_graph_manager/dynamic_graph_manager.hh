@@ -28,7 +28,7 @@
 #include <mutex>
 
 // get the yaml configuration
-#include <yaml-cpp/yaml.h>
+#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 // ROS includes
 #include <ros/ros.h>

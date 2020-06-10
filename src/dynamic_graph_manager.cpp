@@ -175,9 +175,9 @@ void DynamicGraphManager::initialize(YAML::Node param){
   hwc_timer_file_ =  log_dir_ + "hwc_timer.dat";
 
   unsigned int debug_timer_history_length = 0;
-  if (YAML::Node parameter = params_["debug_timer_history_length"]) {
-    debug_timer_history_length = parameter.as<unsigned>();
-  }
+  YAML::ReadParameter(params_["hardware_communication"],
+                      "debug_timer_history_length",
+                      debug_timer_history_length, true);
 
   dg_active_timer_.set_memory_size(debug_timer_history_length);
   dg_sleep_timer_.set_memory_size(debug_timer_history_length);
