@@ -36,12 +36,12 @@ protected:
 TEST_F(TestCppFeatures, test_exit_fork)
 {
     pid_t pid_child = 0;
-    pid_t pid_parent = 0;
+    // pid_t pid_parent = 0;
     pid_t pid = fork();
     if (pid == 0)  // Child process
     {
         pid_child = getpid();
-        pid_parent = getppid();
+        // pid_parent = getppid();
         //    std::cout << "child: pid_child=" << pid_child <<
         //                 " ; pid_parent=" << pid_parent << std::endl;
         usleep(5000);
@@ -50,7 +50,7 @@ TEST_F(TestCppFeatures, test_exit_fork)
     else if (pid > 0)  // Parent process
     {
         pid_child = pid;
-        pid_parent = getpid();
+        // pid_parent = getpid();
         //    std::cout << "parent: pid_child=" << pid_child <<
         //                 " ; pid_parent=" << pid_parent << std::endl;
         bool child_death_detected = false;
