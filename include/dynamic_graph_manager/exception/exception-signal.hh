@@ -2,7 +2,8 @@
  * @file exception-signal.hh
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellschaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellschaft.
  * @date 2019-05-22
  */
 
@@ -13,42 +14,48 @@
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-
 #include <dynamic_graph_manager/exception/exception-abstract.hh>
 
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph {
-
-  /* \class ExceptionSignal */
-  class ExceptionSignal: public ExceptionAbstract
-  {
-  public:
+namespace dynamic_graph
+{
+/* \class ExceptionSignal */
+class ExceptionSignal : public ExceptionAbstract
+{
+public:
     enum ErrorCodeEnum
     {
-      GENERIC = ExceptionAbstract::SIGNAL
+        GENERIC = ExceptionAbstract::SIGNAL
 
-      ,READWRITE_LOCK
-      ,COPY_NOT_INITIALIZED
-      ,NOT_INITIALIZED
-      ,PLUG_IMPOSSIBLE
-      ,SET_IMPOSSIBLE
-      ,BAD_CAST
+        ,
+        READWRITE_LOCK,
+        COPY_NOT_INITIALIZED,
+        NOT_INITIALIZED,
+        PLUG_IMPOSSIBLE,
+        SET_IMPOSSIBLE,
+        BAD_CAST
     };
 
     static const std::string EXCEPTION_NAME;
-    virtual const std::string& getExceptionName( void ) const { return EXCEPTION_NAME; }
+    virtual const std::string& getExceptionName(void) const
+    {
+        return EXCEPTION_NAME;
+    }
 
-  public:
-
-    ExceptionSignal ( const ExceptionSignal::ErrorCodeEnum& errcode,
-                      const std::string & msg = "" );
-    ExceptionSignal( const ExceptionSignal::ErrorCodeEnum& errcode,
-                     const std::string & msg,const char* format, ... );
-    virtual ~ExceptionSignal( void ) throw() {}
-  };
+public:
+    ExceptionSignal(const ExceptionSignal::ErrorCodeEnum& errcode,
+                    const std::string& msg = "");
+    ExceptionSignal(const ExceptionSignal::ErrorCodeEnum& errcode,
+                    const std::string& msg,
+                    const char* format,
+                    ...);
+    virtual ~ExceptionSignal(void) throw()
+    {
+    }
+};
 } /* namespace dynamic_graph */
 
 #endif /* #ifndef SIGNAL_EXCEPTION_HH */
