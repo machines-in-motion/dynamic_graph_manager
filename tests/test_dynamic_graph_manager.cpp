@@ -118,7 +118,7 @@ public:
      *
      * @param map of controls
      */
-    void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
+    void set_motor_controls_from_map(const dynamic_graph::VectorDGMap&)
     { /*Nothing to be done*/
     }
 
