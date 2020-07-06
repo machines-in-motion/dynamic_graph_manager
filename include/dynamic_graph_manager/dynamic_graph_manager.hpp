@@ -1,5 +1,5 @@
 /**
- * @file dynamic_graph_manager.hh
+ * @file dynamic_graph_manager.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -48,13 +48,13 @@
 #include "shared_memory/locked_condition_variable.hpp"
 
 // import the python interpreter ros binding
-#include "dynamic_graph_manager/ros_interpreter.hh"
+#include "dynamic_graph_manager/ros_interpreter.hpp"
 
 // some useful tools like the yaml parsing
-#include "dynamic_graph_manager/tools.hh"
+#include "dynamic_graph_manager/tools.hpp"
 
 // the device of the dynamic-graph
-#include "dynamic_graph_manager/device.hh"
+#include "dynamic_graph_manager/device.hpp"
 
 namespace dynamic_graph
 {

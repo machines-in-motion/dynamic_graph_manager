@@ -10,9 +10,9 @@
 #include "ros_entities/ros_robot_state_publisher_mt.hpp"
 #include <tf/tf.h>
 #include <iostream>
-#include "dynamic_graph_manager/dynamic_graph_manager.hh"
-#include "dynamic_graph_manager/ros_init.hh"
-#include "ros_entities/converter.hh"
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
+#include "dynamic_graph_manager/ros_init.hpp"
+#include "ros_entities/converter.hpp"
 
 using namespace std;
 // using namespace dynamicgraph::sot;

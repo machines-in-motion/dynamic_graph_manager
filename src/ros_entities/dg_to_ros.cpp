@@ -7,7 +7,7 @@
  * @date 2019-05-22
  */
 
-#include "ros_entities/dg_to_ros.hh"
+#include "ros_entities/dg_to_ros.hpp"
 
 namespace dynamic_graph
 {

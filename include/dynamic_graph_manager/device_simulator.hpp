@@ -1,5 +1,5 @@
 /**
- * @file device_simulator.hh
+ * @file device_simulator.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -13,7 +13,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <dynamic-graph/entity.h>
-#include <dynamic_graph_manager/device.hh>
+#include <dynamic_graph_manager/device.hpp>
 
 namespace dynamic_graph
 {

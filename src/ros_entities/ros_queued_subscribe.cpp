@@ -19,10 +19,10 @@
 
 #include <dynamic-graph/factory.h>
 
-#include "dynamic_graph_manager/dynamic_graph_manager.hh"
-#include "dynamic_graph_manager/ros_init.hh"
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
+#include "dynamic_graph_manager/ros_init.hpp"
 
-#include "ros_entities/ros_queued_subscribe.hh"
+#include "ros_entities/ros_queued_subscribe.hpp"
 
 namespace dynamic_graph
 {

@@ -14,10 +14,10 @@
 #include <thread>
 
 // We use another class of this package which has an independant unittest.
-#include "dynamic_graph_manager/ros_init.hh"
+#include "dynamic_graph_manager/ros_init.hpp"
 
 // The class to test
-#include "dynamic_graph_manager/dynamic_graph_manager.hh"
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 
 // Service for the user command unittest
 #include "dynamic_graph_manager/TestUserCmdBool.h"

@@ -1,5 +1,5 @@
 /**
- * @file device.hh
+ * @file device.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -16,8 +16,8 @@
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/linear-algebra.h>
 
-#include <dynamic_graph_manager/periodic-call.hh>
-#include <dynamic_graph_manager/tools.hh>
+#include <dynamic_graph_manager/periodic-call.hpp>
+#include <dynamic_graph_manager/tools.hpp>
 
 namespace dynamic_graph
 {

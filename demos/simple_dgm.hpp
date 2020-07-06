@@ -7,8 +7,8 @@
  * @date 2019-05-22
  */
 #include "dynamic_graph_manager/TestUserCmdBool.h"
-#include "dynamic_graph_manager/dynamic_graph_manager.hh"
-#include "dynamic_graph_manager/ros_init.hh"
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
+#include "dynamic_graph_manager/ros_init.hpp"
 
 namespace dynamic_graph_manager
 {

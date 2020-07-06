@@ -1,5 +1,5 @@
 /**
- * @file ros_tf_listener.hh
+ * @file ros_tf_listener.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -18,7 +18,7 @@
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal.h>
 
-#include <ros_entities/matrix_geometry.hh>
+#include <ros_entities/matrix_geometry.hpp>
 
 namespace dynamic_graph
 {

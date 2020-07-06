@@ -16,7 +16,7 @@
 #include <dynamic-graph/factory.h>
 #include <dynamic-graph/linear-algebra.h>
 
-#include <dynamic_graph_manager/device.hh>
+#include <dynamic_graph_manager/device.hpp>
 
 using namespace std;
 using namespace dynamic_graph;

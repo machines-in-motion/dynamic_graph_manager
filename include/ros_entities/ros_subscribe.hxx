@@ -18,7 +18,7 @@
 #include <vector>
 #include "dynamic_graph_manager/Matrix.h"
 #include "dynamic_graph_manager/Vector.h"
-#include "ros_time.hh"
+#include "ros_time.hpp"
 
 namespace dg = dynamicgraph;
 
