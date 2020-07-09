@@ -35,16 +35,14 @@ its input.
 
 """
 
-import __builtin__
-import __main__
 import ast
-from dynamic_graph_manager.ros.ros_client import RosPythonInterpreter
+from dynamic_graph_manager.wrapper import RosPythonInterpreterClient
 
 __all__ = ["DGCompleter"]
 
 
 class DGCompleter:
-    def __init__(self):
+    def __init__(self, ros_python_interpreter_client=None):
         """Create a new completer for the command line.
 
         Completer([client]) -> completer instance.
@@ -56,7 +54,10 @@ class DGCompleter:
 
         readline.set_completer(Completer(client).complete)
         """
-        self.client = RosPythonInterpreter()
+        if ros_python_interpreter_client is None:
+            self.client = RosPythonInterpreterClient()
+        else:
+            self.client = ros_python_interpreter_client
 
         cmd = (["import sys"] +
                ["import ast"] +

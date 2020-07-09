@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """@package dynamic_graph_manager
 
@@ -23,7 +23,7 @@ import signal
 import rospy
 # Used to connect to ROS services
 from dynamic_graph_manager.ros.dgcompleter import DGCompleter
-from dynamic_graph_manager.ros.ros_client import RosPythonInterpreter
+from dynamic_graph_manager.wrapper import RosPythonInterpreterClient
 
 
 def signal_handler(sig, frame):
@@ -35,15 +35,11 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
-signal.signal(signal.SIGINT, signal_handler)
-
-
 # Command history, auto-completetion and keyboard management
 python_history = os.path.join(os.environ["HOME"], ".dg_python_history")
 readline.parse_and_bind("tab: complete")
 readline.set_history_length(100000)
-readline.set_completer(DGCompleter().complete)
-
+signal.signal(signal.SIGINT, signal_handler)
 
 def save_history(histfile):
     """ Write the history of the user command in a file """
@@ -74,7 +70,9 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         # Command lines from the terminal.
         self.lines_pushed = ""
 
-        self.ros_python_interpreter = RosPythonInterpreter()
+        self.ros_python_interpreter = RosPythonInterpreterClient()
+        readline.set_completer(DGCompleter(self.ros_python_interpreter).complete)
+        
 
     def runcode(self, code):
         """
@@ -89,6 +87,7 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
             code_string = self.lines_pushed[:-1]
             self.write(
                 self.ros_python_interpreter.run_python_command(code_string))
+            self.write("\n")
             # we reset the cache here
             self.lines_pushed = ""
         except Exception as e:
@@ -128,8 +127,8 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
 
 
 if __name__ == '__main__':
-    rospy.init_node('run_command', argv=sys.argv)
-    sys.argv = rospy.myargv(argv=None)
+    rospy.init_node('dgm_python_client', anonymous=True)
+
     parser = optparse.OptionParser(
         usage='\n\t%prog [options]')
     (options, args) = parser.parse_args(sys.argv[1:])
