@@ -9,6 +9,7 @@
  */
 
 #include "dynamic_graph_manager/ros_python_interpreter_client.hpp"
+#include <boost/algorithm/string.hpp>
 #include <fstream>
 
 namespace dynamic_graph_manager
@@ -44,19 +45,19 @@ std::string RosPythonInterpreterClient::run_python_command(
     {
         if (!command_client_.isValid())
         {
-            return_string +=
-                "Connection to remote server lost."
-                " Reconnecting...";
+            ROS_INFO("Connection to remote server lost. Reconnecting...");
             connect_to_rosservice_run_python_command(timeout_connection_s_);
             return return_string;
         }
 
         run_command_srv_.request.input = code_string;
 
+        ros::service::waitForService(run_script_service_name_);
         if (!command_client_.call(run_command_srv_))
         {
             // We had an issue calling the service.
-            return_string += "Error while parsing command.";
+            ROS_INFO("Error while parsing command.");
+            connect_to_rosservice_run_python_command();
         }
         else
         {
@@ -81,9 +82,7 @@ std::string RosPythonInterpreterClient::run_python_command(
     }
     catch (...)
     {
-        return_string +=
-            "Connection to remote server lost. "
-            "Reconnecting...";
+        ROS_INFO("Connection to remote server lost. Reconnecting...");
         connect_to_rosservice_run_python_command(timeout_connection_s_);
     }
     return return_string;
@@ -97,7 +96,7 @@ std::string RosPythonInterpreterClient::run_python_script(
     std::ifstream file_if(filename.c_str());
     if (!file_if.good())
     {
-        return_string += "Provided file does not exist: " + filename;
+        ROS_INFO("Provided file does not exist: %s", filename.c_str());
         return return_string;
     }
 
@@ -105,8 +104,7 @@ std::string RosPythonInterpreterClient::run_python_script(
     {
         if (!script_client_.isValid())
         {
-            return_string +=
-                "Connection to remote server lost. Reconnecting...";
+            ROS_INFO("Connection to remote server lost. Reconnecting...");
             connect_to_rosservice_run_python_script(timeout_connection_s_);
             return return_string;
         }
@@ -136,14 +134,18 @@ std::string RosPythonInterpreterClient::run_python_script(
             // Get the Result and print it is any.
             if (run_command_srv_.response.result != "None")
             {
-                return_string += run_command_srv_.response.result + "\n";
+                return_string += run_command_srv_.response.result;
+                if(!boost::algorithm::ends_with(return_string, "\n"))
+                {
+                    return_string += "\n";
+                }
             }
         }
         return return_string;
     }
     catch (...)
     {
-        return_string += "Connection to remote server lost. Reconnecting...";
+        ROS_INFO("Connection to remote server lost. Reconnecting...");
         connect_to_rosservice_run_python_script(timeout_connection_s_);
         return return_string;
     }

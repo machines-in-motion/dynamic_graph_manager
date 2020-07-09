@@ -59,14 +59,20 @@ class DGCompleter:
         else:
             self.client = ros_python_interpreter_client
 
-        cmd = (["import sys"] +
-               ["import ast"] +
-               ["import readline"] +
-               ["from rlcompleter import Completer"] +
-               ["local_completer=Completer()"] +
-               ["readline.set_completer(local_completer.complete)"] +
-               ["readline.parse_and_bind(\"tab: complete\")"])
+        cmd = (["if \"local_completer\" not in globals():\n"
+                "    print(\"Load the dg_completer\")\n"
+                "    from rlcompleter import Completer\n"
+                "    local_completer=Completer()\n"
+                "    import readline\n"
+                "    readline.set_completer(local_completer.complete)\n"
+                "    readline.parse_and_bind(\"tab: complete\")"
+        ])
+
+        cmd = ([])
+        
+        print("executing in the dg_completer the initailization:")
         for python_command in cmd:
+            print(python_command)
             self.client.run_python_command(python_command)
 
         self.buffer = []

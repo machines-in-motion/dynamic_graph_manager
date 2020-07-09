@@ -68,8 +68,8 @@ private:
             ROS_INFO("Waiting for service %s ...", service_name.c_str());
             // let use wait for the existance of the services
             ros::NodeHandle& n = dynamic_graph::ros_init(ros_node_name_);
-            ros::service::waitForService(service_name, ros::Duration(timeout));
             client = n.serviceClient<RosService>(service_name.c_str());
+            client.waitForExistence(ros::Duration(timeout));
             if (client.isValid())
             {
                 ROS_INFO("Successfully connected to %s", service_name.c_str());

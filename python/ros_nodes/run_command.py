@@ -41,6 +41,7 @@ readline.parse_and_bind("tab: complete")
 readline.set_history_length(100000)
 signal.signal(signal.SIGINT, signal_handler)
 
+
 def save_history(histfile):
     """ Write the history of the user command in a file """
     readline.write_history_file(histfile)
@@ -71,8 +72,9 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         self.lines_pushed = ""
 
         self.ros_python_interpreter = RosPythonInterpreterClient()
-        readline.set_completer(DGCompleter(self.ros_python_interpreter).complete)
-        
+        if '2.' in sys.version[:2]:
+            self.dg_completer = DGCompleter(self.ros_python_interpreter)
+            readline.set_completer(self.dg_completer.complete)
 
     def runcode(self, code):
         """
@@ -137,17 +139,9 @@ if __name__ == '__main__':
 
     if args[:]:
         infile = args[0]
-        if os.path.isfile(infile):
-            print("Executing script at: " + infile)
-            response = dg_console.ros_python_interpreter.run_python_script(
-                os.path.abspath(infile))
-            if not response:
-                print("Error while file parsing ")
-                sys.exit(-1)
-            if response.standard_error:
-                print(response.standard_error)
-        else:
-            print("Provided file does not exist: %s" % (infile))
-            sys.exit(-1)
+        response = dg_console.ros_python_interpreter.run_python_script(
+            os.path.abspath(infile))
+        print(response)
 
+    signal.signal(signal.SIGINT, signal_handler)
     dg_console.interact("Interacting with remote server.")
