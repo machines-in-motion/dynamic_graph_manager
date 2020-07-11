@@ -7,7 +7,7 @@
  * @date 2019-05-22
  */
 
-#include <ros_entities/converter.hh>
+#include <ros_entities/converter.hpp>
 
 namespace dynamic_graph
 {

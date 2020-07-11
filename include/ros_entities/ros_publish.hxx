@@ -15,7 +15,7 @@
 #include "dynamic_graph_manager/Matrix.h"
 #include "dynamic_graph_manager/Vector.h"
 
-#include "dg_to_ros.hh"
+#include "dg_to_ros.hpp"
 
 #include <iostream>
 

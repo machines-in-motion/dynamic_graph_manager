@@ -12,9 +12,9 @@
 // use to set cpu latency.
 #include <real_time_tools/process_manager.hpp>
 // use the ROS singleton to initialize and use ROS
-#include <dynamic_graph_manager/ros_init.hh>
+#include <dynamic_graph_manager/ros_init.hpp>
 // this file defines the class in this header
-#include <dynamic_graph_manager/dynamic_graph_manager.hh>
+#include <dynamic_graph_manager/dynamic_graph_manager.hpp>
 // in order to throw hand made exception
 #include <dynamic_graph_manager/exception/exception-yaml-cpp.hpp>
 

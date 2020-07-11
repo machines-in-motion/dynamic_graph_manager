@@ -9,7 +9,7 @@
 
 #include <stdarg.h>
 #include <cstdio>
-#include <dynamic_graph_manager/exception/exception-feature.hh>
+#include <dynamic_graph_manager/exception/exception-feature.hpp>
 
 using namespace dynamic_graph;
 

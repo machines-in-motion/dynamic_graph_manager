@@ -1,5 +1,5 @@
 /**
- * @file ros_queued_subscribe.hh
+ * @file ros_queued_subscribe.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -22,9 +22,9 @@
 
 #include <ros/ros.h>
 
-#include <ros_entities/converter.hh>
-#include <ros_entities/dg_to_ros.hh>
-#include <ros_entities/matrix_geometry.hh>
+#include <ros_entities/converter.hpp>
+#include <ros_entities/dg_to_ros.hpp>
+#include <ros_entities/matrix_geometry.hpp>
 
 namespace dynamic_graph
 {

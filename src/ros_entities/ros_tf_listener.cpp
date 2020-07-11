@@ -7,8 +7,8 @@
  * @date 2019-05-22
  */
 
-#include "ros_entities/ros_tf_listener.hh"
-#include "dynamic_graph_manager/ros_init.hh"
+#include "ros_entities/ros_tf_listener.hpp"
+#include "dynamic_graph_manager/ros_init.hpp"
 
 #include <dynamic-graph/factory.h>
 

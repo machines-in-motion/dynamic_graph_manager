@@ -1,5 +1,5 @@
 /**
- * @file ros_publish.hh
+ * @file ros_publish.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -24,8 +24,8 @@
 
 #include <realtime_tools/realtime_publisher.h>
 
-#include "ros_entities/converter.hh"
-#include "ros_entities/dg_to_ros.hh"
+#include "ros_entities/converter.hpp"
+#include "ros_entities/dg_to_ros.hpp"
 
 namespace dynamic_graph
 {

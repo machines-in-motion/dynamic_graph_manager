@@ -1,5 +1,5 @@
 /**
- * @file dg_to_ros.hh
+ * @file dg_to_ros.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -28,7 +28,7 @@
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
 
-#include <ros_entities/matrix_geometry.hh>
+#include <ros_entities/matrix_geometry.hpp>
 
 #define MAKE_SIGNAL_STRING(NAME, IS_INPUT, OUTPUT_TYPE, SIGNAL_NAME) \
     makeSignalString(                                                \

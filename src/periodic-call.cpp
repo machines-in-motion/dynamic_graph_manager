@@ -14,8 +14,8 @@
 #include <algorithm>
 #include <dynamic-graph/python/interpreter.hh>
 
-#include <dynamic_graph_manager/exception/exception-tools.hh>
-#include <dynamic_graph_manager/periodic-call.hh>
+#include <dynamic_graph_manager/exception/exception-tools.hpp>
+#include <dynamic_graph_manager/periodic-call.hpp>
 
 using namespace std;
 using namespace dynamic_graph;
