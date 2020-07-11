@@ -1,5 +1,5 @@
 /**
- * @file ros_time.hh
+ * @file ros_time.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck

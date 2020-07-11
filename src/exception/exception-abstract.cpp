@@ -9,7 +9,7 @@
 
 #include <dynamic-graph/debug.h>
 
-#include <dynamic_graph_manager/exception/exception-abstract.hh>
+#include <dynamic_graph_manager/exception/exception-abstract.hpp>
 
 using namespace std;
 using namespace dynamic_graph;

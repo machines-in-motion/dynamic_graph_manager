@@ -7,7 +7,7 @@
  * @date 2019-05-22
  */
 
-#include <dynamic_graph_manager/tools.hh>
+#include <dynamic_graph_manager/tools.hpp>
 
 namespace dynamic_graph
 {

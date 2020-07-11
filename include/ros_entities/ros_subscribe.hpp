@@ -1,5 +1,5 @@
 /**
- * @file ros_subscribe.hh
+ * @file ros_subscribe.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -19,12 +19,12 @@
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
 
-#include <ros_entities/matrix_geometry.hh>
+#include <ros_entities/matrix_geometry.hpp>
 
 #include <ros/ros.h>
 
-#include "converter.hh"
-#include "dg_to_ros.hh"
+#include "converter.hpp"
+#include "dg_to_ros.hpp"
 
 namespace dynamic_graph
 {

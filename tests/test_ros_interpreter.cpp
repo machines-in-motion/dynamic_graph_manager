@@ -9,8 +9,8 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include "dynamic_graph_manager/ros_init.hh"
-#include "dynamic_graph_manager/ros_interpreter.hh"
+#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/ros_interpreter.hpp"
 
 /***************************
  * SETUP THE TESTING CLASS *

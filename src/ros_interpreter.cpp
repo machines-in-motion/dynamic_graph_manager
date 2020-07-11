@@ -7,7 +7,7 @@
  * @date 2019-05-22
  */
 
-#include <dynamic_graph_manager/ros_interpreter.hh>
+#include <dynamic_graph_manager/ros_interpreter.hpp>
 
 namespace dynamic_graph
 {

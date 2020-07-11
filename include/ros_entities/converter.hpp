@@ -1,5 +1,5 @@
 /**
- * @file converter.hh
+ * @file converter.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -10,7 +10,7 @@
 #define DYNAMIC_GRAPH_ROS_CONVERTER_HH
 
 #include <stdexcept>
-#include "dg_to_ros.hh"
+#include "dg_to_ros.hpp"
 
 #include <ros/time.h>
 #include <std_msgs/Header.h>

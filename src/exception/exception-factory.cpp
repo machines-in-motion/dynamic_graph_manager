@@ -12,7 +12,7 @@
 
 #include <dynamic-graph/debug.h>
 
-#include <dynamic_graph_manager/exception/exception-factory.hh>
+#include <dynamic_graph_manager/exception/exception-factory.hpp>
 
 using namespace dynamic_graph;
 namespace dg = dynamicgraph;

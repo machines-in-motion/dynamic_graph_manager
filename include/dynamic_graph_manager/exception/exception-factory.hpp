@@ -1,5 +1,5 @@
 /**
- * @file exception-factory.hh
+ * @file exception-factory.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -14,7 +14,7 @@
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-#include <dynamic_graph_manager/exception/exception-abstract.hh>
+#include <dynamic_graph_manager/exception/exception-abstract.hpp>
 
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */

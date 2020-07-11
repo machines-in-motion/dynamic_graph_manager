@@ -1,5 +1,5 @@
 /**
- * @file exception-signal.hh
+ * @file exception-feature.hpp
  * @author Maximilien Naveau (maximilien.naveau@gmail.com)
  * @license License BSD-3-Clause
  * @copyright Copyright (c) 2019, New York University and Max Planck
@@ -7,14 +7,14 @@
  * @date 2019-05-22
  */
 
-#ifndef SIGNAL_EXCEPTION_HH
-#define SIGNAL_EXCEPTION_HH
+#ifndef EXCEPTION_FEATURE_HH
+#define EXCEPTION_FEATURE_HH
 
 /* --------------------------------------------------------------------- */
 /* --- INCLUDE --------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-#include <dynamic_graph_manager/exception/exception-abstract.hh>
+#include <dynamic_graph_manager/exception/exception-abstract.hpp>
 
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */
@@ -22,43 +22,40 @@
 
 namespace dynamic_graph
 {
-/* \class ExceptionSignal */
-class ExceptionSignal : public ExceptionAbstract
+/* \class ExceptionFeature
+ */
+class ExceptionFeature : public ExceptionAbstract
+
 {
 public:
     enum ErrorCodeEnum
     {
-        GENERIC = ExceptionAbstract::SIGNAL
-
-        ,
-        READWRITE_LOCK,
-        COPY_NOT_INITIALIZED,
-        NOT_INITIALIZED,
-        PLUG_IMPOSSIBLE,
-        SET_IMPOSSIBLE,
-        BAD_CAST
+        GENERIC = ExceptionAbstract::FEATURE,
+        BAD_INIT,
+        UNCOMPATIBLE_SIZE
     };
 
     static const std::string EXCEPTION_NAME;
     virtual const std::string& getExceptionName(void) const
     {
-        return EXCEPTION_NAME;
+        return ExceptionFeature::EXCEPTION_NAME;
     }
 
-public:
-    ExceptionSignal(const ExceptionSignal::ErrorCodeEnum& errcode,
-                    const std::string& msg = "");
-    ExceptionSignal(const ExceptionSignal::ErrorCodeEnum& errcode,
-                    const std::string& msg,
-                    const char* format,
-                    ...);
-    virtual ~ExceptionSignal(void) throw()
+    ExceptionFeature(const ExceptionFeature::ErrorCodeEnum& errcode,
+                     const std::string& msg = "");
+
+    ExceptionFeature(const ExceptionFeature::ErrorCodeEnum& errcode,
+                     const std::string& msg,
+                     const char* format,
+                     ...);
+
+    virtual ~ExceptionFeature(void) throw()
     {
     }
 };
-} /* namespace dynamic_graph */
+}  // namespace dynamic_graph
 
-#endif /* #ifndef SIGNAL_EXCEPTION_HH */
+#endif /* #ifndef EXCEPTION_FEATURE_HH */
 
 /*
  * Local variables:

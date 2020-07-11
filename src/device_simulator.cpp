@@ -15,7 +15,7 @@
 #include <dynamic-graph/debug.h>
 #include <dynamic-graph/factory.h>
 
-#include <dynamic_graph_manager/device_simulator.hh>
+#include <dynamic_graph_manager/device_simulator.hpp>
 
 using namespace std;
 

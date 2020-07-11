@@ -12,7 +12,7 @@
 #include <gtest/gtest.h>
 #include <yaml-cpp/yaml.h>
 #include <cstdlib>  // std::rand, std::srand
-#include <dynamic_graph_manager/device.hh>
+#include <dynamic_graph_manager/device.hpp>
 #include <ostream>
 
 using namespace dynamic_graph;
