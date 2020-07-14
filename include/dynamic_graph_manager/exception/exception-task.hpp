@@ -20,7 +20,7 @@
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /** \brief ExceptionTask */
 class ExceptionTask : public ExceptionAbstract
@@ -52,6 +52,6 @@ public:
     {
     }
 };
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif /* #ifndef EXCEPTION_TASK_HH */

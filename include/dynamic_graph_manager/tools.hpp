@@ -14,7 +14,7 @@
 #ifndef TOOLS_HH
 #define TOOLS_HH
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /**
  * @brief VectorDGMap is a shortcut for the very long type of the map
@@ -33,6 +33,6 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
                      VectorDGMap& out_sensors_map,
                      VectorDGMap& out_motor_controls_map);
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif /* #ifndef TOOLS_HH */

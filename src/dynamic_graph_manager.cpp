@@ -20,7 +20,7 @@
 
 #define DYNAMIC_GRAPH_MANAGER_VERBOSE 0
 
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 
 const std::string DynamicGraphManager::dg_ros_node_name_ = "dynamic_graph";
 const std::string DynamicGraphManager::hw_com_ros_node_name_ =
@@ -345,7 +345,7 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
     
     // we create a python interpreter
     ros_python_interpreter_.reset(
-        new dynamic_graph::RosPythonInterpreter(ros_node_handle));
+        new dynamic_graph_manager::RosPythonInterpreter(ros_node_handle));
     // we call the prologue of the python interpreter
     // we *NEED* to do this *AFTER* the device is created to fetch its pointer
     // in the python interpreter

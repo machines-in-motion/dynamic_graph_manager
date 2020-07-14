@@ -19,7 +19,7 @@
 #include <dynamic_graph_manager/device.hpp>
 
 using namespace std;
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 
 /**
  * @brief str2int used in the switch case, it allows to convert in compile time

@@ -16,13 +16,13 @@ namespace dynamic_graph_manager
  * @brief This class is a simple dynamic graph manager with a fake hardware
  * interface used for unittesting
  */
-class SimpleDGM : public dynamic_graph::DynamicGraphManager
+class SimpleDGM : public DynamicGraphManager
 {
 public:
     /**
      * @brief Construct a new SimpleDGM object
      */
-    SimpleDGM() : dynamic_graph::DynamicGraphManager()
+    SimpleDGM() : DynamicGraphManager()
     {
         boolean_set_by_user_cmd_ = false;
     }
@@ -39,8 +39,8 @@ public:
     void initialize_hardware_communication_process()
     {
         // get the hardware communication ros node handle
-        ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
-            dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
+        ros::NodeHandle& ros_node_handle = ros_init(
+            DynamicGraphManager::hw_com_ros_node_name_);
         /** initialize the user commands */
         ros_user_commands_.push_back(ros_node_handle.advertiseService(
             "set_a_boolean", &SimpleDGM::user_command_callback, this));
@@ -50,7 +50,7 @@ public:
      *
      * @param map of sensors
      */
-    void get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+    void get_sensors_to_map(VectorDGMap& map)
     {
         map["encoders"].setRandom();
         map["imu_accelerometer"].setRandom();
@@ -63,7 +63,7 @@ public:
      *
      * @param map of controls
      */
-    void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
+    void set_motor_controls_from_map(const VectorDGMap& map)
     {
         desired_torques_ = map.at("torques");
         desired_positions_ = map.at("positions");
@@ -125,7 +125,7 @@ public:
     {
         // fill all controls with zero... Check your robot to imagine what would
         // be safer in this case.
-        for (dynamic_graph::VectorDGMap::iterator ctrl =
+        for (VectorDGMap::iterator ctrl =
                  motor_controls_map_.begin();
              ctrl != motor_controls_map_.end();
              ++ctrl)

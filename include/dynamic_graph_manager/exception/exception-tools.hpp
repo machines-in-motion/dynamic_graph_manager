@@ -19,7 +19,7 @@
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /* \class ExceptionTools
  */
@@ -54,7 +54,7 @@ public:
     }
 };
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif /* #ifndef TOOLS_EXCEPTION_HH */
 

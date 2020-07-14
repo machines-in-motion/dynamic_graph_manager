@@ -19,7 +19,7 @@
 
 using namespace std;
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /**
  * @brief dynamic_graph::Device::CLASS_NAME must be the name as the actual
@@ -124,4 +124,4 @@ void DeviceSimulator::execute_graph()
     }
 }
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager

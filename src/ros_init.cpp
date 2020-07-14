@@ -9,7 +9,7 @@
 
 #include <dynamic_graph_manager/ros_init.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /**
  * @brief GLOBAL_ROS_VAR is global variable that acts as a singleton on the
@@ -75,7 +75,7 @@ ros::AsyncSpinner& ros_spinner(std::string node_name)
 {
     if (!ros_exist(node_name))
     {
-        dynamic_graph::ros_init(node_name);
+        dynamic_graph_manager::ros_init(node_name);
     }
     assert(GLOBAL_ROS_VAR[node_name]->async_spinner_ != nullptr &&
            "The spinner must have been created by now.");
@@ -111,4 +111,4 @@ bool ros_exist(std::string node_name)
     }
     return true;
 }
-}  // end of namespace dynamic_graph.
+}  // end of namespace dynamic_graph_manager.

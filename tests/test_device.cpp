@@ -15,7 +15,7 @@
 #include <dynamic_graph_manager/device.hpp>
 #include <ostream>
 
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 namespace dg = dynamicgraph;
 
 /**

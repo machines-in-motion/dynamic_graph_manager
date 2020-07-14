@@ -9,7 +9,7 @@
 
 #include <dynamic_graph_manager/ros_interpreter.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 static const int queueSize = 5;
 
@@ -73,4 +73,4 @@ void RosPythonInterpreter::run_python_file(const std::string ifilename,
     interpreter_.runPythonFile(ifilename, standard_error);
 }
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager

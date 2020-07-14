@@ -12,7 +12,7 @@
 
 #include <dynamic-graph/factory.h>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(RosTfListener, "RosTfListener");
 }

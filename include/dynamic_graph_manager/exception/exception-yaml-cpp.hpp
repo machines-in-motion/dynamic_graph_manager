@@ -19,7 +19,7 @@
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /* \class ExceptionYamlCpp
  */
@@ -55,7 +55,7 @@ public:
     }
 };
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif /* #ifndef YAML_CPP_EXCEPTION_HPP */
 

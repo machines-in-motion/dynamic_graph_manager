@@ -18,7 +18,7 @@
 #include <ros/ros.h>
 #include <dynamic-graph/python/interpreter.hh>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /// \brief This class wraps the implementation of the runCommand
 /// service.
@@ -152,6 +152,6 @@ private:
      */
     ros::ServiceServer run_python_file_srv_;
 };
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  //! DYNAMIC_GRAPH_BRIDGE_INTERPRETER_HH

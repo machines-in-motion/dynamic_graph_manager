@@ -20,7 +20,7 @@
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /* \class ExceptionFeature
  */
@@ -53,7 +53,7 @@ public:
     {
     }
 };
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif /* #ifndef EXCEPTION_FEATURE_HH */
 

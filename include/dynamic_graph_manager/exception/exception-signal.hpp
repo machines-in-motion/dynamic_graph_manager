@@ -20,7 +20,7 @@
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /* \class ExceptionSignal */
 class ExceptionSignal : public ExceptionAbstract
@@ -56,7 +56,7 @@ public:
     {
     }
 };
-} /* namespace dynamic_graph */
+} /* namespace dynamic_graph_manager */
 
 #endif /* #ifndef SIGNAL_EXCEPTION_HH */
 

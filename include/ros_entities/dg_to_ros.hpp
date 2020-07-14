@@ -34,10 +34,15 @@
     makeSignalString(                                                \
         typeid(*this).name(), NAME, IS_INPUT, OUTPUT_TYPE, SIGNAL_NAME)
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
-typedef dynamicgraph::Vector Vector;
-typedef dynamicgraph::Matrix Matrix;
+typedef dynamicgraph::Vector DgVector;
+typedef dynamicgraph::Matrix DgMatrix;
+typedef dynamic_graph_manager::Vector RosVector;
+typedef dynamic_graph_manager::VectorConstPtr RosVectorConstPtr;
+typedef dynamic_graph_manager::Matrix RosMatrix;
+typedef dynamic_graph_manager::MatrixConstPtr RosMatrixConstPtr;
+
 
 /// \brief Types dedicated to identify pairs of (dg,ros) data.
 ///
@@ -112,11 +117,11 @@ struct DgToRos<unsigned int>
 };
 
 template <>
-struct DgToRos<Matrix>
+struct DgToRos<DgMatrix>
 {
-    typedef Matrix dg_t;
-    typedef dynamic_graph_manager::Matrix ros_t;
-    typedef dynamic_graph_manager::MatrixConstPtr ros_const_ptr_t;
+    typedef DgMatrix dg_t;
+    typedef RosMatrix ros_t;
+    typedef RosMatrixConstPtr ros_const_ptr_t;
     typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
     typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
     typedef boost::function<dg_t&(dg_t&, int)> callback_t;
@@ -126,7 +131,7 @@ struct DgToRos<Matrix>
     template <typename S>
     static void setDefault(S& s)
     {
-        Matrix m;
+        DgMatrix m;
         m.resize(0, 0);
         s.setConstant(m);
     }
@@ -138,11 +143,11 @@ struct DgToRos<Matrix>
 };
 
 template <>
-struct DgToRos<Vector>
+struct DgToRos<DgVector>
 {
-    typedef Vector dg_t;
-    typedef dynamic_graph_manager::Vector ros_t;
-    typedef dynamic_graph_manager::VectorConstPtr ros_const_ptr_t;
+    typedef DgVector dg_t;
+    typedef RosVector ros_t;
+    typedef RosVectorConstPtr ros_const_ptr_t;
     typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
     typedef dynamicgraph::SignalPtr<dg_t, int> signalIn_t;
     typedef boost::function<dg_t&(dg_t&, int)> callback_t;
@@ -152,7 +157,7 @@ struct DgToRos<Vector>
     template <typename S>
     static void setDefault(S& s)
     {
-        Vector v;
+        DgVector v;
         v.resize(0);
         s.setConstant(v);
     }
@@ -166,7 +171,7 @@ struct DgToRos<Vector>
 template <>
 struct DgToRos<specific::Vector3>
 {
-    typedef Vector dg_t;
+    typedef DgVector dg_t;
     typedef geometry_msgs::Vector3 ros_t;
     typedef geometry_msgs::Vector3ConstPtr ros_const_ptr_t;
     typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
@@ -178,13 +183,13 @@ struct DgToRos<specific::Vector3>
     template <typename S>
     static void setDefault(S& s)
     {
-        Vector v(Vector::Zero(3));
+        DgVector v(DgVector::Zero(3));
         s.setConstant(v);
     }
 
     static void setDefault(dg_t& s)
     {
-        s = Vector::Zero(3);
+        s = DgVector::Zero(3);
     }
 };
 
@@ -216,7 +221,7 @@ struct DgToRos<MatrixHomogeneous>
 template <>
 struct DgToRos<specific::Twist>
 {
-    typedef Vector dg_t;
+    typedef DgVector dg_t;
     typedef geometry_msgs::Twist ros_t;
     typedef geometry_msgs::TwistConstPtr ros_const_ptr_t;
     typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
@@ -228,22 +233,22 @@ struct DgToRos<specific::Twist>
     template <typename S>
     static void setDefault(S& s)
     {
-        Vector v(6);
+        DgVector v(6);
         v.setZero();
         s.setConstant(v);
     }
 
     static void setDefault(dg_t& s)
     {
-        s = Vector::Zero(6);
+        s = DgVector::Zero(6);
     }
 };
 
 // Stamped vector3
 template <>
-struct DgToRos<std::pair<specific::Vector3, Vector> >
+struct DgToRos<std::pair<specific::Vector3, DgVector> >
 {
-    typedef Vector dg_t;
+    typedef DgVector dg_t;
     typedef geometry_msgs::Vector3Stamped ros_t;
     typedef geometry_msgs::Vector3StampedConstPtr ros_const_ptr_t;
     typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;
@@ -261,7 +266,7 @@ struct DgToRos<std::pair<specific::Vector3, Vector> >
 
 // Stamped transformation
 template <>
-struct DgToRos<std::pair<MatrixHomogeneous, Vector> >
+struct DgToRos<std::pair<MatrixHomogeneous, DgVector> >
 {
     typedef MatrixHomogeneous dg_t;
     typedef geometry_msgs::TransformStamped ros_t;
@@ -281,9 +286,9 @@ struct DgToRos<std::pair<MatrixHomogeneous, Vector> >
 
 // Stamped twist
 template <>
-struct DgToRos<std::pair<specific::Twist, Vector> >
+struct DgToRos<std::pair<specific::Twist, DgVector> >
 {
-    typedef Vector dg_t;
+    typedef DgVector dg_t;
     typedef geometry_msgs::TwistStamped ros_t;
     typedef geometry_msgs::TwistStampedConstPtr ros_const_ptr_t;
     typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_t;

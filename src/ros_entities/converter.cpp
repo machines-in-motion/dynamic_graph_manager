@@ -9,7 +9,7 @@
 
 #include <ros_entities/converter.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 boost::posix_time::ptime rosTimeToPtime(const ros::Time& rosTime)
 {
@@ -31,4 +31,4 @@ ros::Time pTimeToRostime(const boost::posix_time::ptime& time)
     return ros::Time(sec, nsec);
 }
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager

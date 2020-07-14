@@ -18,7 +18,7 @@ using namespace std;
 // using namespace dynamicgraph::sot;
 using namespace dynamicgraph;
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(RosRobotStatePublisher,
                                    "RosRobotStatePublisher");
@@ -127,7 +127,7 @@ void RosRobotStatePublisher::add(const std::string& base_link_name,
     pub.robot_state_input_signal_ =
         std::make_shared<SignalIN>(nullptr, oss_signal_name.str());
     // set default value for the signal
-    Vector v;
+    DgVector v;
     v.resize(0);
     pub.robot_state_input_signal_->setConstant(v);
     // register the signal in the dynamic graph
@@ -173,7 +173,7 @@ void RosRobotStatePublisher::send_data(
     sensor_msgs::JointState& joint_state_msg = pub.joint_state_publisher_->msg_;
 
     // acquiere the input signal
-    const Vector& robot_state = pub.robot_state_input_signal_->access(time);
+    const DgVector& robot_state = pub.robot_state_input_signal_->access(time);
     int joint_state_size = joint_state_msg.position.size();
 
     assert((robot_state.size() == joint_state_size ||
@@ -262,7 +262,7 @@ void RosRobotStatePublisher::normalize_tf_msg_quaternion(
     }
 }
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 /**
  * Definition of the command
@@ -273,7 +273,7 @@ namespace command
 {
 namespace ros_state_publish
 {
-Add::Add(dynamic_graph::RosRobotStatePublisher& entity,
+Add::Add(dynamic_graph_manager::RosRobotStatePublisher& entity,
          const std::string& docstring)
     : Command(entity,
               boost::assign::list_of(Value::STRING)(Value::STRING)(
@@ -284,8 +284,8 @@ Add::Add(dynamic_graph::RosRobotStatePublisher& entity,
 
 Value Add::doExecute()
 {
-    dynamic_graph::RosRobotStatePublisher& entity =
-        static_cast<dynamic_graph::RosRobotStatePublisher&>(owner());
+    dynamic_graph_manager::RosRobotStatePublisher& entity =
+        static_cast<dynamic_graph_manager::RosRobotStatePublisher&>(owner());
     std::vector<Value> values = getParameterValues();
     const std::string& base_link_name = values[0].value();
     const std::string& joint_names = values[1].value();
