@@ -17,7 +17,7 @@
 
 #define MRAWDATA(x) x.data()
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 typedef Eigen::Transform<double, 3, Eigen::Affine> MatrixHomogeneous;
 typedef Eigen::Matrix<double, 3, 3> MatrixRotation;
@@ -42,6 +42,6 @@ inline void buildFrom(const MatrixHomogeneous& MH, MatrixTwist& MT)
     MT.block<3, 3>(3, 0).setZero();
     MT.block<3, 3>(3, 3) = R;
 }
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  // MATRIX_GEOMETRY_HH

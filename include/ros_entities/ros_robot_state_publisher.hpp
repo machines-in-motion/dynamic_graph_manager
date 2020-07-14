@@ -27,7 +27,7 @@
 /**
  * @brief this is this package namespace in order to avoid naming conflict
  */
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /**
  * @brief Simple shortcut for code writing convenience
@@ -159,7 +159,7 @@ private:
      */
     ros::Time last_time_of_publication_;
 };
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 namespace dynamicgraph
 {
@@ -181,13 +181,13 @@ using ::dynamicgraph::command::Value;
  */
 
 // Define here a macro that automatically generates a command
-#define ROS_PUBLISH_MAKE_COMMAND(CMD)                      \
-    class CMD : public Command                             \
-    {                                                      \
-    public:                                                \
-        CMD(dynamic_graph::RosRobotStatePublisher& entity, \
-            const std::string& docstring);                 \
-        virtual Value doExecute();                         \
+#define ROS_PUBLISH_MAKE_COMMAND(CMD)                              \
+    class CMD : public Command                                     \
+    {                                                              \
+    public:                                                        \
+        CMD(dynamic_graph_manager::RosRobotStatePublisher& entity, \
+            const std::string& docstring);                         \
+        virtual Value doExecute();                                 \
     }
 
 // Generate a couple of command classes

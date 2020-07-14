@@ -26,7 +26,7 @@
 #include "converter.hpp"
 #include "dg_to_ros.hpp"
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 class RosSubscribe;
 
@@ -113,7 +113,7 @@ private:
     ros::NodeHandle& nh_;
     std::map<std::string, bindedSignal_t> bindedSignal_;
 };
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #include "ros_subscribe.hxx"
 #endif  //! DYNAMIC_GRAPH_ROS_SUBSCRIBE_HH

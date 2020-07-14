@@ -19,17 +19,17 @@
 
 #include <iostream>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 template <>
-inline void RosPublish::sendData<std::pair<MatrixHomogeneous, Vector> >(
+inline void RosPublish::sendData<std::pair<MatrixHomogeneous, DgVector> >(
     boost::shared_ptr<realtime_tools::RealtimePublisher<
-        DgToRos<std::pair<MatrixHomogeneous, Vector> >::ros_t> > publisher,
+        DgToRos<std::pair<MatrixHomogeneous, DgVector> >::ros_t> > publisher,
     boost::shared_ptr<
-        DgToRos<std::pair<MatrixHomogeneous, Vector> >::signalIn_t> signal,
+        DgToRos<std::pair<MatrixHomogeneous, DgVector> >::signalIn_t> signal,
     int time)
 {
-    DgToRos<std::pair<MatrixHomogeneous, Vector> >::ros_t result;
+    DgToRos<std::pair<MatrixHomogeneous, DgVector> >::ros_t result;
     if (publisher->trylock())
     {
         publisher->msg_.child_frame_id = "/dynamic_graph/world";
@@ -82,6 +82,6 @@ void RosPublish::add(const std::string& signal, const std::string& topic)
     bindedSignal_[signal] = bindedSignal;
 }
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  //! DYNAMIC_GRAPH_ROS_PUBLISH_HXX

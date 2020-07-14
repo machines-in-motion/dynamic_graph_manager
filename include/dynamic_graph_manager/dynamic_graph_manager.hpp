@@ -56,7 +56,7 @@
 // the device of the dynamic-graph
 #include "dynamic_graph_manager/device.hpp"
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /**
  * @brief clock is the std::chrono::high_resolution_clock object. This typedef
@@ -529,7 +529,7 @@ protected:
      * @brief ros_python_interpreter_ptr_ is a ROS wrapper around a python
      * interpreter.
      */
-    std::unique_ptr<dynamic_graph::RosPythonInterpreter>
+    std::unique_ptr<dynamic_graph_manager::RosPythonInterpreter>
         ros_python_interpreter_;
 
     /**
@@ -785,6 +785,6 @@ protected:
     std::mutex hwc_mutex_;
 };
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  // DYNAMIC_GRAPH_MANAGER_HH

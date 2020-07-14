@@ -18,7 +18,7 @@
 #include <map>
 #include <string>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /*!
   \class PeriodicCall
@@ -98,6 +98,6 @@ public:
     }
 };
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  // #ifndef PERIODICCALL_HH

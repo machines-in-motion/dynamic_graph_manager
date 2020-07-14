@@ -19,7 +19,7 @@
 #include <dynamic_graph_manager/periodic-call.hpp>
 #include <dynamic_graph_manager/tools.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 typedef dynamicgraph::Signal<dynamicgraph::Vector, int> OutSignal;
 typedef dynamicgraph::SignalPtr<dynamicgraph::Vector, int> InSignal;
@@ -173,6 +173,6 @@ protected:
     YAML::Node params_;
 };
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif /* #ifndef DEVICE_HH */

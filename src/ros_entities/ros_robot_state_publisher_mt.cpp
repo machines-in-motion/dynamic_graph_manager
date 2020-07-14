@@ -18,7 +18,7 @@ using namespace std;
 // using namespace dynamicgraph::sot;
 using namespace dynamicgraph;
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(RosRobotStatePublisherMt,
                                    "RosRobotStatePublisherMt");
@@ -129,7 +129,7 @@ void RosRobotStatePublisherMt::add(const std::string& base_link_name,
     pub.robot_state_input_signal_ =
         std::make_shared<SignalIN>(nullptr, oss_signal_name.str());
     // set default value for the signal
-    Vector v;
+    DgVector v;
     v.resize(0);
     pub.robot_state_input_signal_->setConstant(v);
     // register the signal in the dynamic graph
@@ -297,7 +297,7 @@ void RosRobotStatePublisherMt::normalize_tf_msg_quaternion(
     }
 }
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 /**
  * Definition of the command
@@ -308,7 +308,7 @@ namespace command
 {
 namespace ros_state_publish
 {
-Add::Add(dynamic_graph::RosRobotStatePublisherMt& entity,
+Add::Add(dynamic_graph_manager::RosRobotStatePublisherMt& entity,
          const std::string& docstring)
     : Command(entity,
               boost::assign::list_of(Value::STRING)(Value::STRING)(
@@ -319,8 +319,8 @@ Add::Add(dynamic_graph::RosRobotStatePublisherMt& entity,
 
 Value Add::doExecute()
 {
-    dynamic_graph::RosRobotStatePublisherMt& entity =
-        static_cast<dynamic_graph::RosRobotStatePublisherMt&>(owner());
+    dynamic_graph_manager::RosRobotStatePublisherMt& entity =
+        static_cast<dynamic_graph_manager::RosRobotStatePublisherMt&>(owner());
     std::vector<Value> values = getParameterValues();
     const std::string& base_link_name = values[0].value();
     const std::string& joint_names = values[1].value();
