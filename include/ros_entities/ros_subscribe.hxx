@@ -48,7 +48,7 @@ namespace internal
 template <typename T>
 struct Add
 {
-    void operator()(RosSubscribe& RosSubscribe,
+    void operator()(RosSubscribe& rosSubscribe,
                     const std::string& signal,
                     const std::string& topic)
     {
@@ -61,32 +61,32 @@ struct Add
 
         // Initialize the signal.
         boost::format signalName("RosSubscribe(%1%)::%2%");
-        signalName % RosSubscribe.getName() % signal;
+        signalName % rosSubscribe.getName() % signal;
 
         boost::shared_ptr<signal_t> signal_(new signal_t(0, signalName.str()));
         DgToRos<T>::setDefault(*signal_);
         bindedSignal.first = signal_;
-        RosSubscribe.signalRegistration(*bindedSignal.first);
+        rosSubscribe.signalRegistration(*bindedSignal.first);
 
         // Initialize the subscriber.
         typedef boost::function<void(const ros_const_ptr_t& data)> callback_t;
         callback_t callback =
             boost::bind(&RosSubscribe::callback<ros_const_ptr_t, dg_t>,
-                        &RosSubscribe,
+                        &rosSubscribe,
                         signal_,
                         _1);
 
         bindedSignal.second = boost::make_shared<ros::Subscriber>(
-            RosSubscribe.nh().subscribe(topic, 1, callback));
+            rosSubscribe.nh().subscribe(topic, 1, callback));
 
-        RosSubscribe.bindedSignal()[signal] = bindedSignal;
+        rosSubscribe.bindedSignal()[signal] = bindedSignal;
     }
 };
 
 template <typename T>
 struct Add<std::pair<T, dg::Vector> >
 {
-    void operator()(RosSubscribe& RosSubscribe,
+    void operator()(RosSubscribe& rosSubscribe,
                     const std::string& signal,
                     const std::string& topic)
     {
@@ -101,25 +101,25 @@ struct Add<std::pair<T, dg::Vector> >
 
         // Initialize the signal.
         boost::format signalName("RosSubscribe(%1%)::%2%");
-        signalName % RosSubscribe.getName() % signal;
+        signalName % rosSubscribe.getName() % signal;
 
         boost::shared_ptr<signal_t> signal_(new signal_t(0, signalName.str()));
         DgToRos<T>::setDefault(*signal_);
         bindedSignal.first = signal_;
-        RosSubscribe.signalRegistration(*bindedSignal.first);
+        rosSubscribe.signalRegistration(*bindedSignal.first);
 
         // Initialize the publisher.
         typedef boost::function<void(const ros_const_ptr_t& data)> callback_t;
         callback_t callback =
             boost::bind(&RosSubscribe::callback<ros_const_ptr_t, dg_t>,
-                        &RosSubscribe,
+                        &rosSubscribe,
                         signal_,
                         _1);
 
         bindedSignal.second = boost::make_shared<ros::Subscriber>(
-            RosSubscribe.nh().subscribe(topic, 1, callback));
+            rosSubscribe.nh().subscribe(topic, 1, callback));
 
-        RosSubscribe.bindedSignal()[signal] = bindedSignal;
+        rosSubscribe.bindedSignal()[signal] = bindedSignal;
 
         // Timestamp.
         typedef dynamicgraph::SignalPtr<RosSubscribe::ptime, int>
@@ -132,7 +132,7 @@ struct Add<std::pair<T, dg::Vector> >
 
         // Initialize the signal.
         boost::format signalNameTimestamp("RosSubscribe(%1%)::%2%");
-        signalNameTimestamp % RosSubscribe.name % signalTimestamp;
+        signalNameTimestamp % rosSubscribe.name % signalTimestamp;
 
         boost::shared_ptr<signalTimestamp_t> signalTimestamp_(
             new signalTimestamp_t(0, signalNameTimestamp.str()));
@@ -140,20 +140,20 @@ struct Add<std::pair<T, dg::Vector> >
         RosSubscribe::ptime zero(rosTimeToPtime(ros::Time(0, 0)));
         signalTimestamp_->setConstant(zero);
         bindedSignalTimestamp.first = signalTimestamp_;
-        RosSubscribe.signalRegistration(*bindedSignalTimestamp.first);
+        rosSubscribe.signalRegistration(*bindedSignalTimestamp.first);
 
         // Initialize the publisher.
         typedef boost::function<void(const ros_const_ptr_t& data)> callback_t;
         callback_t callbackTimestamp =
             boost::bind(&RosSubscribe::callbackTimestamp<ros_const_ptr_t>,
-                        &RosSubscribe,
+                        &rosSubscribe,
                         signalTimestamp_,
                         _1);
 
         bindedSignalTimestamp.second = boost::make_shared<ros::Subscriber>(
-            RosSubscribe.nh().subscribe(topic, 1, callbackTimestamp));
+            rosSubscribe.nh().subscribe(topic, 1, callbackTimestamp));
 
-        RosSubscribe.bindedSignal()[signalTimestamp] = bindedSignalTimestamp;
+        rosSubscribe.bindedSignal()[signalTimestamp] = bindedSignalTimestamp;
     }
 };
 }  // end of namespace internal.

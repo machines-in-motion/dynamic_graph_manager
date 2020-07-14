@@ -77,7 +77,7 @@ class Robot(object):
           self.device_signals_names.append(signal_name)
 
         # Prepare potential ros import/export
-        self.ros = Ros(self)
+        self.ros = Ros(self.device)
         # self.export_device_dg_to_ros()
 
     def __del__(self):

@@ -95,7 +95,7 @@ public:
     {
         // get the hardware communication ros node handle
         ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
-            dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
+            dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_, true);
         /** initialize the user commands */
         ros_user_commands_.push_back(ros_node_handle.advertiseService(
             "set_a_boolean", &SimpleDGM::user_command_callback, this));
@@ -373,7 +373,7 @@ TEST_F(TestDynamicGraphManager, test_init_dg_process_start_dg_exist)
     dynamic_graph::DynamicGraphManager dgm;
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
-    dynamic_graph::ros_init(dgm.dg_ros_node_name_);
+    dynamic_graph::ros_init(dgm.dg_ros_node_name_, true);
 
     /** Test */
     ASSERT_TRUE(
@@ -391,7 +391,7 @@ TEST_F(TestDynamicGraphManager, test_init_dg_process_stop_dg_exist)
     dynamic_graph::DynamicGraphManager dgm;
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
-    dynamic_graph::ros_init(dgm.dg_ros_node_name_);
+    dynamic_graph::ros_init(dgm.dg_ros_node_name_, true);
 
     /** Test */
     ASSERT_TRUE(
@@ -409,7 +409,7 @@ TEST_F(TestDynamicGraphManager, test_init_dg_process_run_python_cmd_exist)
     dynamic_graph::DynamicGraphManager dgm;
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
-    dynamic_graph::ros_init(dgm.dg_ros_node_name_);
+    dynamic_graph::ros_init(dgm.dg_ros_node_name_, true);
 
     /** Test */
     ASSERT_TRUE(
@@ -427,7 +427,7 @@ TEST_F(TestDynamicGraphManager, test_init_dg_process_run_python_file_exist)
     dynamic_graph::DynamicGraphManager dgm;
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
-    dynamic_graph::ros_init(dgm.dg_ros_node_name_);
+    dynamic_graph::ros_init(dgm.dg_ros_node_name_, true);
 
     /** Test */
     ASSERT_TRUE(ros::service::exists("/dynamic_graph/run_python_script", true));
@@ -727,7 +727,7 @@ TEST_F(TestDynamicGraphManagerHWC, test_run_user_cmd)
 {
     /** Setup */
     dynamic_graph::ros_init(
-        dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
+        dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_, true);
     SimpleDGM dgm;
     dgm.initialize(params_);
     dgm.initialize_hardware_communication_process();

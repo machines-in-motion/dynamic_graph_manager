@@ -29,7 +29,7 @@ RosRobotStatePublisher::RosRobotStatePublisher(const std::string& name)
           boost::bind(&RosRobotStatePublisher::trigger, this, _1, _2),
           dynamicgraph::sotNOSIGNAL,
           MAKE_SIGNAL_STRING(name, true, "int", "trigger")),
-      ros_node_handle_(ros_init(DynamicGraphManager::dg_ros_node_name_))
+      ros_node_handle_(ros_init(DynamicGraphManager::dg_ros_node_name_, true))
 {
     // Define the refresh signal as always ready.
     signalRegistration(trigger_signal_);

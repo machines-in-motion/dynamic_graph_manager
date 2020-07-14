@@ -15,9 +15,21 @@
 namespace dynamic_graph_manager
 {
 RosPythonInterpreterClient::RosPythonInterpreterClient()
-{   
+{
     ros_node_name_ = "ros_python_interpreter_client";
-    dynamic_graph::ros_init(ros_node_name_);
+
+    /** call ros::init */
+    if (!ros::isInitialized())
+    {
+        int argc = 1;
+        char* arg0 = strdup(ros_node_name_.c_str());
+        char* argv[] = {arg0, nullptr};
+        ros::init(argc, argv, ros_node_name_,
+                  ros::init_options::AnonymousName |
+                  ros::init_options::NoSigintHandler);
+        free(arg0);
+    }
+    mode_handle_ = std::make_shared<ros::NodeHandle>();
 
     // Create a client for the single python command service of the
     // DynamicGraphManager.
@@ -114,7 +126,7 @@ std::string RosPythonInterpreterClient::run_python_script(
         if (!script_client_.call(run_script_srv_))
         {
             // We had an issue calling the service.
-            return_string += "Error while parsing scripts.";
+            ROS_INFO("Error while parsing scripts.");
             return return_string;
         }
         else
@@ -135,7 +147,7 @@ std::string RosPythonInterpreterClient::run_python_script(
             if (run_command_srv_.response.result != "None")
             {
                 return_string += run_command_srv_.response.result;
-                if(!boost::algorithm::ends_with(return_string, "\n"))
+                if (!boost::algorithm::ends_with(return_string, "\n"))
                 {
                     return_string += "\n";
                 }

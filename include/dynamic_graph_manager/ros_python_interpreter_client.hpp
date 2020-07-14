@@ -10,9 +10,9 @@
 
 #pragma once
 
+#include <ros/ros.h>
 #include "dynamic_graph_manager/RunCommand.h"
 #include "dynamic_graph_manager/RunPythonFile.h"
-#include "dynamic_graph_manager/ros_init.hpp"
 
 namespace dynamic_graph_manager
 {
@@ -67,8 +67,8 @@ private:
         {
             ROS_INFO("Waiting for service %s ...", service_name.c_str());
             // let use wait for the existance of the services
-            ros::NodeHandle& n = dynamic_graph::ros_init(ros_node_name_);
-            client = n.serviceClient<RosService>(service_name.c_str());
+            client =
+                mode_handle_->serviceClient<RosService>(service_name.c_str());
             client.waitForExistence(ros::Duration(timeout));
             if (client.isValid())
             {
@@ -115,6 +115,9 @@ private:
      * @brief Name of the local ros_node;
      */
     std::string ros_node_name_;
+
+    /** @brief Handle for manipulating ROS objects. */
+    std::shared_ptr<ros::NodeHandle> mode_handle_;
 
     /** @brief  Name of the DynamicGraphManager RosPythonInterpreter rosservice
      * for running a python command. */

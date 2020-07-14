@@ -102,6 +102,8 @@ add_subdirectory(demos)
 # manage the unit tests #
 #########################
 add_subdirectory(tests)
+# Add Python unit-tests
+catkin_add_nosetests(tests)
 
 ##########################################
 # export the package as a catkin package #

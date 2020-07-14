@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """@package dynamic_graph_manager
 
@@ -32,6 +32,7 @@ def signal_handler(sig, frame):
     """
     print('')
     print('You pressed Ctrl+C! Closing ros client and shell.')
+    rospy.signal_shutdown('You pressed Ctrl+C! Closing ros client and shell.')
     sys.exit(0)
 
 
@@ -39,7 +40,6 @@ def signal_handler(sig, frame):
 python_history = os.path.join(os.environ["HOME"], ".dg_python_history")
 readline.parse_and_bind("tab: complete")
 readline.set_history_length(100000)
-signal.signal(signal.SIGINT, signal_handler)
 
 
 def save_history(histfile):
@@ -72,7 +72,7 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         self.lines_pushed = ""
 
         self.ros_python_interpreter = RosPythonInterpreterClient()
-        if '2.' in sys.version[:2]:
+        if sys.version[:2].startswith('2.'):
             self.dg_completer = DGCompleter(self.ros_python_interpreter)
             readline.set_completer(self.dg_completer.complete)
 
@@ -129,7 +129,7 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
 
 
 if __name__ == '__main__':
-    rospy.init_node('dgm_python_client', anonymous=True)
+    rospy.init_node('dgm_python_client', anonymous=True, disable_signals=True)
 
     parser = optparse.OptionParser(
         usage='\n\t%prog [options]')

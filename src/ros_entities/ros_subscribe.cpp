@@ -121,7 +121,7 @@ const std::string RosSubscribe::docstring_(
 
 RosSubscribe::RosSubscribe(const std::string& n)
     : dynamicgraph::Entity(n),
-      nh_(ros_init(DynamicGraphManager::dg_ros_node_name_)),
+      nh_(ros_init(DynamicGraphManager::dg_ros_node_name_, true)),
       bindedSignal_()
 {
     std::string docstring =
@@ -164,6 +164,7 @@ RosSubscribe::RosSubscribe(const std::string& n)
 
 RosSubscribe::~RosSubscribe()
 {
+    clear();
 }
 
 void RosSubscribe::display(std::ostream& os) const
