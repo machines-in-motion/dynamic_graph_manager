@@ -29,7 +29,7 @@
 
 #include "ros_entities/ros_publish.hpp"
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(RosPublish, "RosPublish");
 const double RosPublish::ROS_JOINT_STATE_PUBLISHER_RATE = 0.01;
@@ -84,21 +84,21 @@ Value Add::doExecute()
     else if (type == "unsigned")
         entity.add<unsigned int>(signal, topic);
     else if (type == "matrix")
-        entity.add<Matrix>(signal, topic);
+        entity.add<DgMatrix>(signal, topic);
     else if (type == "vector")
-        entity.add<Vector>(signal, topic);
+        entity.add<DgVector>(signal, topic);
     else if (type == "vector3")
         entity.add<specific::Vector3>(signal, topic);
     else if (type == "vector3Stamped")
-        entity.add<std::pair<specific::Vector3, Vector> >(signal, topic);
+        entity.add<std::pair<specific::Vector3, DgVector> >(signal, topic);
     else if (type == "matrixHomo")
         entity.add<MatrixHomogeneous>(signal, topic);
     else if (type == "matrixHomoStamped")
-        entity.add<std::pair<MatrixHomogeneous, Vector> >(signal, topic);
+        entity.add<std::pair<MatrixHomogeneous, DgVector> >(signal, topic);
     else if (type == "twist")
         entity.add<specific::Twist>(signal, topic);
     else if (type == "twistStamped")
-        entity.add<std::pair<specific::Twist, Vector> >(signal, topic);
+        entity.add<std::pair<specific::Twist, DgVector> >(signal, topic);
     else
         throw std::runtime_error("bad type");
     return Value();
@@ -271,4 +271,4 @@ std::string RosPublish::getDocString() const
     return docstring_;
 }
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager

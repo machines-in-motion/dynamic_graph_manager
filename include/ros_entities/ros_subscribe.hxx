@@ -22,7 +22,7 @@
 
 namespace dg = dynamicgraph;
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 template <typename R, typename S>
 void RosSubscribe::callback(
@@ -163,6 +163,6 @@ void RosSubscribe::add(const std::string& signal, const std::string& topic)
 {
     internal::Add<T>()(*this, signal, topic);
 }
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  //! DYNAMIC_GRAPH_ROS_SUBSCRIBE_HXX

@@ -9,7 +9,7 @@
 
 #include <dynamic_graph_manager/tools.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 void parse_yaml_node(const YAML::Node& sensors_and_controls,
                      VectorDGMap& out_sensors_map,
@@ -51,4 +51,4 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
     }
 }
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager

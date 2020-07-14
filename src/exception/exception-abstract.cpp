@@ -12,7 +12,7 @@
 #include <dynamic_graph_manager/exception/exception-abstract.hpp>
 
 using namespace std;
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 
 /* ------------------------------------------------------------------------- */
 /* --- CONSTRUCTORS -------------------------------------------------------- */
@@ -84,7 +84,7 @@ ExceptionAbstract::Param::Param(const int& _line,
 /* --- OP << --------------------------------------------------------------- */
 /* ------------------------------------------------------------------------- */
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 ostream& operator<<(ostream& os, const ExceptionAbstract& error)
 {
@@ -98,7 +98,7 @@ ostream& operator<<(ostream& os, const ExceptionAbstract& error)
 #endif  //#ifdef SOT_EXCEPTION_PASSING_PARAM
     return os;
 }
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 /** \file $Source$
  */

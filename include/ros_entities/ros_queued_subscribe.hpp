@@ -26,7 +26,7 @@
 #include <ros_entities/dg_to_ros.hpp>
 #include <ros_entities/matrix_geometry.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 class RosQueuedSubscribe;
 
@@ -225,7 +225,7 @@ private:
     template <typename T, int BufferSize>
     friend class internal::BindedSignal;
 };
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #include "ros_queued_subscribe.hxx"
 #endif  //! DYNAMIC_GRAPH_QUEUED_ROS_SUBSCRIBE_HH

@@ -24,7 +24,7 @@
 
 #include "ros_entities/ros_subscribe.hpp"
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(RosSubscribe, "RosSubscribe");
 
@@ -214,4 +214,4 @@ std::string RosSubscribe::getDocString() const
 {
     return docstring_;
 }
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager

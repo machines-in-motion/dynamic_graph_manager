@@ -12,7 +12,7 @@
 
 #include <ros/ros.h>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /**
  * @brief The GlobalRos struct is a structure that allows to gloabally handle
@@ -82,6 +82,6 @@ void ros_shutdown();
  */
 bool ros_exist(std::string node_name);
 
-}  // end of namespace dynamic_graph.
+}  // end of namespace dynamic_graph_manager.
 
 #endif  //! ROS_INIT_HH

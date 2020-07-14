@@ -16,7 +16,7 @@
  * SETUP THE TESTING CLASS *
  ***************************/
 
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 
 /**
  * @brief This is the test environment

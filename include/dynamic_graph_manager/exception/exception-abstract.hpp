@@ -25,7 +25,7 @@
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /**
  * @brief The ExceptionAbstract class
@@ -140,7 +140,7 @@ protected:
 #define DG_THROW throw
 #endif  //#ifdef EXCEPTION_PASSING_PARAM
 
-} /* namespace dynamic_graph */
+} /* namespace dynamic_graph_manager */
 
 #endif /* #ifndef ABSTRACT_EXCEPTION_HH */
 

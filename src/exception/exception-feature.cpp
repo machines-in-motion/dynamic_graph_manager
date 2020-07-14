@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <dynamic_graph_manager/exception/exception-feature.hpp>
 
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */

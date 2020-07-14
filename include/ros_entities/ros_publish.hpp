@@ -27,7 +27,7 @@
 #include "ros_entities/converter.hpp"
 #include "ros_entities/dg_to_ros.hpp"
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 class RosPublish;
 
@@ -101,7 +101,7 @@ private:
     ros::Time lastPublicated_;
     boost::interprocess::interprocess_mutex mutex_;
 };
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #include "ros_publish.hxx"
 #endif  //! DYNAMIC_GRAPH_ROS_PUBLISH_HH

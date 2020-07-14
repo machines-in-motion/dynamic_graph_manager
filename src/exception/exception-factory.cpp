@@ -14,7 +14,7 @@
 
 #include <dynamic_graph_manager/exception/exception-factory.hpp>
 
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 namespace dg = dynamicgraph;
 
 /* --------------------------------------------------------------------- */

@@ -20,7 +20,7 @@
 /* --- CLASS ----------------------------------------------------------- */
 /* --------------------------------------------------------------------- */
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 /**
  * @brief The ExceptionFactory class
@@ -60,7 +60,7 @@ public:
     {
     }
 };
-} /* namespace dynamic_graph */
+} /* namespace dynamic_graph_manager */
 
 #endif /* #ifndef EXCEPTION_FACTORY_HH */
 

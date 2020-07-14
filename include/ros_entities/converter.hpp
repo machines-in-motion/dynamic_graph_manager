@@ -38,7 +38,7 @@
     template <>           \
     inline void converter(DgToRos<T>::dg_t& dst, const DgToRos<T>::ros_t& src)
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 inline void makeHeader(std_msgs::Header& header)
 {
@@ -80,13 +80,13 @@ ROS_TO_DG_IMPL(unsigned int)
 }
 
 // Vector
-DG_TO_ROS_IMPL(Vector)
+DG_TO_ROS_IMPL(DgVector)
 {
     dst.data.resize(src.size());
     for (int i = 0; i < src.size(); ++i) dst.data[i] = src(i);
 }
 
-ROS_TO_DG_IMPL(Vector)
+ROS_TO_DG_IMPL(DgVector)
 {
     dst.resize(src.data.size());
     for (unsigned int i = 0; i < src.data.size(); ++i) dst(i) = src.data[i];
@@ -115,7 +115,7 @@ ROS_TO_DG_IMPL(specific::Vector3)
 }
 
 // Matrix
-DG_TO_ROS_IMPL(Matrix)
+DG_TO_ROS_IMPL(DgMatrix)
 {
     // TODO: Confirm Ros Matrix Storage order. It changes the RosMatrix to
     // ColMajor.
@@ -125,7 +125,7 @@ DG_TO_ROS_IMPL(Matrix)
         dst.data[i] = src.data()[i];
 }
 
-ROS_TO_DG_IMPL(Matrix)
+ROS_TO_DG_IMPL(DgMatrix)
 {
     dst.resize(src.width,
                (unsigned int)src.data.size() / (unsigned int)src.width);
@@ -187,8 +187,8 @@ ROS_TO_DG_IMPL(specific::Twist)
 /// timestamp.
 #define DG_BRIDGE_TO_ROS_MAKE_STAMPED_IMPL(T, ATTRIBUTE, EXTRA)             \
     template <>                                                             \
-    inline void converter(DgToRos<std::pair<T, Vector> >::ros_t& dst,       \
-                          const DgToRos<std::pair<T, Vector> >::dg_t& src)  \
+    inline void converter(DgToRos<std::pair<T, DgVector> >::ros_t& dst,       \
+                          const DgToRos<std::pair<T, DgVector> >::dg_t& src)  \
     {                                                                       \
         makeHeader(dst.header);                                             \
         converter<DgToRos<T>::ros_t, DgToRos<T>::dg_t>(dst.ATTRIBUTE, src); \
@@ -223,9 +223,9 @@ DG_BRIDGE_TO_ROS_MAKE_STAMPED_IMPL(specific::Twist, twist, ;);
 
 DG_BRIDGE_MAKE_SHPTR_IMPL(double);
 DG_BRIDGE_MAKE_SHPTR_IMPL(unsigned int);
-DG_BRIDGE_MAKE_SHPTR_IMPL(Vector);
+DG_BRIDGE_MAKE_SHPTR_IMPL(DgVector);
 DG_BRIDGE_MAKE_SHPTR_IMPL(specific::Vector3);
-DG_BRIDGE_MAKE_SHPTR_IMPL(Matrix);
+DG_BRIDGE_MAKE_SHPTR_IMPL(DgMatrix);
 DG_BRIDGE_MAKE_SHPTR_IMPL(MatrixHomogeneous);
 DG_BRIDGE_MAKE_SHPTR_IMPL(specific::Twist);
 
@@ -235,8 +235,8 @@ DG_BRIDGE_MAKE_SHPTR_IMPL(specific::Twist);
 /// FIXME: the timestamp is not yet forwarded to the dg signal.
 #define DG_BRIDGE_MAKE_STAMPED_IMPL(T, ATTRIBUTE, EXTRA)                    \
     template <>                                                             \
-    inline void converter(DgToRos<std::pair<T, Vector> >::dg_t& dst,        \
-                          const DgToRos<std::pair<T, Vector> >::ros_t& src) \
+    inline void converter(DgToRos<std::pair<T, DgVector> >::dg_t& dst,        \
+                          const DgToRos<std::pair<T, DgVector> >::ros_t& src) \
     {                                                                       \
         converter<DgToRos<T>::dg_t, DgToRos<T>::ros_t>(dst, src.ATTRIBUTE); \
         do                                                                  \
@@ -257,8 +257,8 @@ DG_BRIDGE_MAKE_STAMPED_IMPL(specific::Twist, twist, ;);
 #define DG_BRIDGE_MAKE_STAMPED_SHPTR_IMPL(T, ATTRIBUTE, EXTRA)                \
     template <>                                                               \
     inline void converter(                                                    \
-        DgToRos<std::pair<T, Vector> >::dg_t& dst,                            \
-        const boost::shared_ptr<DgToRos<std::pair<T, Vector> >::ros_t const>& \
+        DgToRos<std::pair<T, DgVector> >::dg_t& dst,                            \
+        const boost::shared_ptr<DgToRos<std::pair<T, DgVector> >::ros_t const>& \
             src)                                                              \
     {                                                                         \
         converter<DgToRos<T>::dg_t, DgToRos<T>::ros_t>(dst, src->ATTRIBUTE);  \
@@ -299,6 +299,6 @@ typedef boost::gregorian::date date;
 boost::posix_time::ptime rosTimeToPtime(const ros::Time& rosTime);
 
 ros::Time pTimeToRostime(const boost::posix_time::ptime& time);
-}  // end of namespace dynamic_graph.
+}  // end of namespace dynamic_graph_manager.
 
 #endif  //! DYNAMIC_GRAPH_ROS_CONVERTER_HH

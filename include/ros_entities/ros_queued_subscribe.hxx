@@ -22,7 +22,7 @@
 namespace dg = dynamicgraph;
 typedef boost::mutex::scoped_lock scoped_lock;
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 namespace internal
 {
@@ -128,6 +128,6 @@ void RosQueuedSubscribe::add(const std::string& type,
 {
     internal::Add<T>()(*this, type, signal, topic);
 }
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  //! DYNAMIC_GRAPH_ROS_QUEUED_SUBSCRIBE_HXX

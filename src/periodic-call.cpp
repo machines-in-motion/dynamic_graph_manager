@@ -18,7 +18,7 @@
 #include <dynamic_graph_manager/periodic-call.hpp>
 
 using namespace std;
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 namespace dg = dynamicgraph;
 
 PeriodicCall::PeriodicCall(void)

@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <dynamic_graph_manager/exception/exception-yaml-cpp.hpp>
 
-using namespace dynamic_graph;
+using namespace dynamic_graph_manager;
 
 /* --------------------------------------------------------------------- */
 /* --- CLASS ----------------------------------------------------------- */

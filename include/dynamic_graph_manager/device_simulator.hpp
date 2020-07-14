@@ -15,9 +15,9 @@
 #include <dynamic-graph/entity.h>
 #include <dynamic_graph_manager/device.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
-class DeviceSimulator : public dynamic_graph::Device
+class DeviceSimulator : public dynamic_graph_manager::Device
 {
 public:
     /**
@@ -88,6 +88,6 @@ public:
     DeviceInSignalMap simu_sensors_in_;
 };
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif /* #ifndef DEVICE_SIMULATOR_HH */

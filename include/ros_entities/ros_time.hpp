@@ -15,7 +15,7 @@
 #include <ros/time.h>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 class RosTime : public dynamicgraph::Entity
 {
@@ -34,6 +34,6 @@ private:
     static const std::string docstring_;
 };  // class RosTime
 
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  // DYNAMIC_GRAPH_ROS_TIME_HH

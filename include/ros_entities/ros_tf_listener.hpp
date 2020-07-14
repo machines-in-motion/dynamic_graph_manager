@@ -20,7 +20,7 @@
 
 #include <ros_entities/matrix_geometry.hpp>
 
-namespace dynamic_graph
+namespace dynamic_graph_manager
 {
 class RosTfListener;
 
@@ -124,6 +124,6 @@ private:
     Map_t listenerDatas;
     tf::TransformListener listener;
 };
-}  // namespace dynamic_graph
+}  // namespace dynamic_graph_manager
 
 #endif  // DYNAMIC_GRAPH_ROS_TF_LISTENER_HH
