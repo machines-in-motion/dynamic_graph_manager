@@ -162,7 +162,7 @@ const std::string RosQueuedSubscribe::docstring_(
 
 RosQueuedSubscribe::RosQueuedSubscribe(const std::string& n)
     : dynamicgraph::Entity(n),
-      nh_(ros_init(DynamicGraphManager::dg_ros_node_name_)),
+      nh_(ros_init(DynamicGraphManager::dg_ros_node_name_, true)),
       bindedSignal_(),
       readQueue_(-1)
 {

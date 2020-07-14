@@ -29,7 +29,7 @@ RosRobotStatePublisherMt::RosRobotStatePublisherMt(const std::string& name)
           boost::bind(&RosRobotStatePublisherMt::trigger, this, _1, _2),
           dynamicgraph::sotNOSIGNAL,
           MAKE_SIGNAL_STRING(name, true, "int", "trigger")),
-      ros_node_handle_(ros_init(DynamicGraphManager::dg_ros_node_name_))
+      ros_node_handle_(ros_init(DynamicGraphManager::dg_ros_node_name_, true))
 {
     // Define the refresh signal as always ready.
     signalRegistration(trigger_signal_);
@@ -196,8 +196,6 @@ void RosRobotStatePublisherMt::send_data(
         publisher.joint_state_publisher_->msg_;
     // local copy of the data
     dynamicgraph::Vector robot_state;
-    // update the init ros just in case
-    ros_init(DynamicGraphManager::dg_ros_node_name_);
 
     publisher.stop_publish_ = false;
     while (!publisher.stop_publish_)

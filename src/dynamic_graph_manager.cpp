@@ -339,21 +339,24 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
     ros_node_handle.setParam("device_name", robot_name);
     ros_node_handle.setParam("log_dir", log_dir_);
 
-    // we create a python interpreter
-    ros_python_interpreter_.reset(
-        new dynamic_graph::RosPythonInterpreter(ros_node_handle));
-    // we start the ros services for the DGM (python command + start/stop DG)
-    start_ros_service(ros_node_handle);
     // we create the device of the DG and implicitly the DG itself
     device_.reset(new Device(robot_name));
     device_->initialize(params_["device"]);
-    // we build the condition variables after the fork (seems safer this way)
-    cond_var_.reset(
-        new shared_memory::LockedConditionVariable(cond_var_name_, false));
+    
+    // we create a python interpreter
+    ros_python_interpreter_.reset(
+        new dynamic_graph::RosPythonInterpreter(ros_node_handle));
     // we call the prologue of the python interpreter
     // we *NEED* to do this *AFTER* the device is created to fetch its pointer
     // in the python interpreter
     python_prologue();
+    
+    // we start the ros services for the DGM (python command + start/stop DG)
+    start_ros_service(ros_node_handle);
+    
+    // we build the condition variables after the fork (seems safer this way)
+    cond_var_.reset(
+        new shared_memory::LockedConditionVariable(cond_var_name_, false));
 }
 
 void DynamicGraphManager::run_python_command(std::ostream& file,
@@ -387,6 +390,7 @@ void DynamicGraphManager::python_prologue()
     // make sure that the current environment variable are setup in the current
     // python interpreter.
     run_python_command(aof, "import sys, os");
+    run_python_command(aof, "print(\"python version:\", sys.version)");
     run_python_command(aof, "pythonpath = os.environ['PYTHONPATH']");
     run_python_command(aof, "path = []");
     run_python_command(aof,
@@ -402,6 +406,7 @@ void DynamicGraphManager::python_prologue()
     // Create the device or get a pointer to the c++ object if it already exist
     run_python_command(
         aof, "from dynamic_graph_manager.device.prologue import robot");
+
     run_python_command(
         aof, "print(\"Executing python interpreter prologue... Done\")");
     // close the log file

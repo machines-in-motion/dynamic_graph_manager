@@ -27,6 +27,7 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
     shared_memory
     real_time_tools
     yaml_cpp_catkin
+    pybind11_catkin
 
     # ROS dependencies
     message_generation
@@ -87,6 +88,11 @@ generate_messages(DEPENDENCIES std_msgs)
 ########################################################
 add_subdirectory(src)
 
+##########################
+# manage python bindings #
+##########################
+add_subdirectory(srcpy)
+
 ####################
 # manage the demos #
 ####################
@@ -96,6 +102,8 @@ add_subdirectory(demos)
 # manage the unit tests #
 #########################
 add_subdirectory(tests)
+# Add Python unit-tests
+catkin_add_nosetests(tests)
 
 ##########################################
 # export the package as a catkin package #

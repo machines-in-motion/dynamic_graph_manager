@@ -23,7 +23,7 @@ import signal
 import rospy
 # Used to connect to ROS services
 from dynamic_graph_manager.ros.dgcompleter import DGCompleter
-from dynamic_graph_manager.ros.ros_client import RosPythonInterpreter
+from dynamic_graph_manager.wrapper import RosPythonInterpreterClient
 
 
 def signal_handler(sig, frame):
@@ -32,17 +32,14 @@ def signal_handler(sig, frame):
     """
     print('')
     print('You pressed Ctrl+C! Closing ros client and shell.')
+    rospy.signal_shutdown('You pressed Ctrl+C! Closing ros client and shell.')
     sys.exit(0)
-
-
-signal.signal(signal.SIGINT, signal_handler)
 
 
 # Command history, auto-completetion and keyboard management
 python_history = os.path.join(os.environ["HOME"], ".dg_python_history")
 readline.parse_and_bind("tab: complete")
 readline.set_history_length(100000)
-readline.set_completer(DGCompleter().complete)
 
 
 def save_history(histfile):
@@ -74,7 +71,10 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         # Command lines from the terminal.
         self.lines_pushed = ""
 
-        self.ros_python_interpreter = RosPythonInterpreter()
+        self.ros_python_interpreter = RosPythonInterpreterClient()
+        if sys.version[:2].startswith('2.'):
+            self.dg_completer = DGCompleter(self.ros_python_interpreter)
+            readline.set_completer(self.dg_completer.complete)
 
     def runcode(self, code):
         """
@@ -89,6 +89,7 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
             code_string = self.lines_pushed[:-1]
             self.write(
                 self.ros_python_interpreter.run_python_command(code_string))
+            self.write("\n")
             # we reset the cache here
             self.lines_pushed = ""
         except Exception as e:
@@ -128,8 +129,8 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
 
 
 if __name__ == '__main__':
-    rospy.init_node('run_command', argv=sys.argv)
-    sys.argv = rospy.myargv(argv=None)
+    rospy.init_node('dgm_python_client', anonymous=True, disable_signals=True)
+
     parser = optparse.OptionParser(
         usage='\n\t%prog [options]')
     (options, args) = parser.parse_args(sys.argv[1:])
@@ -138,17 +139,9 @@ if __name__ == '__main__':
 
     if args[:]:
         infile = args[0]
-        if os.path.isfile(infile):
-            print("Executing script at: " + infile)
-            response = dg_console.ros_python_interpreter.run_python_script(
-                os.path.abspath(infile))
-            if not response:
-                print("Error while file parsing ")
-                sys.exit(-1)
-            if response.standard_error:
-                print(response.standard_error)
-        else:
-            print("Provided file does not exist: %s" % (infile))
-            sys.exit(-1)
+        response = dg_console.ros_python_interpreter.run_python_script(
+            os.path.abspath(infile))
+        print(response)
 
+    signal.signal(signal.SIGINT, signal_handler)
     dg_console.interact("Interacting with remote server.")
