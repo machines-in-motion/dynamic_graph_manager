@@ -28,7 +28,7 @@ namespace dynamic_graph
  */
 static std::map<std::string, std::unique_ptr<GlobalRos> > GLOBAL_ROS_VAR;
 
-ros::NodeHandle& ros_init(std::string node_name)
+ros::NodeHandle& ros_init(std::string node_name, bool anonymous)
 {
     if (!ros::isInitialized())
     {
@@ -36,7 +36,13 @@ ros::NodeHandle& ros_init(std::string node_name)
         int argc = 1;
         char* arg0 = strdup(node_name.c_str());
         char* argv[] = {arg0, nullptr};
-        ros::init(argc, argv, node_name);
+        if(anonymous)
+        {
+            ros::init(argc, argv, node_name, ros::init_options::AnonymousName);
+        }
+        else{
+            ros::init(argc, argv, node_name);
+        }
         free(arg0);
     }
     if (!ros_exist(node_name))

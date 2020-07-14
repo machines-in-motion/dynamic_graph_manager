@@ -128,7 +128,7 @@ const std::string RosPublish::docstring_(
 RosPublish::RosPublish(const std::string& n)
     : dynamicgraph::Entity(n),
       // RosPublish do not use callback so do not create a useless spinner.
-      nh_(ros_init(DynamicGraphManager::dg_ros_node_name_)),
+      nh_(ros_init(DynamicGraphManager::dg_ros_node_name_, true)),
       bindedSignal_(),
       trigger_(boost::bind(&RosPublish::trigger, this, _1, _2),
                dynamicgraph::sotNOSIGNAL,

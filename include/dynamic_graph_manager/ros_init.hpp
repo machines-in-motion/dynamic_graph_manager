@@ -36,7 +36,7 @@ struct GlobalRos
         }
         if (node_handle_)
         {
-            node_handle_->shutdown();
+            // node_handle_->shutdown();
         }
     }
     /**
@@ -57,7 +57,7 @@ struct GlobalRos
  * first call. It always returns a reference to the node hanlde.
  * @return the reference of GLOBAL_ROS_VAR.node_handle_.
  */
-ros::NodeHandle& ros_init(std::string node_name);
+ros::NodeHandle& ros_init(std::string node_name, bool anonymous=false);
 
 /**
  * @brief ros_spinner return the async_spinner_. Call dynamic_graph ros_init if
