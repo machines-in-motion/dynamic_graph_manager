@@ -17,7 +17,7 @@
 #include <dynamic-graph/linear-algebra.h>
 
 #include <dynamic_graph_manager/periodic-call.hpp>
-#include <dynamic_graph_manager/tools.hpp>
+#include <dynamic_graph_manager/yaml_parsing.hpp>
 
 namespace dynamic_graph_manager
 {

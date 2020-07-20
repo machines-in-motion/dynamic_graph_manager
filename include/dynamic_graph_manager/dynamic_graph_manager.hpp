@@ -51,7 +51,7 @@
 #include "dynamic_graph_manager/ros_interpreter.hpp"
 
 // some useful tools like the yaml parsing
-#include "dynamic_graph_manager/tools.hpp"
+#include "dynamic_graph_manager/yaml_parsing.hpp"
 
 // the device of the dynamic-graph
 #include "dynamic_graph_manager/device.hpp"

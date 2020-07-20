@@ -64,7 +64,7 @@ std::string RosPythonInterpreterClient::run_python_command(
 
         run_command_srv_.request.input = code_string;
 
-        ros::service::waitForService(run_script_service_name_);
+        ros::service::waitForService(run_command_service_name_);
         if (!command_client_.call(run_command_srv_))
         {
             // We had an issue calling the service.

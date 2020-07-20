@@ -1,18 +1,16 @@
 /**
- * @file tools.hpp
- * @author Maximilien Naveau (maximilien.naveau@gmail.com)
- * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck
- * Gesellschaft.
- * @date 2019-05-22
+ * @file
+ * @license BSD 3-clause
+ * @copyright Copyright (c) 2020, New York University and Max Planck
+ * Gesellschaft
+ *
+ * @brief Parse the yaml files and build the device interface.
  */
 
+#pragma once
+
 #include <dynamic-graph/linear-algebra.h>
-
-#include "yaml_cpp_catkin/yaml_eigen.h"
-
-#ifndef TOOLS_HH
-#define TOOLS_HH
+#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 namespace dynamic_graph_manager
 {
@@ -34,5 +32,3 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
                      VectorDGMap& out_motor_controls_map);
 
 }  // namespace dynamic_graph_manager
-
-#endif /* #ifndef TOOLS_HH */

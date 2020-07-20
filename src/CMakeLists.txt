@@ -16,7 +16,7 @@ add_library(device SHARED
   device.cpp
   device_simulator.cpp
   periodic-call.cpp
-  tools.cpp
+  yaml_parsing.cpp
   ${EXCEPTION_SRC}
 )
 pkg_config_use_dependency(device yaml-cpp)
@@ -39,6 +39,7 @@ dynamic_graph_python_module("device" # from dynamic_graph_manager.device import 
 
 set(DYNAMIC_GRAPH_MANAGER_SRC
     dynamic_graph_manager.cpp
+    dynamic_graph_controller.cpp
     ros_init.cpp
     ros_interpreter.cpp
     ros_python_interpreter_client.cpp
