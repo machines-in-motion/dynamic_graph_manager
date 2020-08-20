@@ -67,10 +67,7 @@ class DGCompleter:
                 "    readline.set_completer(local_completer.complete)\n"
                 "    readline.parse_and_bind(\"tab: complete\")"
         ])
-
-        cmd = ([])
-        
-        print("executing in the dg_completer the initailization:")
+       
         for python_command in cmd:
             print(python_command)
             self.client.run_python_command(python_command)
@@ -83,9 +80,10 @@ class DGCompleter:
         This is called successively with state == 0, 1, 2, ... until it
         returns None. The completion should begin with 'text'.
         """
+        # self.client.run_python_command("global local_completer")
         cmd = "local_completer.complete(\""+text+"\","+str(state)+")"
         response = self.client.run_python_command(cmd)
-        if response is "":
+        if not response or response is "\n" or response is None:
             response = None
             self.buffer = []
         else:
