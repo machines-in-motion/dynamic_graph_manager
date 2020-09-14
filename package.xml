@@ -1,53 +1,64 @@
 <?xml version="1.0"?>
-<package format="2">
-  <name>dynamic_graph_manager</name>
-  <version>1.0.0</version>
-  <description>
-    This project implements a control architecture based on the dynamic_graph
-  </description>
-  <author email="mnaveau@tue.mpg.de">Maximilien Naveau</author>
-  <maintainer email="mnaveau@tue.mpg.de">Maximilien Naveau</maintainer>
-  <license>BSD 3-Clause</license>
-  <buildtool_depend>catkin</buildtool_depend>
+<?xml-model
+   href="http://download.ros.org/schema/package_format3.xsd"
+   schematypens="http://www.w3.org/2001/XMLSchema"?>
 
-  
-  <!-- This provide cmake macros to help building the project. -->
-  <depend> mpi_cmake_modules </depend>
-  
-  <!-- Message dependencies -->
-  <depend>std_msgs</depend>
-  
-  <!-- Generate messages and services -->
-  <depend>message_generation</depend>
-  
-  <!-- It is a C++ pacakge depending on ROS -->
-  <depend> roscpp </depend>
-  
-  <!-- Dynamic Graph dependency -->
-  <depend> dynamic_graph </depend>
-  
-  <!-- Dynamic Graph python bindings and python interpreter -->
-  <depend> dynamic_graph_python </depend>
-  
-  <!-- Use YAML files to parameterize the DynamicGraph device  -->
-  <depend> yaml_cpp </depend>
-  
-  <!-- This tools provides shared memory object in an encapsulated way -->
-  <depend> shared_memory </depend>
-  
-  <!-- This tools provides real time thread objects in an encapsulated way -->
-  <depend> real_time_tools </depend>
 
-  <!-- Provide the python bindings utilities. -->
-  <depend> pybind11_catkin </depend>
+<package format="3">
+
+    <name>dynamic_graph_manager</name>
+    <version>1.0.0</version>
+    
+    <description>
+        This project implements a control architecture based on the
+        dynamic_graph.
+    </description>
+
+    <maintainer email="mnaveau@tuebingen.mpg.de">Maximilien Naveau</maintainer>
+
+    <license>BSD 3-clause</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_cmake_python</buildtool_depend>
+    
+    <!-- Message dependencies. -->
+    <depend>std_msgs</depend>
+
+    <!-- Dynamic Graph dependency. -->
+    <depend>dynamic_graph</depend>
   
-  <!-- Allow to use the tranform from ROS to DG and reverse. And rviz support -->
-  <depend> tf2_bullet </depend>
-  <depend> tf </depend>
-  
-  <!-- ros_realtime allow to export data from the real time thread to the network -->
-  <depend> realtime_tools </depend>
-  
-  <!-- yaml parser including eigen compatibility -->
-  <depend> yaml_cpp_catkin </depend>
+    <!-- Dynamic Graph python bindings and python interpreter. -->
+    <depend>dynamic_graph_python</depend>
+
+    <!-- Eigen interface. -->
+    <depend>Eigen3</depend>
+
+    <!-- CMake module containing helper to find the OS, boost, python, etc. -->
+    <depend>mpi_cmake_modules</depend>
+
+    <!-- Use YAML files to parameterize the DynamicGraph device.  -->
+    <depend>yaml_utils</depend>
+
+    <!-- Python bindings. -->
+    <depend>pybind11_vendor</depend>
+    <depend>pybind11</depend>
+
+    <!-- Access to a shared memory -->
+    <depend>shared_memory</depend>
+
+    <!-- real_time_tools -->
+    <depend>real_time_tools</depend>
+
+    <!-- ROS2 message generation. -->
+    <build_depend>rosidl_default_generators</build_depend>
+    <exec_depend>rosidl_default_runtime</exec_depend>
+    <member_of_group>rosidl_interface_packages</member_of_group>
+
+    <!-- Unit-tests. -->
+    <test_depend>ament_cmake_gtest</test_depend>
+    
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+
 </package>

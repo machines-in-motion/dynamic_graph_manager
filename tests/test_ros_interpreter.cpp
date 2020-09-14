@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/ros.hpp"
 #include "dynamic_graph_manager/ros_interpreter.hpp"
 
 /***************************
@@ -56,18 +56,18 @@ TEST_F(TestRosInterpreter, test_constructor_no_throw)
     /* setup */
 
     /* test */
-    ASSERT_NO_THROW(RosPythonInterpreter rpi(ros_init(node_name_)););
+    ASSERT_NO_THROW(RosPythonInterpreterServer rpi(ros_init(node_name_)););
 }
 
 TEST_F(TestRosInterpreter, test_destructor_no_throw)
 {
-    ASSERT_NO_THROW({ RosPythonInterpreter rpi(ros_init(node_name_)); });
+    ASSERT_NO_THROW({ RosPythonInterpreterServer rpi(ros_init(node_name_)); });
 }
 
 TEST_F(TestRosInterpreter, test_run_cmd_not_available_upon_construction)
 {
     /* setup */
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     /* test */
     ASSERT_FALSE(
         ros::service::exists("/" + node_name_ + "/run_python_command", false));
@@ -76,7 +76,7 @@ TEST_F(TestRosInterpreter, test_run_cmd_not_available_upon_construction)
 TEST_F(TestRosInterpreter, test_run_script_not_available_upon_construction)
 {
     /* setup */
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     /* test */
     ASSERT_FALSE(
         ros::service::exists("/" + node_name_ + "/run_python_command", false));
@@ -85,7 +85,7 @@ TEST_F(TestRosInterpreter, test_run_script_not_available_upon_construction)
 TEST_F(TestRosInterpreter, test_run_cmd_available_after_init)
 {
     /* setup */
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     rpi.start_ros_service();
     /* test */
     ASSERT_TRUE(
@@ -95,7 +95,7 @@ TEST_F(TestRosInterpreter, test_run_cmd_available_after_init)
 TEST_F(TestRosInterpreter, test_run_script_available_after_init)
 {
     /* setup */
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     rpi.start_ros_service();
     /* test */
     ASSERT_TRUE(
@@ -106,7 +106,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_result)
 {
     /* setup */
     // create the ros interpreter
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     rpi.start_ros_service();
     // service name is
     std::string service_name = "/" + node_name_ + "/run_python_command";
@@ -115,7 +115,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_result)
     // fetch the node handle reference
     ros_init(node_name_);
     // Prepare a simple python operation
-    dynamic_graph_manager::RunCommand run_com_msg;
+    dynamic_graph_manager::RunPythonCommand run_com_msg;
     run_com_msg.request.input = "1 + 1";
     // call the service
     ros::service::call(service_name, run_com_msg);
@@ -128,7 +128,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_standard_output)
 {
     /* setup */
     // create the ros interpreter
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     rpi.start_ros_service();
     // service name is
     std::string service_name = "/" + node_name_ + "/run_python_command";
@@ -137,7 +137,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_standard_output)
     // fetch the node handle reference
     ros_init(node_name_);
     // Prepare a simple python operation
-    dynamic_graph_manager::RunCommand run_com_msg;
+    dynamic_graph_manager::RunPythonCommand run_com_msg;
     run_com_msg.request.input = "print(\"Banana\")";
     // call the service
     ros::service::call(service_name, run_com_msg);
@@ -152,7 +152,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_standard_error)
 {
     /* setup */
     // create the ros interpreter
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     rpi.start_ros_service();
     // service name is
     std::string service_name = "/" + node_name_ + "/run_python_command";
@@ -161,7 +161,7 @@ TEST_F(TestRosInterpreter, test_call_run_command_standard_error)
     // fetch the node handle reference
     ros_init(node_name_);
     // Prepare a simple python operation
-    dynamic_graph_manager::RunCommand run_com_msg;
+    dynamic_graph_manager::RunPythonCommand run_com_msg;
     run_com_msg.request.input = "a";
     // call the service
     ros::service::call(service_name, run_com_msg);
@@ -177,7 +177,7 @@ TEST_F(TestRosInterpreter, test_call_run_script_result)
 {
     /* setup */
     // create the ros interpreter
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     rpi.start_ros_service();
     // service name is
     std::string service_name = "/" + node_name_ + "/run_python_script";
@@ -200,7 +200,7 @@ TEST_F(TestRosInterpreter, test_call_run_script_standard_error)
 {
     /* setup */
     // create the ros interpreter
-    RosPythonInterpreter rpi(ros_init(node_name_));
+    RosPythonInterpreterServer rpi(ros_init(node_name_));
     rpi.start_ros_service();
     // service name is
     std::string service_name = "/" + node_name_ + "/run_python_script";

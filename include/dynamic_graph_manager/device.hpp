@@ -10,7 +10,7 @@
 #ifndef DEVICE_HH
 #define DEVICE_HH
 
-#include <yaml-cpp/yaml.h>
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 #include <dynamic-graph/all-signals.h>
 #include <dynamic-graph/entity.h>

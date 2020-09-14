@@ -1,4 +1,7 @@
-# dynamic_graph_manager
+[![continuous integration](https://raw.githubusercontent.com/MPI-IS-BambooAgent/sw_badges/master/badges/plans/dynamicgraphmanager/build.svg?sanitize=true)](url) [![continuous integration](https://raw.githubusercontent.com/MPI-IS-BambooAgent/sw_badges/master/badges/plans/dynamicgraphmanager/unit tests.svg?sanitize=true)](url)
+
+Readme
+------
 
 ## What is it
 
@@ -24,11 +27,13 @@ License BSD-3-Clause
 This is a ros package so it should be in a ROS environment.
 One can still test its compilation by using the following instruction:
 
-`cd dynamic_graph_manager
+```bash
+cd dynamic_graph_manager
 mkdir _build
 cd _build
 cmake ..
-make -j8`
+make
+```
 
 ## Usage:
 
@@ -48,4 +53,4 @@ and
 See demo and unit tests for more information on the API.
 Doxygen informations are available by calling:
 
-	`catkin_make -DBUILD_DOCUMENTATION=ON`
+	`colcon build --ament-cmake -DGENERATE_DOCUMENTATION=ON`

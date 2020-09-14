@@ -10,14 +10,12 @@
 
 #pragma once
 
-#include <ros/ros.h>
-#include "dynamic_graph_manager/RunCommand.h"
-#include "dynamic_graph_manager/RunPythonFile.h"
+#include "dynamic_graph_manager/ros.hpp"
 
 namespace dynamic_graph_manager
 {
 /**
- * @brief Client of the RosPythonInterpreter through rosservices.
+ * @brief Client of the RosPythonInterpreterServer through rosservices.
  */
 class RosPythonInterpreterClient
 {
@@ -53,30 +51,35 @@ private:
     /**
      * @brief Connect to a designated service.
      *
-     * @tparam RosService
+     * @tparam RosServiceType
      * @param service_name
      * @param client
      * @param timeout
      */
-    template <typename RosService>
-    ros::ServiceClient connect_to_rosservice(const std::string& service_name,
-                                             double timeout)
+    template <typename RosServiceType>
+    typename rclcpp::Client<RosServiceType>::SharedPtr connect_to_rosservice(
+        const std::string& service_name, const DurationSec& timeout)
     {
-        ros::ServiceClient client;
+        typename rclcpp::Client<RosServiceType>::SharedPtr client;
         try
         {
-            ROS_INFO("Waiting for service %s ...", service_name.c_str());
+            RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                        "Waiting for service %s ...",
+                        service_name.c_str());
             // let use wait for the existance of the services
             client =
-                mode_handle_->serviceClient<RosService>(service_name.c_str());
-            client.waitForExistence(ros::Duration(timeout));
-            if (client.isValid())
+                ros_node_->create_client<RosServiceType>(service_name.c_str());
+            if (client->wait_for_service(timeout))
             {
-                ROS_INFO("Successfully connected to %s", service_name.c_str());
+                RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                            "Successfully connected to %s",
+                            service_name.c_str());
             }
             else
             {
-                ROS_INFO("Failed to connect to %s", service_name.c_str());
+                RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                            "Failed to connect to %s",
+                            service_name.c_str());
             }
         }
         catch (...)
@@ -91,11 +94,11 @@ private:
      *
      * @param timeout [in]
      */
-    void connect_to_rosservice_run_python_command(double timeout = -1.0)
+    void connect_to_rosservice_run_python_command(
+        const DurationSec& timeout = DurationSec(-1))
     {
-        command_client_ =
-            connect_to_rosservice<dynamic_graph_manager::RunCommand>(
-                run_command_service_name_, timeout);
+        command_client_ = connect_to_rosservice<RunPythonCommandSrvType>(
+            run_command_service_name_, timeout);
     }
 
     /**
@@ -103,11 +106,11 @@ private:
      *
      * @param timeout [in]
      */
-    void connect_to_rosservice_run_python_script(double timeout = -1.0)
+    void connect_to_rosservice_run_python_script(
+        const DurationSec& timeout = DurationSec(-1))
     {
-        script_client_ =
-            connect_to_rosservice<dynamic_graph_manager::RunPythonFile>(
-                run_script_service_name_, timeout);
+        script_client_ = connect_to_rosservice<RunPythonFileSrvType>(
+            run_script_service_name_, timeout);
     }
 
 private:
@@ -117,33 +120,33 @@ private:
     std::string ros_node_name_;
 
     /** @brief Handle for manipulating ROS objects. */
-    std::shared_ptr<ros::NodeHandle> mode_handle_;
+    RosNodePtr ros_node_;
 
-    /** @brief  Name of the DynamicGraphManager RosPythonInterpreter rosservice
-     * for running a python command. */
+    /** @brief  Name of the DynamicGraphManager RosPythonInterpreterServer
+     * rosservice for running a python command. */
     std::string run_command_service_name_;
 
     /** @brief Rosservice to run a python command.
      * @see run_command_service_name_ */
-    ros::ServiceClient command_client_;
+    RunPythonCommandClientPtr command_client_;
 
-    /** @brief Input/Ouput of the rosservice. */
-    dynamic_graph_manager::RunCommand run_command_srv_;
+    /** @brief Input of the rosservice. */
+    RunPythonCommandRequestPtr run_command_request_;
 
-    /** @brief  Name of the DynamicGraphManager RosPythonInterpreter rosservice
-     * for running a python script. */
+    /** @brief  Name of the DynamicGraphManager RosPythonInterpreterServer
+     * rosservice for running a python script. */
     std::string run_script_service_name_;
 
     /** @brief Rosservice to run a python script.
      * @see run_command_service_name_ */
-    ros::ServiceClient script_client_;
+    RunPythonFileClientPtr script_client_;
 
-    /** @brief Input/Ouput of the rosservice. */
-    dynamic_graph_manager::RunPythonFile run_script_srv_;
+    /** @brief Input of the rosservice. */
+    RunPythonFileRequestPtr run_file_request_;
 
     /** @brief timeout used during the connection to the rosservices in
      * seconds. */
-    double timeout_connection_s_;
+    DurationSec timeout_connection_s_;
 };
 
 }  // namespace dynamic_graph_manager

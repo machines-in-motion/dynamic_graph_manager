@@ -13,62 +13,61 @@
 #ifndef DYNAMIC_GRAPH_BRIDGE_INTERPRETER_HH
 #define DYNAMIC_GRAPH_BRIDGE_INTERPRETER_HH
 
-#include <dynamic_graph_manager/RunCommand.h>
-#include <dynamic_graph_manager/RunPythonFile.h>
-#include <ros/ros.h>
-#include <dynamic-graph/python/interpreter.hh>
+#include "dynamic-graph/python/interpreter.hh"
+#include "dynamic_graph_manager/ros.hpp"
 
 namespace dynamic_graph_manager
 {
+
+
 /// \brief This class wraps the implementation of the runCommand
 /// service.
 ///
 /// This takes as input a ROS node handle and do not handle the
 /// callback so that the service behavior can be controlled from
 /// the outside.
-class RosPythonInterpreter
+class RosPythonInterpreterServer
 {
 public:
     /**
-     * @brief run_python_command_callback_t define a boost::function to be used
-     * as callback to the ros::service.
+     * @brief run_python_command_callback_t define a std::function to be used
+     * as callback to the rclcpp::service.
      *
      * The first argument of "runCommandCallback"
      * (const std::string & command) is bound to
-     * (dynamic_graph_manager::RunCommand::Request).
+     * (dynamic_graph_manager::srv::RunPythonCommand::Request).
      * And the second argument (std::string &result) is bound to
-     * (dynamic_graph_manager::RunCommand::Response)
+     * (dynamic_graph_manager::srv::RunPythonCommand::Response)
      */
-    typedef boost::function<bool(dynamic_graph_manager::RunCommand::Request&,
-                                 dynamic_graph_manager::RunCommand::Response&)>
+    typedef std::function<void(RunPythonCommandRequestPtr,
+                               RunPythonCommandResponsePtr)>
         run_python_command_callback_t;
 
     /**
-     * @brief run_python_file_callback_t define a boost::function to be used as
-     * callback to the ros::service.
+     * @brief run_python_file_callback_t define a std::function to be used as
+     * callback to the rclcpp::service.
      *
      * The first argument of "runPythonFileCallback"
      * (std::string ifilename) is bound to
-     * (dynamic_graph_manager::RunCommand::Request).
+     * (dynamic_graph_manager::srv::RunPythonCommand::Request).
      * And a fake second argument is simulated in
-     * (dynamic_graph_manager::RunCommand::Response)
+     * (dynamic_graph_manager::srv::RunPythonCommand::Response)
      */
-    typedef boost::function<bool(
-        dynamic_graph_manager::RunPythonFile::Request&,
-        dynamic_graph_manager::RunPythonFile::Response&)>
+    typedef std::function<void(RunPythonFileRequestPtr,
+                               RunPythonFileResponsePtr)>
         run_python_file_callback_t;
 
     /**
-     * @brief RosPythonInterpreter is the unique constructor of the class
-     * @param node_handle is the ros::nodeHandle used to advertize the
-     *        ros::services
+     * @brief RosPythonInterpreterServer is the unique constructor of the class
+     * @param node_handle is the RosNode used to advertize the
+     *        rclcpp::services
      */
-    explicit RosPythonInterpreter(ros::NodeHandle& node_handle);
+    explicit RosPythonInterpreterServer(RosNodePtr node_handle);
 
     /**
-     * @brief ~RosPythonInterpreter is the default destructor of the class
+     * @brief ~RosPythonInterpreterServer is the default destructor of the class
      */
-    ~RosPythonInterpreter();
+    ~RosPythonInterpreterServer();
 
     /**
      * @brief run_python_command used the python interpreter to execute the
@@ -107,8 +106,8 @@ protected:
      *        RunCommand.msg
      * @return true
      */
-    bool runCommandCallback(dynamic_graph_manager::RunCommand::Request& req,
-                            dynamic_graph_manager::RunCommand::Response& res);
+    void runCommandCallback(RunPythonCommandRequestPtr req,
+                            RunPythonCommandResponsePtr res);
 
     /**
      * @brief runCommandCallback is the "run_python_script" ros service callback
@@ -119,9 +118,8 @@ protected:
      *        RunCommand.msg
      * @return true
      */
-    bool runPythonFileCallback(
-        dynamic_graph_manager::RunPythonFile::Request& req,
-        dynamic_graph_manager::RunPythonFile::Response& res);
+    void runPythonFileCallback(RunPythonFileRequestPtr req,
+                               RunPythonFileResponsePtr res);
 
 private:
     /**
@@ -129,29 +127,30 @@ private:
      */
     dynamicgraph::python::Interpreter interpreter_;
     /**
-     * @brief ros_node_handle_ is reference to the ros::NodeHandle used to
-     * advertize the ros::services
+     * @brief ros_node_ is reference to the RosNode used to
+     * advertize the rclcpp::services
      */
-    ros::NodeHandle& ros_node_handle_;
+    RosNodePtr ros_node_;
     /**
-     * @brief run_python_command_srv_ is the "run_python_command" ros::service
+     * @brief run_python_command_srv_ is the "run_python_command" rclcpp::service
      * c++ object
      *
      * This kind of ros object require *NOT* to be destroyed. otherwize the
-     * ros::service is cancelled. This is the reason why this object is an
+     * rclcpp::service is cancelled. This is the reason why this object is an
      * attribute of the class
      */
-    ros::ServiceServer run_python_command_srv_;
+    RunPythonCommandServerPtr run_python_command_srv_;
     /**
-     * @brief run_python_file_srv_ is the "run_python_script" ros::service c++
+     * @brief run_python_file_srv_ is the "run_python_script" rclcpp::service c++
      * object
      *
      * This kind of ros object require *NOT* to be destroyed. otherwize the
-     * ros::service is cancelled. This is the reason why this object is an
+     * rclcpp::service is cancelled. This is the reason why this object is an
      * attribute of the class
      */
-    ros::ServiceServer run_python_file_srv_;
+    RunPythonFileServerPtr run_python_file_srv_;
 };
+
 }  // namespace dynamic_graph_manager
 
 #endif  //! DYNAMIC_GRAPH_BRIDGE_INTERPRETER_HH

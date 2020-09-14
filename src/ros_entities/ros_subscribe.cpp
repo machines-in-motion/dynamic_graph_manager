@@ -20,7 +20,7 @@
 #include <dynamic-graph/factory.h>
 
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
-#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/ros.hpp"
 
 #include "ros_entities/ros_subscribe.hpp"
 

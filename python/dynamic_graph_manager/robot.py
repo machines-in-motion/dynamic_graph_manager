@@ -13,12 +13,10 @@ robot: ros export/import logging utilities...
 
 from __future__ import print_function
 
-import rospy
-
 from dynamic_graph import plug
 from dynamic_graph.tracer_real_time import TracerRealTime
 from dynamic_graph.tools import addTrace
-from dynamic_graph_manager.ros import Ros
+from dynamic_graph_manager.ros.ros import Ros
 from dynamic_graph.entity import Entity
 
 # Internal helper tool.

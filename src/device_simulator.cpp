@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "yaml_cpp_catkin/yaml_eigen.h"
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 #include <dynamic-graph/all-commands.h>
 #include <dynamic-graph/debug.h>

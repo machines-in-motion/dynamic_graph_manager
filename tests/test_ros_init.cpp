@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <std_srvs/Empty.h>
 #include <sstream>
-#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/ros.hpp"
 
 /***************************
  * SETUP THE TESTING CLASS *

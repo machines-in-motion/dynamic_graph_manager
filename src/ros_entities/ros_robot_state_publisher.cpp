@@ -11,7 +11,7 @@
 #include <tf/tf.h>
 #include <iostream>
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
-#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/ros.hpp"
 #include "ros_entities/converter.hpp"
 
 using namespace std;

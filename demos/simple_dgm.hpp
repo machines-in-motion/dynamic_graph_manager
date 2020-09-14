@@ -6,9 +6,8 @@
  * Gesellschaft.
  * @date 2019-05-22
  */
-#include "dynamic_graph_manager/TestUserCmdBool.h"
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
-#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/srv/test_user_cmd_bool.hpp"
 
 namespace dynamic_graph_manager
 {
@@ -39,11 +38,21 @@ public:
     void initialize_hardware_communication_process()
     {
         // get the hardware communication ros node handle
-        ros::NodeHandle& ros_node_handle = ros_init(
-            DynamicGraphManager::hw_com_ros_node_name_);
+        RosNodePtr ros_node_handle =
+            get_ros_node(DynamicGraphManager::hw_com_ros_node_name_);
+        std::function<void(
+            dynamic_graph_manager::srv::TestUserCmdBool::Request::SharedPtr,
+            dynamic_graph_manager::srv::TestUserCmdBool::Response::SharedPtr)>
+            user_command_callback_function =
+                std::bind(&SimpleDGM::user_command_callback,
+                          this,
+                          std::placeholders::_1,
+                          std::placeholders::_2);
         /** initialize the user commands */
-        ros_user_commands_.push_back(ros_node_handle.advertiseService(
-            "set_a_boolean", &SimpleDGM::user_command_callback, this));
+        user_command_service_ =
+            ros_node_handle
+                ->create_service<dynamic_graph_manager::srv::TestUserCmdBool>(
+                    "set_a_boolean", user_command_callback_function);
     }
     /**
      * @brief Get the sensors to the map object.
@@ -90,18 +99,15 @@ public:
      * @return true in case the service hase been properly executed
      * @return false in case of failure
      */
-    bool user_command_callback(
-        dynamic_graph_manager::TestUserCmdBool::Request& req,
-        dynamic_graph_manager::TestUserCmdBool::Response& res)
+    void user_command_callback(
+        dynamic_graph_manager::srv::TestUserCmdBool::Request::SharedPtr req,
+        dynamic_graph_manager::srv::TestUserCmdBool::Response::SharedPtr res)
     {
         // parse and register the command for further call.
         add_user_command(
-            std::bind(&SimpleDGM::user_command, this, req.input_boolean));
+            std::bind(&SimpleDGM::user_command, this, req->input_boolean));
         // return whatever the user want
-        res.sanity_check = true;
-
-        // the service has been executed properly
-        return true;
+        res->sanity_check = true;
     }
 
     /**
@@ -125,8 +131,7 @@ public:
     {
         // fill all controls with zero... Check your robot to imagine what would
         // be safer in this case.
-        for (VectorDGMap::iterator ctrl =
-                 motor_controls_map_.begin();
+        for (VectorDGMap::iterator ctrl = motor_controls_map_.begin();
              ctrl != motor_controls_map_.end();
              ++ctrl)
         {
@@ -148,6 +153,10 @@ private:
     // some internal hardware class or obect. Here just a simple boolean for
     // unit testing
     std::atomic_bool boolean_set_by_user_cmd_;
+
+    // Service for calling the user_command on the hardware side.
+    rclcpp::Service<dynamic_graph_manager::srv::TestUserCmdBool>::SharedPtr
+        user_command_service_;
 
     // Control
     dynamicgraph::Vector desired_torques_, desired_positions_;

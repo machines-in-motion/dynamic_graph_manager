@@ -14,7 +14,7 @@
 #include <thread>
 
 // We use another class of this package which has an independant unittest.
-#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/ros.hpp"
 
 // The class to test
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
@@ -258,7 +258,7 @@ void start_run_python_command_ros_service(std::string cmd)
     // wait for the service
     ros::service::waitForService(service_name, true);
     // fill the command message
-    dynamic_graph_manager::RunCommand run_com_msg;
+    dynamic_graph_manager::RunPythonCommand run_com_msg;
     run_com_msg.request.input = cmd;
     // Call the server
     ros::service::call(service_name, run_com_msg);
@@ -860,10 +860,10 @@ TEST_F(DISABLED_TestDynamicGraphManager,
 
     // check the run_python_command service
     ros::NodeHandle node_handle("test");
-    dynamic_graph_manager::RunCommand run_com_msg;
+    dynamic_graph_manager::RunPythonCommand run_com_msg;
     run_com_msg.request.input = "1 + 1";
     ros::ServiceClient run_python_command_client =
-        node_handle.serviceClient<dynamic_graph_manager::RunCommand>(
+        node_handle.serviceClient<dynamic_graph_manager::RunPythonCommand>(
             "/dynamic_graph/run_python_command");
     ASSERT_TRUE(run_python_command_client.waitForExistence(ros::Duration(0.5)));
     ASSERT_TRUE(run_python_command_client.call(run_com_msg));
@@ -895,7 +895,7 @@ TEST_F(DISABLED_TestDynamicGraphManager,
 
     // reset the client
     run_python_command_client =
-        node_handle.serviceClient<dynamic_graph_manager::RunCommand>(
+        node_handle.serviceClient<dynamic_graph_manager::RunPythonCommand>(
             "/dynamic_graph/run_python_command");
 
     //  // perform a simple operation

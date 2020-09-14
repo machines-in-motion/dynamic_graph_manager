@@ -1,7 +1,12 @@
-###############################
-# Expose the device in python #
-###############################
-set(EXCEPTION_SRC
+#
+# Create the device library
+#
+add_library(
+  device SHARED
+  device.cpp
+  device_simulator.cpp
+  periodic-call.cpp
+  tools.cpp
   exception/exception-abstract.cpp
   exception/exception-factory.cpp
   exception/exception-signal.cpp
@@ -9,102 +14,76 @@ set(EXCEPTION_SRC
   exception/exception-dynamic.cpp
   exception/exception-feature.cpp
   exception/exception-task.cpp
-  exception/exception-yaml-cpp.cpp
-)
+  exception/exception-yaml-cpp.cpp)
+# Add the include dependencies.
+target_include_directories(
+  device PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                $<INSTALL_INTERFACE:include>)
+# Link the dependencies.
+target_link_libraries(device dynamic-graph::dynamic-graph)
+target_link_libraries(device dynamic-graph-python::dynamic-graph-python)
+target_link_libraries(device yaml_utils::yaml_utils)
+# Install the target and it's python bindings.
+install_dynamic_graph_plugin(device)
 
-add_library(device SHARED
-  device.cpp
-  device_simulator.cpp
-  periodic-call.cpp
-  tools.cpp
-  ${EXCEPTION_SRC}
-)
-pkg_config_use_dependency(device yaml-cpp)
-pkg_config_use_dependency(device dynamic-graph)
-pkg_config_use_dependency(device dynamic-graph-python)
-
-target_link_libraries(device ${catkin_LIBRARIES})
-set_target_properties(device PROPERTIES
-  PREFIX ""
-  LIBRARY_OUTPUT_DIRECTORY ${DYNAMIC_GRAPH_PLUGIN_DIR}
-)
-dynamic_graph_python_module("device" # from dynamic_graph_manager.device import *
-  device                             # python wrapper dependencies
-  device_wrap                        # python wrapper target name
-)
-
-############################################
-# create the dynamic graph manager library #
-############################################
-
-set(DYNAMIC_GRAPH_MANAGER_SRC
-    dynamic_graph_manager.cpp
-    ros_init.cpp
-    ros_interpreter.cpp
-    ros_python_interpreter_client.cpp
-)
-add_library(dynamic_graph_manager SHARED ${DYNAMIC_GRAPH_MANAGER_SRC})
-pkg_config_use_dependency(dynamic_graph_manager yaml-cpp)
-pkg_config_use_dependency(dynamic_graph_manager dynamic-graph)
-pkg_config_use_dependency(dynamic_graph_manager dynamic-graph-python)
+#
+# create the dynamic graph manager library
+#
+add_library(
+  dynamic_graph_manager SHARED
+  dynamic_graph_manager.cpp ros.cpp ros_python_interpreter_server.cpp
+  ros_python_interpreter_client.cpp)
+# Includes
+target_include_directories(
+  dynamic_graph_manager PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                               $<INSTALL_INTERFACE:include>)
+# Dependencies
+ament_target_dependencies(dynamic_graph_manager rclcpp)
+ament_target_dependencies(dynamic_graph_manager std_srvs)
+target_link_libraries(dynamic_graph_manager dynamic-graph::dynamic-graph)
 target_link_libraries(dynamic_graph_manager
-  device
-  ${catkin_LIBRARIES}
-  
-)
-add_dependencies(dynamic_graph_manager
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-target_link_libraries(dynamic_graph_manager
-  rt
-  pthread
-)
-endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+                      dynamic-graph-python::dynamic-graph-python)
+target_link_libraries(dynamic_graph_manager yaml_utils::yaml_utils)
+target_link_libraries(dynamic_graph_manager Eigen3::Eigen)
+target_link_libraries(dynamic_graph_manager device)
+target_link_libraries(dynamic_graph_manager shared_memory::shared_memory)
+target_link_libraries(dynamic_graph_manager real_time_tools::real_time_tools)
+rosidl_target_interfaces(dynamic_graph_manager ${PROJECT_NAME}_msg_srv
+                         "rosidl_typesupport_cpp")
+# Set the location of the device.so in the rpath.
+set_target_properties(
+  dynamic_graph_manager
+  PROPERTIES
+    INSTALL_RPATH
+    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/lib/dynamic_graph_plugins")
+# Export the target.
+ament_export_interfaces(export_dynamic_graph_manager HAS_LIBRARY_TARGET)
+# For the installation
+list(APPEND all_targets dynamic_graph_manager)
+list(APPEND all_target_exports export_dynamic_graph_manager)
 
-set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dynamic_graph_manager
-    PARENT_SCOPE)
+#
+# Export some default entities used for ROS<->DG communication
+#
+# set(LIST_ROS_ENTITIES ros_robot_state_publisher ros_robot_state_publisher_mt
+# ros_publish ros_subscribe ros_queued_subscribe ros_tf_listener ros_time)
 
-################################################################
-# Export some default entities used for ROS<->DG communication #
-################################################################
-# first we create small library for type convertions
-add_library(dg_ros_convertion
-  ros_entities/dg_to_ros.cpp
-  ros_entities/converter.cpp
-)
-target_link_libraries(dg_ros_convertion dynamic_graph_manager)
-set_target_properties(dg_ros_convertion PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${DYNAMIC_GRAPH_PLUGIN_DIR}"
-)
+# foreach(ROS_ENTITY ${LIST_ROS_ENTITIES}) add_library( ${ROS_ENTITY} SHARED
+# ros_entities/${ROS_ENTITY}.cpp ros_entities/dg_to_ros.cpp
+# ros_entities/converter.cpp) # Includes target_include_directories(
+# ${ROS_ENTITY} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+# $<INSTALL_INTERFACE:include>) # Linked libraries
+# target_link_libraries(${ROS_ENTITY} dynamic-graph::dynamic-graph)
+# target_link_libraries(${ROS_ENTITY}
+# dynamic-graph-python::dynamic-graph-python) # Export/Install
+# install_dynamic_graph_plugin(${ROS_ENTITY}) endforeach()
 
-# then we build the different entities and install them in devel/lib/plugin folder
-set(LIST_ROS_ENTITIES
-  ros_robot_state_publisher
-  ros_robot_state_publisher_mt
-  ros_publish
-  ros_subscribe
-  ros_queued_subscribe
-  ros_tf_listener
-  ros_time
-)
-
-foreach(ROS_ENTITY ${LIST_ROS_ENTITIES})
-  add_library(${ROS_ENTITY} SHARED
-    ros_entities/${ROS_ENTITY}.cpp
-  )
-  target_link_libraries(${ROS_ENTITY}
-    dg_ros_convertion
-    ${catkin_LIBRARIES}
-  )
-  set_target_properties(${ROS_ENTITY} PROPERTIES
-    PREFIX ""
-    LIBRARY_OUTPUT_DIRECTORY ${DYNAMIC_GRAPH_PLUGIN_DIR}
-  )
-  dynamic_graph_python_module("ros/${ROS_ENTITY}"
-    ${ROS_ENTITY}
-    ${ROS_ENTITY}_wrap
-  )
-endforeach()
-
+# Install the libraries
+install(
+  TARGETS ${all_targets}
+  EXPORT ${all_target_exports}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES
+  DESTINATION include)

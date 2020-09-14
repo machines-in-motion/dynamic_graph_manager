@@ -8,7 +8,7 @@
  */
 
 #include "ros_entities/ros_tf_listener.hpp"
-#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/ros.hpp"
 
 #include <dynamic-graph/factory.h>
 

@@ -20,10 +20,10 @@ import sys
 import readline
 import atexit
 import signal
-import rospy
+import rclpy
 # Used to connect to ROS services
 from dynamic_graph_manager.ros.dgcompleter import DGCompleter
-from dynamic_graph_manager.wrapper import RosPythonInterpreterClient
+from dynamic_graph_manager_cpp_bindings import RosPythonInterpreterClient
 
 
 def signal_handler(sig, frame):
