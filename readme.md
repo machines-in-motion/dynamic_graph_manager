@@ -9,7 +9,7 @@ python interpreter. Provide a ROS server in order to create distant ROS clients.
 
 - Maximilien Naveau
 - Julian Viereck
-- Andrea Delprete
+- Andrea Del Prete
 
 ## Copyrights
 
