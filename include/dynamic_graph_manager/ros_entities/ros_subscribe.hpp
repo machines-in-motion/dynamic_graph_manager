@@ -19,9 +19,7 @@
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
 
-#include <ros_entities/matrix_geometry.hpp>
-
-#include <ros/ros.h>
+#include "dynamic_graph_manager/ros_entities/matrix_geometry.hpp"
 
 #include "converter.hpp"
 #include "dg_to_ros.hpp"

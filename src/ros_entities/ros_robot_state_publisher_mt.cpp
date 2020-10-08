@@ -7,12 +7,12 @@
  * @date 2019-05-22
  */
 
-#include "ros_entities/ros_robot_state_publisher_mt.hpp"
+#include "dynamic_graph_manager/ros_entities/ros_robot_state_publisher_mt.hpp"
 #include <tf/tf.h>
 #include <iostream>
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 #include "dynamic_graph_manager/ros.hpp"
-#include "ros_entities/converter.hpp"
+#include "dynamic_graph_manager/ros_entities/converter.hpp"
 
 using namespace std;
 // using namespace dynamicgraph::sot;

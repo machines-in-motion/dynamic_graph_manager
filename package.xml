@@ -22,7 +22,9 @@
     <buildtool_depend>ament_cmake_python</buildtool_depend>
     
     <!-- Message dependencies. -->
+    <depend>std_srvs</depend>
     <depend>std_msgs</depend>
+    <depend>geometry_msgs</depend>
 
     <!-- Dynamic Graph dependency. -->
     <depend>dynamic_graph</depend>

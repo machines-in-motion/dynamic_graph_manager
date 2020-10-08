@@ -16,9 +16,9 @@ namespace dynamic_graph_manager
 {
 static const int queueSize = 5;
 
-RosPythonInterpreterServer::RosPythonInterpreterServer(RosNodePtr ros_node)
+RosPythonInterpreterServer::RosPythonInterpreterServer()
     : interpreter_(),
-      ros_node_(ros_node),
+      ros_node_(get_ros_node("python_interpreter")),
       run_python_command_srv_(nullptr),
       run_python_file_srv_(nullptr)
 {
@@ -36,8 +36,8 @@ void RosPythonInterpreterServer::start_ros_service()
                   std::placeholders::_1,
                   std::placeholders::_2);
     run_python_command_srv_ =
-        ros_node_->create_service<RunPythonCommandSrvType>("run_python_command",
-                                                           runCommandCb);
+        ros_node_->create_service<RunPythonCommandSrvType>(
+            "run_python_command", runCommandCb);
 
     run_python_file_callback_t runPythonFileCb =
         std::bind(&RosPythonInterpreterServer::runPythonFileCallback,

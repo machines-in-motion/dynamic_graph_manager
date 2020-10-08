@@ -420,12 +420,13 @@ private:
         stop_dynamic_graph();
     }
 
+public:
     /**
      * @brief start_ros_service is the method that advertise the different ros
      * services.
      */
-    void start_ros_service(RosNodePtr ros_node_handle);
-
+    void start_ros_service();
+private:
     /**
      * @brief dynamic_graph_real_time_loop is the method used to execute the
      * dynamic graph.
@@ -479,15 +480,6 @@ private:
     {
         return static_cast<DynamicGraphManager*>(context)
             ->single_process_real_time_loop();
-    }
-
-    void dynamic_graph_ros_spinner()
-    {
-        while(ros_ok())
-        {
-            ros_spin(DynamicGraphManager::dg_ros_node_name_);
-            real_time_tools::Timer::sleep_microseconds(20);
-        }
     }
 
     /***********************

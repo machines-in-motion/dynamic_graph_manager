@@ -12,13 +12,13 @@
 
 #include <boost/bind.hpp>
 
-#include <tf/transform_listener.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <dynamic-graph/command-bind.h>
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal.h>
 
-#include <ros_entities/matrix_geometry.hpp>
+#include "dynamic_graph_manager/ros_entities/matrix_geometry.hpp"
 
 namespace dynamic_graph_manager
 {

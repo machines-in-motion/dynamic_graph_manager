@@ -11,8 +11,8 @@
 #include <dynamic-graph/signal-cast-helper.h>
 #include <dynamic-graph/signal-caster.h>
 
-#include "ros_entities/converter.hpp"
-#include "ros_entities/ros_time.hpp"
+#include "dynamic_graph_manager/ros_entities/converter.hpp"
+#include "dynamic_graph_manager/ros_entities/ros_time.hpp"
 
 namespace dynamic_graph_manager
 {

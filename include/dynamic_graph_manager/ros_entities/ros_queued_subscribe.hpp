@@ -22,9 +22,9 @@
 
 #include <ros/ros.h>
 
-#include <ros_entities/converter.hpp>
-#include <ros_entities/dg_to_ros.hpp>
-#include <ros_entities/matrix_geometry.hpp>
+#include "dynamic_graph_manager/ros_entities/converter.hpp"
+#include "dynamic_graph_manager/ros_entities/dg_to_ros.hpp"
+#include "dynamic_graph_manager/ros_entities/matrix_geometry.hpp"
 
 namespace dynamic_graph_manager
 {

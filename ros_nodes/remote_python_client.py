@@ -32,7 +32,7 @@ def signal_handler(sig, frame):
     """
     print('')
     print('You pressed Ctrl+C! Closing ros client and shell.')
-    rospy.signal_shutdown('You pressed Ctrl+C! Closing ros client and shell.')
+    rclpy.try_shutdown()
     sys.exit(0)
 
 
@@ -129,7 +129,7 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
 
 
 if __name__ == '__main__':
-    rospy.init_node('dgm_python_client', anonymous=True, disable_signals=True)
+    rclpy.init()
 
     parser = optparse.OptionParser(
         usage='\n\t%prog [options]')
@@ -145,3 +145,4 @@ if __name__ == '__main__':
 
     signal.signal(signal.SIGINT, signal_handler)
     dg_console.interact("Interacting with remote server.")
+    rclpy.shutdown()

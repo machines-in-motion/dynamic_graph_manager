@@ -52,9 +52,9 @@ struct Add
                     const std::string& signal,
                     const std::string& topic)
     {
-        typedef typename DgToRos<T>::dg_t dg_t;
-        typedef typename DgToRos<T>::ros_const_ptr_t ros_const_ptr_t;
-        typedef typename DgToRos<T>::signalIn_t signal_t;
+        typedef typename DgRosMapping<T>::dg_t dg_t;
+        typedef typename DgRosMapping<T>::ros_const_ptr_t ros_const_ptr_t;
+        typedef typename DgRosMapping<T>::signalIn_t signal_t;
 
         // Initialize the bindedSignal object.
         RosSubscribe::bindedSignal_t bindedSignal;
@@ -64,7 +64,7 @@ struct Add
         signalName % rosSubscribe.getName() % signal;
 
         boost::shared_ptr<signal_t> signal_(new signal_t(0, signalName.str()));
-        DgToRos<T>::setDefault(*signal_);
+        DgRosMapping<T>::setDefault(*signal_);
         bindedSignal.first = signal_;
         rosSubscribe.signalRegistration(*bindedSignal.first);
 
@@ -92,9 +92,9 @@ struct Add<std::pair<T, dg::Vector> >
     {
         typedef std::pair<T, dg::Vector> type_t;
 
-        typedef typename DgToRos<type_t>::dg_t dg_t;
-        typedef typename DgToRos<type_t>::ros_const_ptr_t ros_const_ptr_t;
-        typedef typename DgToRos<type_t>::signalIn_t signal_t;
+        typedef typename DgRosMapping<type_t>::dg_t dg_t;
+        typedef typename DgRosMapping<type_t>::ros_const_ptr_t ros_const_ptr_t;
+        typedef typename DgRosMapping<type_t>::signalIn_t signal_t;
 
         // Initialize the bindedSignal object.
         RosSubscribe::bindedSignal_t bindedSignal;
@@ -104,7 +104,7 @@ struct Add<std::pair<T, dg::Vector> >
         signalName % rosSubscribe.getName() % signal;
 
         boost::shared_ptr<signal_t> signal_(new signal_t(0, signalName.str()));
-        DgToRos<T>::setDefault(*signal_);
+        DgRosMapping<T>::setDefault(*signal_);
         bindedSignal.first = signal_;
         rosSubscribe.signalRegistration(*bindedSignal.first);
 

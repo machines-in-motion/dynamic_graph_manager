@@ -22,9 +22,10 @@
 
 using namespace dynamic_graph_manager;
 
-const std::string DynamicGraphManager::dg_ros_node_name_ = "dynamic_graph";
+const std::string DynamicGraphManager::dg_ros_node_name_ = DG_ROS_NODE_NAME
+;
 const std::string DynamicGraphManager::hw_com_ros_node_name_ =
-    "hardware_communication";
+    HWC_ROS_NODE_NAME;
 const std::string DynamicGraphManager::sensors_map_name_ = "sensors_map";
 const std::string DynamicGraphManager::motor_controls_map_name_ =
     "motor_controls_map";
@@ -33,11 +34,9 @@ const std::string DynamicGraphManager::cond_var_name_ = "cond_var";
 
 DynamicGraphManager::DynamicGraphManager()
 {
-    std::cout << "set shm memory name" << std::endl;
     shared_memory::clear_shared_memory("dgm_shm_name");
     shared_memory::set<std::string>(
         "dgm_shm_name", "shared_memory_name", shared_memory_name_);
-    std::cout << "set shm memory name: done" << std::endl;
 
     // Upon construction the graph is inactive
     params_.reset();
@@ -234,8 +233,8 @@ void DynamicGraphManager::run()
 
             initialize_dynamic_graph_process();
             run_dynamic_graph_process();
-            wait_stop_dynamic_graph();
-            dynamic_graph_ros_spinner();
+            dynamic_graph_manager::ros_spin();
+            dynamic_graph_manager::ros_shutdown();
             std::cout << "DG: End of the dynamic graph process." << std::endl;
             exit(0);
         }
@@ -330,13 +329,9 @@ bool DynamicGraphManager::has_dynamic_graph_process_died()
 
 void DynamicGraphManager::initialize_dynamic_graph_process()
 {
-    // from here this process becomes a ros node
-    RosNodePtr ros_node = get_ros_node(dg_ros_node_name_);
-
+    // export the robot name and the log directory from the yaml to the shared
+    // memory so we can access it in the python interpretor.
     std::string robot_name = params_["device"]["name"].as<std::string>();
-
-    // export the yaml node to ros so we can access it in the python interpretor
-    // and in other ros node if needed.
     shared_memory::set<std::string>(
         shared_memory_name_, "device_name", robot_name);
     shared_memory::set<std::string>(shared_memory_name_, "log_dir", log_dir_);
@@ -345,20 +340,17 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
     device_.reset(new Device(robot_name));
     device_->initialize(params_["device"]);
 
-    // we create a python interpreter
-    ros_python_interpreter_.reset(
-        new dynamic_graph_manager::RosPythonInterpreterServer(ros_node));
+    // we start the ros services for the DGM (python command + start/stop DG)
+    start_ros_service();
+
     // we call the prologue of the python interpreter
     // we *NEED* to do this *AFTER* the device is created to fetch its pointer
     // in the python interpreter
     python_prologue();
 
     // we build the condition variables after the fork (seems safer this way)
-    cond_var_.reset(
-        new shared_memory::LockedConditionVariable(cond_var_name_, false));
-
-    // we start the ros services for the DGM (python command + start/stop DG)
-    start_ros_service(ros_node);
+    cond_var_ = std::make_unique<shared_memory::LockedConditionVariable>(
+        cond_var_name_, false);
 }
 
 void DynamicGraphManager::run_python_command(std::ostream& file,
@@ -417,7 +409,6 @@ void DynamicGraphManager::python_prologue()
 void DynamicGraphManager::run_dynamic_graph_process()
 {
     printf("wait to start dynamic graph\n");
-    wait_start_dynamic_graph();
     if (ros_ok())
     {
         // launch the real time thread
@@ -470,9 +461,10 @@ void DynamicGraphManager::run_single_process()
     printf("single process dynamic graph loop started\n");
 }
 
-void DynamicGraphManager::start_ros_service(RosNodePtr ros_node_handle)
+void DynamicGraphManager::start_ros_service()
 {
     // Advertize the service to start and stop the dynamic graph
+    RosNodePtr ros_node_handle = get_ros_node(dg_ros_node_name_);
     ros_service_start_dg_ =
         ros_node_handle->create_service<std_srvs::srv::Empty>(
             "start_dynamic_graph",
@@ -494,6 +486,8 @@ void DynamicGraphManager::start_ros_service(RosNodePtr ros_node_handle)
                       std::placeholders::_1,
                       std::placeholders::_2));
     // advertize the ros::services associated to the python interpreter
+    // we create a python interpreter
+    ros_python_interpreter_ = std::make_unique<RosPythonInterpreterServer>();
     ros_python_interpreter_->start_ros_service();
 }
 
@@ -503,6 +497,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
     cond_var_->lock_scope();
     get_ros_node(dg_ros_node_name_);
 
+    wait_start_dynamic_graph();
     rt_printf("DG: Start loop\n");
 
     // initialize the timers
@@ -566,7 +561,6 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
 
     // some basic checks
     assert(!is_hardware_communication_stopped_ && "The loop is started");
-    assert(ros_exist(hw_com_ros_node_name_));
     get_ros_node(hw_com_ros_node_name_);
     assert(ros_ok() && "Ros has to be initialized");
 

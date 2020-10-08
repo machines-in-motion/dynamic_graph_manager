@@ -29,7 +29,9 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
 # ROS2 dependencies
+find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 # Declare the ROS message and service files to be built. This is here because
@@ -56,6 +58,7 @@ find_package(dynamic-graph-python REQUIRED)
 # export de dependencies
 ament_export_dependencies(
   std_srvs
+  geometry_msgs
   dynamic-graph
   dynamic-graph-python
   Eigen3

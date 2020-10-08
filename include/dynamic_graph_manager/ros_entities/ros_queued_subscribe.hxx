@@ -36,14 +36,14 @@ struct Add
                     const std::string& signal,
                     const std::string& topic)
     {
-        typedef typename DgToRos<T>::dg_t dg_t;
-        typedef typename DgToRos<T>::ros_const_ptr_t ros_const_ptr_t;
+        typedef typename DgRosMapping<T>::dg_t dg_t;
+        typedef typename DgRosMapping<T>::ros_const_ptr_t ros_const_ptr_t;
         typedef BindedSignal<dg_t, BUFFER_SIZE> BindedSignal_t;
         typedef typename BindedSignal_t::Signal_t Signal_t;
 
         // Initialize the bindedSignal object.
         BindedSignal_t* bs = new BindedSignal_t(&rosSubscribe);
-        DgToRos<T>::setDefault(bs->last);
+        DgRosMapping<T>::setDefault(bs->last);
 
         // Initialize the signal.
         boost::format signalName("RosQueuedSubscribe(%1%)::output(%2%)::%3%");

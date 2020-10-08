@@ -45,9 +45,9 @@ target_link_libraries(dynamic_graph_manager
                       dynamic-graph-python::dynamic-graph-python)
 target_link_libraries(dynamic_graph_manager yaml_utils::yaml_utils)
 target_link_libraries(dynamic_graph_manager Eigen3::Eigen)
-target_link_libraries(dynamic_graph_manager device)
 target_link_libraries(dynamic_graph_manager shared_memory::shared_memory)
 target_link_libraries(dynamic_graph_manager real_time_tools::real_time_tools)
+target_link_libraries(dynamic_graph_manager device)
 rosidl_target_interfaces(dynamic_graph_manager ${PROJECT_NAME}_msg_srv
                          "rosidl_typesupport_cpp")
 # Set the location of the device.so in the rpath.
@@ -65,18 +65,34 @@ list(APPEND all_target_exports export_dynamic_graph_manager)
 #
 # Export some default entities used for ROS<->DG communication
 #
-# set(LIST_ROS_ENTITIES ros_robot_state_publisher ros_robot_state_publisher_mt
-# ros_publish ros_subscribe ros_queued_subscribe ros_tf_listener ros_time)
+set(LIST_ROS_ENTITIES
+    # ros_robot_state_publisher ros_robot_state_publisher_mt
+    ros_publish
+    # ros_subscribe ros_queued_subscribe ros_tf_listener ros_time
+)
 
-# foreach(ROS_ENTITY ${LIST_ROS_ENTITIES}) add_library( ${ROS_ENTITY} SHARED
-# ros_entities/${ROS_ENTITY}.cpp ros_entities/dg_to_ros.cpp
-# ros_entities/converter.cpp) # Includes target_include_directories(
-# ${ROS_ENTITY} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-# $<INSTALL_INTERFACE:include>) # Linked libraries
-# target_link_libraries(${ROS_ENTITY} dynamic-graph::dynamic-graph)
-# target_link_libraries(${ROS_ENTITY}
-# dynamic-graph-python::dynamic-graph-python) # Export/Install
-# install_dynamic_graph_plugin(${ROS_ENTITY}) endforeach()
+foreach(ROS_ENTITY ${LIST_ROS_ENTITIES})
+  add_library(
+    ${ROS_ENTITY} SHARED ros_entities/${ROS_ENTITY}.cpp
+                         ros_entities/dg_ros_mapping.cpp
+  )
+  # Includes
+  target_include_directories(
+    ${ROS_ENTITY} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                         $<INSTALL_INTERFACE:include>)
+  # Linked libraries
+  ament_target_dependencies(${ROS_ENTITY} rclcpp)
+  ament_target_dependencies(${ROS_ENTITY} geometry_msgs)
+  ament_target_dependencies(${ROS_ENTITY} std_msgs)
+  target_link_libraries(${ROS_ENTITY} dynamic_graph_manager)
+  target_link_libraries(${ROS_ENTITY} dynamic-graph::dynamic-graph)
+  target_link_libraries(${ROS_ENTITY}
+                        dynamic-graph-python::dynamic-graph-python)
+  rosidl_target_interfaces(${ROS_ENTITY} ${PROJECT_NAME}_msg_srv
+                           "rosidl_typesupport_cpp")
+  # Export/Install
+  install_dynamic_graph_plugin(${ROS_ENTITY})
+endforeach()
 
 # Install the libraries
 install(

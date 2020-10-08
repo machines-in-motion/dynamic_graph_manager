@@ -62,7 +62,7 @@ public:
      * @param node_handle is the RosNode used to advertize the
      *        rclcpp::services
      */
-    explicit RosPythonInterpreterServer(RosNodePtr node_handle);
+    explicit RosPythonInterpreterServer();
 
     /**
      * @brief ~RosPythonInterpreterServer is the default destructor of the class
