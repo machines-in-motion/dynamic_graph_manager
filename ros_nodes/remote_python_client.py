@@ -21,6 +21,7 @@ import readline
 import atexit
 import signal
 import rclpy
+
 # Used to connect to ROS services
 from dynamic_graph_manager.ros.dgcompleter import DGCompleter
 from dynamic_graph_manager_cpp_bindings import RosPythonInterpreterClient
@@ -30,8 +31,8 @@ def signal_handler(sig, frame):
     """
     Catch Ctrl+C and quit.
     """
-    print('')
-    print('You pressed Ctrl+C! Closing ros client and shell.')
+    print("")
+    print("You pressed Ctrl+C! Closing ros client and shell.")
     rclpy.try_shutdown()
     sys.exit(0)
 
@@ -72,7 +73,7 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         self.lines_pushed = ""
 
         self.ros_python_interpreter = RosPythonInterpreterClient()
-        if sys.version[:2].startswith('2.'):
+        if sys.version[:2].startswith("2."):
             self.dg_completer = DGCompleter(self.ros_python_interpreter)
             readline.set_completer(self.dg_completer.complete)
 
@@ -87,8 +88,7 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         try:
             # we copy the line in a tmp var
             code_string = self.lines_pushed[:-1]
-            self.write(
-                self.ros_python_interpreter.run_python_command(code_string))
+            self.write(self.ros_python_interpreter.run_python_command(code_string))
             self.write("\n")
             # we reset the cache here
             self.lines_pushed = ""
@@ -96,7 +96,7 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
             self.write(str(e))
             return False
 
-    def runsource(self, source, filename='<input>', symbol='single'):
+    def runsource(self, source, filename="<input>", symbol="single"):
         """
         Inherited from code.InteractiveConsole
 
@@ -128,11 +128,10 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         return code.InteractiveConsole.push(self, line)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     rclpy.init()
 
-    parser = optparse.OptionParser(
-        usage='\n\t%prog [options]')
+    parser = optparse.OptionParser(usage="\n\t%prog [options]")
     (options, args) = parser.parse_args(sys.argv[1:])
 
     dg_console = DynamicGraphInteractiveConsole()
@@ -140,9 +139,11 @@ if __name__ == '__main__':
     if args[:]:
         infile = args[0]
         response = dg_console.ros_python_interpreter.run_python_script(
-            os.path.abspath(infile))
-        print(response)
+            os.path.abspath(infile)
+        )
+        print(dg_console.ros_python_interpreter.run_python_command(
+              "print('File parsed')"))
 
     signal.signal(signal.SIGINT, signal_handler)
-    dg_console.interact("Interacting with remote server.")
+    dg_console.interact("Interacting with remote python server.")
     rclpy.shutdown()

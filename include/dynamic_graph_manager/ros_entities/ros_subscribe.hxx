@@ -7,162 +7,99 @@
  * @date 2019-05-22
  */
 
-#ifndef DYNAMIC_GRAPH_ROS_SUBSCRIBE_HXX
-#define DYNAMIC_GRAPH_ROS_SUBSCRIBE_HXX
-#include <dynamic-graph/linear-algebra.h>
-#include <dynamic-graph/signal-cast-helper.h>
-#include <dynamic-graph/signal-caster.h>
-#include <std_msgs/Float64.h>
-#include <boost/bind.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <vector>
-#include "dynamic_graph_manager/Matrix.h"
-#include "dynamic_graph_manager/Vector.h"
-#include "ros_time.hpp"
+#pragma once
 
-namespace dg = dynamicgraph;
+#include <message_filters/message_traits.h>
+
+#include "dynamic_graph_manager/ros_entities/dg_ros_mapping.hpp"
 
 namespace dynamic_graph_manager
 {
-template <typename R, typename S>
+template <typename RosType, typename DgType>
 void RosSubscribe::callback(
-    boost::shared_ptr<dynamicgraph::SignalPtr<S, int> > signal, const R& data)
+    std::shared_ptr<typename DgRosMapping<RosType, DgType>::signal_out_t>
+        signal_out,
+    std::shared_ptr<
+        typename DgRosMapping<RosType, DgType>::signal_timestamp_out_t>
+        signal_timestamp_out,
+    const std::shared_ptr<typename DgRosMapping<RosType, DgType>::ros_t>
+        ros_data)
 {
-    typedef S dg_t;
+    // Some convenient shortcut.
+    using ros_t = typename DgRosMapping<RosType, DgType>::ros_t;
+    using dg_t = typename DgRosMapping<RosType, DgType>::dg_t;
+ 
+    // Create a dynamic graph object to copy the information in. Not real time
+    // safe?
     dg_t value;
-    converter(value, data);
-    signal->setConstant(value);
-}
-
-template <typename R>
-void RosSubscribe::callbackTimestamp(
-    boost::shared_ptr<dynamicgraph::SignalPtr<ptime, int> > signal,
-    const R& data)
-{
-    ptime time = rosTimeToPtime(data->header.stamp);
-    signal->setConstant(time);
-}
-
-namespace internal
-{
-template <typename T>
-struct Add
-{
-    void operator()(RosSubscribe& rosSubscribe,
-                    const std::string& signal,
-                    const std::string& topic)
+    // Convert the ROS topic into a dynamic graph type.
+    DgRosMapping<RosType, DgType>::ros_to_dg(*ros_data, value);
+    // Update the signal.
+    signal_out->setConstant(value);
+    // If he ROS message has a header then copy the header into the timestamp
+    // signal
+    if (signal_timestamp_out)
     {
-        typedef typename DgRosMapping<T>::dg_t dg_t;
-        typedef typename DgRosMapping<T>::ros_const_ptr_t ros_const_ptr_t;
-        typedef typename DgRosMapping<T>::signalIn_t signal_t;
-
-        // Initialize the bindedSignal object.
-        RosSubscribe::bindedSignal_t bindedSignal;
-
-        // Initialize the signal.
-        boost::format signalName("RosSubscribe(%1%)::%2%");
-        signalName % rosSubscribe.getName() % signal;
-
-        boost::shared_ptr<signal_t> signal_(new signal_t(0, signalName.str()));
-        DgRosMapping<T>::setDefault(*signal_);
-        bindedSignal.first = signal_;
-        rosSubscribe.signalRegistration(*bindedSignal.first);
-
-        // Initialize the subscriber.
-        typedef boost::function<void(const ros_const_ptr_t& data)> callback_t;
-        callback_t callback =
-            boost::bind(&RosSubscribe::callback<ros_const_ptr_t, dg_t>,
-                        &rosSubscribe,
-                        signal_,
-                        _1);
-
-        bindedSignal.second = boost::make_shared<ros::Subscriber>(
-            rosSubscribe.nh().subscribe(topic, 1, callback));
-
-        rosSubscribe.bindedSignal()[signal] = bindedSignal;
+        signal_timestamp_out->setConstant(
+            DgRosMapping<RosType, DgType>::from_ros_time(
+                message_filters::message_traits::TimeStamp<ros_t>::value(
+                    *ros_data)));
     }
+}
+
+template <typename RosType, typename DgType>
+void RosSubscribe::add(const std::string& signal_name,
+                       const std::string& topic_name)
+{
+    using dg_t = typename DgRosMapping<RosType, DgType>::dg_t;
+    using ros_t = typename DgRosMapping<RosType, DgType>::ros_t;
+    using signal_out_t = typename DgRosMapping<RosType, DgType>::signal_out_t;
+    using signal_timestamp_out_t =
+        typename DgRosMapping<RosType, DgType>::signal_timestamp_out_t;
+
+    // Initialize the binded_signal object.
+    RosSubscribe::BindedSignal binded_signal;
+
+    // Initialize the signal.
+    std::string full_signal_name =
+        this->getClassName() + "(" + this->getName() + ")::" + signal_name;
+    std::shared_ptr<signal_out_t> signal_ptr =
+        std::make_shared<signal_out_t>(full_signal_name);
+    DgRosMapping<RosType, DgType>::set_default(signal_ptr);
+    signal_ptr->setDependencyType(
+        dynamicgraph::TimeDependency<int>::ALWAYS_READY);
+    std::get<0>(binded_signal) = signal_ptr;
+    this->signalRegistration(*std::get<0>(binded_signal));
+
+    // Initialize the time stamp signal if needed.
+    std::shared_ptr<signal_timestamp_out_t> signal_timestamp_ptr = nullptr;
+    if (message_filters::message_traits::HasHeader<ros_t>())
+    {
+        std::string full_time_stamp_signal_name = this->getClassName() + "(" +
+                                                  this->getName() + ")::" +
+                                                  signal_name +
+                                                  "_timestamp";
+        signal_timestamp_ptr = std::make_shared<signal_timestamp_out_t>(
+            full_time_stamp_signal_name);
+        signal_timestamp_ptr->setConstant(
+            DgRosMapping<RosType, DgType>::epoch_time());
+        signal_timestamp_ptr->setDependencyType(
+            dynamicgraph::TimeDependency<int>::ALWAYS_READY);
+        this->signalRegistration(*signal_timestamp_ptr);
+    }
+    std::get<1>(binded_signal) = signal_timestamp_ptr;
+
+    // Initialize the subscriber.
+    std::function<void(const std::shared_ptr<ros_t>)> callback =
+        std::bind(&RosSubscribe::callback<ros_t, dg_t>,
+                  this,
+                  signal_ptr,
+                  signal_timestamp_ptr,
+                  std::placeholders::_1);
+    std::get<2>(binded_signal) =
+        ros_node_->create_subscription<ros_t>(topic_name, 10, callback);
+
+    binded_signals_[signal_name] = binded_signal;
 };
 
-template <typename T>
-struct Add<std::pair<T, dg::Vector> >
-{
-    void operator()(RosSubscribe& rosSubscribe,
-                    const std::string& signal,
-                    const std::string& topic)
-    {
-        typedef std::pair<T, dg::Vector> type_t;
-
-        typedef typename DgRosMapping<type_t>::dg_t dg_t;
-        typedef typename DgRosMapping<type_t>::ros_const_ptr_t ros_const_ptr_t;
-        typedef typename DgRosMapping<type_t>::signalIn_t signal_t;
-
-        // Initialize the bindedSignal object.
-        RosSubscribe::bindedSignal_t bindedSignal;
-
-        // Initialize the signal.
-        boost::format signalName("RosSubscribe(%1%)::%2%");
-        signalName % rosSubscribe.getName() % signal;
-
-        boost::shared_ptr<signal_t> signal_(new signal_t(0, signalName.str()));
-        DgRosMapping<T>::setDefault(*signal_);
-        bindedSignal.first = signal_;
-        rosSubscribe.signalRegistration(*bindedSignal.first);
-
-        // Initialize the publisher.
-        typedef boost::function<void(const ros_const_ptr_t& data)> callback_t;
-        callback_t callback =
-            boost::bind(&RosSubscribe::callback<ros_const_ptr_t, dg_t>,
-                        &rosSubscribe,
-                        signal_,
-                        _1);
-
-        bindedSignal.second = boost::make_shared<ros::Subscriber>(
-            rosSubscribe.nh().subscribe(topic, 1, callback));
-
-        rosSubscribe.bindedSignal()[signal] = bindedSignal;
-
-        // Timestamp.
-        typedef dynamicgraph::SignalPtr<RosSubscribe::ptime, int>
-            signalTimestamp_t;
-        std::string signalTimestamp =
-            (boost::format("%1%%2%") % signal % "Timestamp").str();
-
-        // Initialize the bindedSignal object.
-        RosSubscribe::bindedSignal_t bindedSignalTimestamp;
-
-        // Initialize the signal.
-        boost::format signalNameTimestamp("RosSubscribe(%1%)::%2%");
-        signalNameTimestamp % rosSubscribe.name % signalTimestamp;
-
-        boost::shared_ptr<signalTimestamp_t> signalTimestamp_(
-            new signalTimestamp_t(0, signalNameTimestamp.str()));
-
-        RosSubscribe::ptime zero(rosTimeToPtime(ros::Time(0, 0)));
-        signalTimestamp_->setConstant(zero);
-        bindedSignalTimestamp.first = signalTimestamp_;
-        rosSubscribe.signalRegistration(*bindedSignalTimestamp.first);
-
-        // Initialize the publisher.
-        typedef boost::function<void(const ros_const_ptr_t& data)> callback_t;
-        callback_t callbackTimestamp =
-            boost::bind(&RosSubscribe::callbackTimestamp<ros_const_ptr_t>,
-                        &rosSubscribe,
-                        signalTimestamp_,
-                        _1);
-
-        bindedSignalTimestamp.second = boost::make_shared<ros::Subscriber>(
-            rosSubscribe.nh().subscribe(topic, 1, callbackTimestamp));
-
-        rosSubscribe.bindedSignal()[signalTimestamp] = bindedSignalTimestamp;
-    }
-};
-}  // end of namespace internal.
-
-template <typename T>
-void RosSubscribe::add(const std::string& signal, const std::string& topic)
-{
-    internal::Add<T>()(*this, signal, topic);
-}
 }  // namespace dynamic_graph_manager
-
-#endif  //! DYNAMIC_GRAPH_ROS_SUBSCRIBE_HXX

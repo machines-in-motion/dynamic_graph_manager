@@ -65,17 +65,13 @@ list(APPEND all_target_exports export_dynamic_graph_manager)
 #
 # Export some default entities used for ROS<->DG communication
 #
-set(LIST_ROS_ENTITIES
-    # ros_robot_state_publisher ros_robot_state_publisher_mt
-    ros_publish
-    # ros_subscribe ros_queued_subscribe ros_tf_listener ros_time
-)
+# deprecated module: ros_queued_subscribe ros_tf_listener ros_time
+# ros_robot_state_publisher ros_robot_state_publisher_mt
+set(LIST_ROS_ENTITIES ros_publish ros_subscribe)
 
 foreach(ROS_ENTITY ${LIST_ROS_ENTITIES})
-  add_library(
-    ${ROS_ENTITY} SHARED ros_entities/${ROS_ENTITY}.cpp
-                         ros_entities/dg_ros_mapping.cpp
-  )
+  add_library(${ROS_ENTITY} SHARED ros_entities/${ROS_ENTITY}.cpp
+                                   ros_entities/dg_ros_mapping.cpp)
   # Includes
   target_include_directories(
     ${ROS_ENTITY} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

@@ -11,20 +11,15 @@
 
 namespace dynamic_graph_manager
 {
-const std::vector<std::string> DgRosTypes::type_list =
-    DgRosTypes::create_type_list();
+#define DG_TO_ROS_IMPL(DgRosMappingType)                                   \
+    template <>                                                            \
+    void DgRosMappingType::dg_to_ros(const DgRosMappingType::dg_t& dg_src, \
+                                     DgRosMappingType::ros_t& ros_dst)
 
-#define DG_TO_ROS_IMPL(DgRosMappingType)      \
-    template <>                               \
-    inline void DgRosMappingType::dg_to_ros(  \
-        const DgRosMappingType::dg_t& dg_src, \
-        DgRosMappingType::ros_t& ros_dst)
-
-#define ROS_TO_DG_IMPL(DgRosMappingType)        \
-    template <>                                 \
-    inline void DgRosMappingType::ros_to_dg(    \
-        const DgRosMappingType::ros_t& ros_src, \
-        DgRosMappingType::dg_t& dg_dst)
+#define ROS_TO_DG_IMPL(DgRosMappingType)                                     \
+    template <>                                                              \
+    void DgRosMappingType::ros_to_dg(const DgRosMappingType::ros_t& ros_src, \
+                                     DgRosMappingType::dg_t& dg_dst)
 
 #define DG_DEFAULT_VALUE(DgRosMappingType) \
     template <>                            \
@@ -33,6 +28,13 @@ const std::vector<std::string> DgRosTypes::type_list =
 #define DG_SIGNAL_TYPE_NAME(DgRosMappingType) \
     template <>                               \
     const std::string DgRosMappingType::signal_type_name
+
+/*
+ * Create the list of available types for error and documentation.
+ * purposes.
+ */
+const std::vector<std::string> DgRosTypes::type_list =
+    DgRosTypes::create_type_list();
 
 /*
  * Float
@@ -161,7 +163,8 @@ ROS_TO_DG_IMPL(DgRosMappingVector3)
  */
 typedef DgRosMapping<geometry_msgs::msg::Transform, MatrixHomogeneous>
     DgRosMappingMatrixHomo;
-DG_SIGNAL_TYPE_NAME(DgRosMappingMatrixHomo) = DgRosTypes::get_matrix_homogeneous();
+DG_SIGNAL_TYPE_NAME(DgRosMappingMatrixHomo) =
+    DgRosTypes::get_matrix_homogeneous();
 DG_DEFAULT_VALUE(DgRosMappingMatrixHomo) = MatrixHomogeneous::Identity();
 DG_TO_ROS_IMPL(DgRosMappingMatrixHomo)
 {
@@ -224,7 +227,8 @@ ROS_TO_DG_IMPL(DgRosMappingTwist)
  */
 typedef DgRosMapping<geometry_msgs::msg::Vector3Stamped, DgVector>
     DgRosMappingVector3Stamped;
-DG_SIGNAL_TYPE_NAME(DgRosMappingVector3Stamped) = DgRosTypes::get_vector3_stamped();
+DG_SIGNAL_TYPE_NAME(DgRosMappingVector3Stamped) =
+    DgRosTypes::get_vector3_stamped();
 DG_DEFAULT_VALUE(DgRosMappingVector3Stamped) = DgVector::Zero(3);
 DG_TO_ROS_IMPL(DgRosMappingVector3Stamped)
 {

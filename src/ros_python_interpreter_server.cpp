@@ -59,7 +59,7 @@ void RosPythonInterpreterServer::runPythonFileCallback(
     RunPythonFileRequestPtr req, RunPythonFileResponsePtr res)
 {
     run_python_file(req->input, res->standard_error);
-    // FIX: It is just an echo, is there a way to have a feedback?
+    // @todo: (FIX) It is just an echo, is there a way to have a feedback?
     res->result = "File parsed";
 }
 

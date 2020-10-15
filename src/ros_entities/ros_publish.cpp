@@ -9,20 +9,6 @@
 
 #include "dynamic_graph_manager/ros_entities/ros_publish.hpp"
 
-#include <dynamic-graph/command.h>
-#include <dynamic-graph/factory.h>
-#include <dynamic-graph/linear-algebra.h>
-
-#include <boost/assign.hpp>
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/format.hpp>
-#include <boost/function.hpp>
-#include <boost/make_shared.hpp>
-#include <std_msgs/msg/float64.hpp>
-#include <std_msgs/msg/u_int64.hpp>
-#include <stdexcept>
-
 #include "dynamic_graph_manager/ros.hpp"
 
 namespace dynamic_graph_manager
@@ -65,22 +51,26 @@ RosPublish::RosPublish(const std::string& n)
     }
     mutex_.unlock();
 
-    std::string doc_string =
+    std::string doc_string;
+    doc_string =
         "\n"
-        "  Add a signal writing data to a ROS topic\n"
+        "  Add a signal writing data to a ROS topic.\n"
         "\n"
         "  Input:\n"
-        "    - type: string among ['double', 'matrix', 'vector', 'vector3',\n"
-        "                          'vector3Stamped', 'matrixHomo', "
-        "'matrixHomoStamped',\n"
-        "                          'twist', 'twistStamped'],\n"
+        "    - type: string among:\n";
+    for (unsigned int i = 0; i < DgRosTypes::type_list.size(); ++i)
+    {
+        doc_string += "        - " + DgRosTypes::type_list[i] + "\n";
+    }
+    doc_string +=
         "    - signal: the signal name in dynamic-graph,\n"
         "    - topic:  the topic name in ROS.\n"
         "\n";
-    addCommand("add", new command::ros_publish::Add(*this, doc_string));
+    addCommand("add",
+               new command::ros_publish::Add(*this, doc_string));
     doc_string =
         "\n"
-        "  Remove a signal writing data to a ROS topic\n"
+        "  Remove a signal writing data to a ROS topic.\n"
         "\n"
         "  Input:\n"
         "    - name of the signal to remove (see method list for the list of "
@@ -89,16 +79,16 @@ RosPublish::RosPublish(const std::string& n)
     addCommand("rm", new command::ros_publish::Rm(*this, doc_string));
     doc_string =
         "\n"
-        "  Remove all signals writing data to a ROS topic\n"
+        "  Remove all signals writing data to a ROS topic.\n"
         "\n"
-        "  No input:\n"
+        "  No input.\n"
         "\n";
     addCommand("clear", new command::ros_publish::Clear(*this, doc_string));
     doc_string =
         "\n"
-        "  List signals writing data to a ROS topic\n"
+        "  List signals writing data to a ROS topic.\n"
         "\n"
-        "  No input:\n"
+        "  No input.\n"
         "\n";
     addCommand("list", new command::ros_publish::List(*this, doc_string));
 }  // namespace dynamic_graph_manager
@@ -290,9 +280,9 @@ Value Add::doExecute()
     else
     {
         std::cerr << "RosPublish(" << entity.getName()
-                  << ")::add(): bad type given."
+                  << ")::add(): bad type given (" << type << ")."
                   << " Possible choice is among:";
-        for (unsigned int i = 0; DgRosTypes::type_list.size(); ++i)
+        for (unsigned int i = 0; i < DgRosTypes::type_list.size(); ++i)
         {
             std::cerr << "    - " << DgRosTypes::type_list[i] << std::endl;
         }

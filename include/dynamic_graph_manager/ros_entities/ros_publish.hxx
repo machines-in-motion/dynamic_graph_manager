@@ -9,29 +9,28 @@
 
 #pragma once
 
-#include <vector>
-
 #include "dynamic_graph_manager/ros_entities/dg_ros_mapping.hpp"
 
 namespace dynamic_graph_manager
 {
-template <class ROS_TYPE, class DG_TYPE>
+template <typename RosType, typename
+ DgType>
 void RosPublish::send_data(
     std::shared_ptr<rclcpp::Publisher<
-        typename DgRosMapping<ROS_TYPE, DG_TYPE>::ros_t> > publisher,
-    std::shared_ptr<typename DgRosMapping<ROS_TYPE, DG_TYPE>::signal_in_t>
+        typename DgRosMapping<RosType, DgType>::ros_t> > publisher,
+    std::shared_ptr<typename DgRosMapping<RosType, DgType>::signal_in_t>
         signal)
 {
-    typename DgRosMapping<ROS_TYPE, DG_TYPE>::ros_t msg;
-    DgRosMapping<ROS_TYPE, DG_TYPE>::dg_to_ros(signal->accessCopy(), msg);
+    typename DgRosMapping<RosType, DgType>::ros_t msg;
+    DgRosMapping<RosType, DgType>::dg_to_ros(signal->accessCopy(), msg);
     publisher->publish(msg);
 }
 
-template <typename ROS_TYPE, typename DG_TYPE>
+template <typename RosType, typename DgType>
 void RosPublish::add(const std::string& signal, const std::string& topic)
 {
-    using ros_t = typename DgRosMapping<ROS_TYPE, DG_TYPE>::ros_t;
-    using signal_in_t = typename DgRosMapping<ROS_TYPE, DG_TYPE>::signal_in_t;
+    using ros_t = typename DgRosMapping<RosType, DgType>::ros_t;
+    using signal_in_t = typename DgRosMapping<RosType, DgType>::signal_in_t;
 
     // Initialize the bindedSignal object.
     BindedSignal binded_signal;
@@ -42,19 +41,18 @@ void RosPublish::add(const std::string& signal, const std::string& topic)
 
     // Initialize the signal.
     std::shared_ptr<signal_in_t> signal_ptr = std::make_shared<signal_in_t>(
-            nullptr,  // no explicit dependence
-            make_signal_string(
-                *this,
-                true,
-                DgRosMapping<ROS_TYPE, DG_TYPE>::signal_type_name,
-                signal));
+        nullptr,  // no explicit dependence
+        make_signal_string(*this,
+                           true,
+                           DgRosMapping<RosType, DgType>::signal_type_name,
+                           signal));
     std::get<0>(binded_signal) = signal_ptr;
-    DgRosMapping<ROS_TYPE, DG_TYPE>::set_default(signal_ptr);
+    DgRosMapping<RosType, DgType>::set_default(signal_ptr);
     signalRegistration(*std::get<0>(binded_signal));
 
     // Initialize the callback.
     PublisherCallback callback = std::bind(
-        &RosPublish::send_data<ROS_TYPE, DG_TYPE>, this, pub_ptr, signal_ptr);
+        &RosPublish::send_data<RosType, DgType>, this, pub_ptr, signal_ptr);
     std::get<1>(binded_signal) = callback;
 
     binded_signals_[signal] = binded_signal;

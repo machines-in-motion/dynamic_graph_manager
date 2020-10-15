@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <dynamic-graph/factory.h>
 #include <dynamic-graph/command.h>
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal-time-dependent.h>
@@ -71,12 +72,12 @@ public:
     /**
      * @brief Add a signal to publish to ROS.
      * 
-     * @tparam ROS_TYPE type of the ROS message.
-     * @tparam DG_TYPE type of the Dynamic Graph signal data.
+     * @tparam RosType type of the ROS message.
+     * @tparam DgType type of the Dynamic Graph signal data.
      * @param signal name.
      * @param topic name.
      */
-    template <typename ROS_TYPE, typename DG_TYPE>
+    template <typename RosType, typename DgType>
     void add(const std::string& signal, const std::string& topic);
 
     /**
@@ -110,16 +111,16 @@ private:
     /**
      * @brief Send the data from the input signal to the ROS topic.
      * 
-     * @tparam ROS_TYPE ROS message type.
-     * @tparam DG_TYPE Dynamic graph signal data type.
+     * @tparam RosType ROS message type.
+     * @tparam DgType Dynamic graph signal data type.
      * @param publisher pointer to the ros publisher.
      * @param signal signal name.
      */
-    template <class ROS_TYPE, class DG_TYPE>
+    template <typename RosType, typename DgType>
     void send_data(
         std::shared_ptr<rclcpp::Publisher<
-            typename DgRosMapping<ROS_TYPE, DG_TYPE>::ros_t> > publisher,
-        std::shared_ptr<typename DgRosMapping<ROS_TYPE, DG_TYPE>::signal_in_t>
+            typename DgRosMapping<RosType, DgType>::ros_t> > publisher,
+        std::shared_ptr<typename DgRosMapping<RosType, DgType>::signal_in_t>
             signal);
 
 private:

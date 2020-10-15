@@ -106,7 +106,13 @@ public:
     /** @brief Ros type as a shared pointer. */
     typedef std::shared_ptr<RosType> ros_shared_ptr_t;
     /** @brief Output signal type. */
-    typedef dynamicgraph::Signal<dg_t, int> signal_out_t;
+    typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_out_t;
+    /** @brief Type of the time stamp used in ROS */
+    typedef std::chrono::time_point<std::chrono::high_resolution_clock>
+        timestamp_t;
+    /** @brief Output signal type. */
+    typedef dynamicgraph::SignalTimeDependent<timestamp_t, int>
+        signal_timestamp_out_t;
     /** @brief Input signal type. */
     typedef dynamicgraph::SignalPtr<dg_t, int> signal_in_t;
     /** @brief Signal callback function types. */
@@ -139,12 +145,34 @@ public:
     }
 
     /**
+     * @brief Convert ROS time to std::chrono.
+     * 
+     * @param ros_time 
+     * @return timestamp_t 
+     */
+    static timestamp_t from_ros_time(rclcpp::Time ros_time)
+    {
+        return epoch_time() + std::chrono::nanoseconds(ros_time.nanoseconds());
+    }
+
+    /**
+     * @brief Get epoch time as ROS time start from there.
+     * 
+     * @return timestamp_t 
+     */
+    static timestamp_t epoch_time()
+    {
+        return std::chrono::time_point<std::chrono::high_resolution_clock>{};
+    }
+
+
+    /**
      * @brief Convert a ROS object into DG one.
      *
      * @param src
      * @param dst
      */
-    static void ros_to_dg(const ros_t& src, dg_t& dst);
+    static void ros_to_dg(const ros_t& ros_src, dg_t& dg_dst);
 
     /**
      * @brief Convert a DG object into a ROS one.
@@ -152,7 +180,7 @@ public:
      * @param src
      * @param dst
      */
-    static void dg_to_ros(const dg_t& src, ros_t& dst);
+    static void dg_to_ros(const dg_t& dg_src, ros_t& ros_dst);
 };
 
 template <class RosEntity>
@@ -162,7 +190,7 @@ inline std::string make_signal_string(const RosEntity& entity,
                                       const std::string& signal_name)
 {
     std::ostringstream oss;
-    oss << typeid(entity).name() << "(" << entity.getName() << ")"
+    oss << entity.getClassName() << "(" << entity.getName() << ")"
         << "::" << (isInputSignal ? "input" : "output") << "(" << signal_type
         << ")"
         << "::" << signal_name;
