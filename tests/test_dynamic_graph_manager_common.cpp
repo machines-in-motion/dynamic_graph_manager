@@ -42,8 +42,6 @@ public:
     YAML::Node params_;
 };
 
-const std::string ROS_NODE_NAME = "test_dynamic_graph_manager_control";
-
 /**
  * @brief The TestDynamicGraphManager class: test suit template for setting up
  * the unit tests for the DynamicGraphManager
@@ -76,88 +74,6 @@ protected:
      */
     YAML::Node params_;
 };
-
-void start_dg_ros_service()
-{
-    // service name
-    std::string service_name = "/dynamic_graph_manager/start_dynamic_graph";
-    // Create a client from a temporary node
-    RosNodePtr ros_node = get_ros_node(ROS_NODE_NAME);
-    auto client = ros_node->create_client<std_srvs::srv::Empty>(service_name);
-    ASSERT_TRUE(client->wait_for_service(1s));
-
-    // fill the command message
-    std_srvs::srv::Empty::Request::SharedPtr request =
-        std::make_shared<std_srvs::srv::Empty::Request>();
-    std::shared_future<std_srvs::srv::Empty::Response::SharedPtr> response;
-    // call the service
-    response = client->async_send_request(request);
-    // wait for the answer
-    ASSERT_TRUE(rclcpp::spin_until_future_complete(ros_node, response) ==
-                rclcpp::executor::FutureReturnCode::SUCCESS);
-}
-
-void stop_dg_ros_service()
-{
-    // service name
-    std::string service_name = "/dynamic_graph_manager/stop_dynamic_graph";
-    // Create a client from a temporary node
-    RosNodePtr ros_node = get_ros_node(ROS_NODE_NAME);
-    auto client = ros_node->create_client<std_srvs::srv::Empty>(service_name);
-    ASSERT_TRUE(client->wait_for_service(1s));
-
-    // fill the command message
-    std_srvs::srv::Empty::Request::SharedPtr request =
-        std::make_shared<std_srvs::srv::Empty::Request>();
-    std::shared_future<std_srvs::srv::Empty::Response::SharedPtr> response;
-    // call the service
-    response = client->async_send_request(request);
-    // wait for the answer
-    ASSERT_TRUE(rclcpp::spin_until_future_complete(ros_node, response) ==
-                rclcpp::executor::FutureReturnCode::SUCCESS);
-}
-
-void start_run_python_command_ros_service(std::string cmd)
-{
-    // service name
-    std::string service_name = "/dynamic_graph_manager/run_python_command";
-    // Create a client from a temporary node
-    RosNodePtr ros_node = get_ros_node(ROS_NODE_NAME);
-    auto client = ros_node->create_client<srv::RunPythonCommand>(service_name);
-    ASSERT_TRUE(client->wait_for_service(1s));
-
-    // fill the command message
-    srv::RunPythonCommand::Request::SharedPtr request =
-        std::make_shared<srv::RunPythonCommand::Request>();
-    std::shared_future<srv::RunPythonCommand::Response::SharedPtr> response;
-    request->input = cmd;
-    // call the service
-    response = client->async_send_request(request);
-    // wait for the answer
-    ASSERT_TRUE(rclcpp::spin_until_future_complete(ros_node, response) ==
-                rclcpp::executor::FutureReturnCode::SUCCESS);
-}
-
-void start_run_python_script_ros_service(std::string file_name)
-{
-    // service name
-    std::string service_name = "/dynamic_graph_manager/run_python_script";
-    // Create a client from a temporary node
-    RosNodePtr ros_node = get_ros_node(ROS_NODE_NAME);
-    auto client = ros_node->create_client<srv::RunPythonFile>(service_name);
-    ASSERT_TRUE(client->wait_for_service(1s));
-
-    // fill the command message
-    srv::RunPythonFile::Request::SharedPtr request =
-        std::make_shared<srv::RunPythonFile::Request>();
-    std::shared_future<srv::RunPythonFile::Response::SharedPtr> response;
-    request->input = file_name;
-    // call the service
-    response = client->async_send_request(request);
-    // wait for the answer
-    ASSERT_TRUE(rclcpp::spin_until_future_complete(ros_node, response) ==
-                rclcpp::executor::FutureReturnCode::SUCCESS);
-}
 
 /*****************
  * Start Testing *
