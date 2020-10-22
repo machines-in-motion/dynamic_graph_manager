@@ -762,7 +762,7 @@ protected:
      * @brief This is the list of the ros user commands. The class inheriting
      * from this one can add services for the hardware communication process.
      */
-    std::vector<EmptyServicePtr> ros_user_commands_;
+    std::vector<ServiceBasePtr> ros_user_commands_;
 
     /**
      * @brief control_period_sec_ this is the control period in Seconds

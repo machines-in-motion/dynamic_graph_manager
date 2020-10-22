@@ -45,7 +45,7 @@ void RosPythonInterpreterServer::start_ros_service()
                   std::placeholders::_1,
                   std::placeholders::_2);
     run_python_file_srv_ = ros_node_->create_service<RunPythonFileSrvType>(
-        "run_python_script", runPythonFileCb);
+        "run_python_file", runPythonFileCb);
 }
 
 void RosPythonInterpreterServer::runCommandCallback(

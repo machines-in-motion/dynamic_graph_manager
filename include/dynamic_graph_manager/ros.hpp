@@ -31,24 +31,34 @@ typedef std::shared_ptr<RosNode> RosNodePtr;
 typedef rclcpp::executors::MultiThreadedExecutor RosExecutor;
 typedef std::shared_ptr<RosExecutor> RosExecutorPtr;
 
+// Python commands shortcuts
 typedef dynamic_graph_manager::srv::RunPythonCommand RunPythonCommandSrvType;
-typedef dynamic_graph_manager::srv::RunPythonFile RunPythonFileSrvType;
 typedef rclcpp::Service<RunPythonCommandSrvType>::SharedPtr
     RunPythonCommandServerPtr;
-typedef rclcpp::Service<RunPythonFileSrvType>::SharedPtr RunPythonFileServerPtr;
 typedef rclcpp::Client<RunPythonCommandSrvType>::SharedPtr
     RunPythonCommandClientPtr;
-typedef rclcpp::Client<RunPythonFileSrvType>::SharedPtr RunPythonFileClientPtr;
 typedef RunPythonCommandSrvType::Request::SharedPtr
     RunPythonCommandRequestPtr;
-typedef std::shared_ptr<RunPythonFileSrvType::Request> RunPythonFileRequestPtr;
 typedef std::shared_ptr<RunPythonCommandSrvType::Response>
     RunPythonCommandResponsePtr;
+typedef std::shared_future<std::shared_ptr<RunPythonCommandSrvType::Response> >
+    RunPythonCommandResponseFuturePtr;
+
+// Parse python file shortcuts.
+typedef dynamic_graph_manager::srv::RunPythonFile RunPythonFileSrvType;
+typedef rclcpp::Service<RunPythonFileSrvType>::SharedPtr RunPythonFileServerPtr;
+typedef rclcpp::Client<RunPythonFileSrvType>::SharedPtr RunPythonFileClientPtr;
+typedef std::shared_ptr<RunPythonFileSrvType::Request> RunPythonFileRequestPtr;
 typedef std::shared_ptr<RunPythonFileSrvType::Response>
     RunPythonFileResponsePtr;
+typedef std::shared_future<std::shared_ptr<RunPythonFileSrvType::Response> >
+    RunPythonFileResponseFuturePtr;
 
+// Shortcut for chrono constant handling.
 typedef std::chrono::duration<int64_t, std::ratio<1, 1> > DurationSec;
 
+// Used to save the hardware service pointers.
+typedef std::shared_ptr<rclcpp::ServiceBase> ServiceBasePtr;
 typedef rclcpp::Service<std_srvs::srv::Empty>::SharedPtr EmptyServicePtr;
 typedef std_srvs::srv::Empty EmptyServiceType;
 
@@ -61,10 +71,31 @@ typedef std_srvs::srv::Empty EmptyServiceType;
 RosNodePtr get_ros_node(std::string node_name);
 
 /**
+ * @brief Get ros executor global variable in order to execute the ROS nodes.
+ *
+ * @return RosExecutorPtr
+ */
+RosExecutorPtr get_ros_executor();
+
+/**
+ * @brief Checks if the Node has been created.
+ *
+ * @param node_name
+ * @return true
+ * @return false
+ */
+bool ros_node_exists(std::string node_name);
+
+/**
  * @brief Allow all the created ROS node to perform their callbacks.
  * Warning: blocking function.
  */
 void ros_spin();
+
+/**
+ * @brief Allow all the created ROS node to perform their callbacks.
+ */
+void ros_spin_non_blocking();
 
 /**
  * @brief ros_shutdown shuts down ros and stop the ros spinner with the
