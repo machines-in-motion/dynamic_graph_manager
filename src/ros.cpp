@@ -7,8 +7,12 @@
  * @date 2019-05-22
  */
 
-#include <dynamic_graph_manager/ros.hpp>
+#include "dynamic_graph_manager/ros.hpp"
+
+#include <atomic>
 #include <fstream>
+
+#include "real_time_tools/timer.hpp"
 
 namespace dynamic_graph_manager
 {
@@ -41,53 +45,125 @@ static GlobalListOfRosNodeType GLOBAL_LIST_OF_ROS_NODE;
 /**
  * @brief Small class allowing to start a ROS spin in a thread.
  */
-class RosExecutorThread
+class Executor
 {
 public:
-    RosExecutorThread() : ros_executor_thread_(nullptr)
+    Executor() : ros_executor_(rclcpp::executor::ExecutorArgs(), 4)
     {
+        is_thread_running_ = false;
+        list_node_added_.clear();
     }
 
     /**
-     * @brief Start ros_spin in a different thread.
+     * @brief Start ros_spin in a different thread to not block the current one.
      */
-    void spin()
+    void spin_non_blocking()
     {
-        if (!ros_executor_thread_)
+        stop_spinning();
+        if (!is_thread_running_)
         {
-            ros_executor_thread_ = std::make_shared<std::thread>(&ros_spin);
+            thread_ = std::thread(&Executor::thread_callback, this);
         }
     }
 
-    ~RosExecutorThread()
+    /**
+     * @brief Block the current thread and make ROS spinning.
+     */
+    void spin()
     {
-        if (ros_executor_thread_)
+        ros_executor_.spin();
+    }
+
+    void add_node(const std::string& ros_node_name)
+    {
+        if (std::find(list_node_added_.begin(),
+                      list_node_added_.end(),
+                      ros_node_name) == list_node_added_.end())
         {
-            if (ros_executor_thread_->joinable())
-            {
-                ros_executor_thread_->join();
-            }
+            list_node_added_.push_back(ros_node_name);
+            ros_executor_.add_node(get_ros_node(ros_node_name));
         }
+    }
+
+    void remove_node(const std::string& ros_node_name)
+    {
+        std::deque<std::string>::iterator el = std::find(
+            list_node_added_.begin(), list_node_added_.end(), ros_node_name);
+        if (el != list_node_added_.end())
+        {
+            list_node_added_.erase(el);
+            assert(std::find(list_node_added_.begin(),
+                             list_node_added_.end(),
+                             ros_node_name) == list_node_added_.end() &&
+                   "The node has not been removed properly.");
+            ros_executor_.remove_node(get_ros_node(ros_node_name));
+        }
+    }
+
+    /**
+     * @brief Stop the spinning al together. Callable in a different thread.
+     */
+    void stop_spinning()
+    {
+        while(is_thread_running_)
+        {
+            ros_executor_.cancel();
+            real_time_tools::Timer::sleep_sec(0.1);
+        }
+        if (thread_.joinable())
+        {
+            thread_.join();
+        }
+    }
+
+    /**
+     * @brief Upon destruction close the thread and stop spinning.
+     *
+     * @return
+     */
+    ~Executor()
+    {
+        stop_spinning();
     }
 
 private:
     /**
-     * @brief ROS_EXECUTOR_THREAD is a thread in which the ROS_EXECUTOR spins.
+     * @brief Thread callback function
      */
-    std::shared_ptr<std::thread> ros_executor_thread_;
-};
+    void thread_callback()
+    {
+        is_thread_running_ = true;
+        ros_executor_.spin();
+        is_thread_running_ = false;
+    }
+
+    /**
+     * @brief Check if the thread is running.
+     */
+    std::atomic<bool> is_thread_running_;
+
+    /**
+     * @brief Thread in which the EXECUTOR spins.
+     */
+    std::thread thread_;
+
+    /**
+     * @brief Object that execute the ROS callbacks in a different thread.
+     */
+    RosExecutor ros_executor_;
+
+    std::deque<std::string> list_node_added_;
+
+};  // class Executor
+
+typedef std::shared_ptr<Executor> ExecutorPtr;
 
 /**
- * @brief ROS_EXECUTOR is a ros object that handles in a global way
- * all the ros callbacks and interruption. Call ROS_EXECUTOR.spin()
+ * @brief EXECUTOR is a ros object that handles in a global way
+ * all the ros callbacks and interruption. Call EXECUTOR.spin()
  * in order to start handling the callback in a separate thread.
  */
-std::shared_ptr<RosExecutor> ROS_EXECUTOR = nullptr;
-
-/**
- * @brief Object that execute the ROS callbacks in a different thread.
- */
-std::shared_ptr<RosExecutorThread> ROS_EXECUTOR_THREAD = nullptr;
+ExecutorPtr EXECUTOR = nullptr;
 
 /**
  * @brief Private function that allow us to get the current executable name.
@@ -150,15 +226,14 @@ bool ros_node_exists(std::string node_name)
     return true;
 }
 
-RosExecutorPtr get_ros_executor()
+ExecutorPtr get_ros_executor()
 {
     ros_init();
-    if (ROS_EXECUTOR == nullptr)
+    if (!EXECUTOR)
     {
-        ROS_EXECUTOR =
-            std::make_shared<RosExecutor>(rclcpp::executor::ExecutorArgs(), 4);
+        EXECUTOR = std::make_shared<Executor>();
     }
-    return ROS_EXECUTOR;
+    return EXECUTOR;
 }
 
 RosNodePtr get_ros_node(std::string node_name)
@@ -168,23 +243,25 @@ RosNodePtr get_ros_node(std::string node_name)
     {
         GLOBAL_LIST_OF_ROS_NODE[node_name] = RosNodePtr(nullptr);
     }
-    if (GLOBAL_LIST_OF_ROS_NODE[node_name] == nullptr)
+    if (!GLOBAL_LIST_OF_ROS_NODE[node_name] ||
+        GLOBAL_LIST_OF_ROS_NODE[node_name].get() == nullptr)
     {
         /** RosNode instanciation */
         GLOBAL_LIST_OF_ROS_NODE[node_name] =
             std::make_shared<RosNode>(node_name, "dynamic_graph_manager");
-
-        RosExecutorPtr executor = get_ros_executor();
-        executor->add_node(GLOBAL_LIST_OF_ROS_NODE[node_name]);
     }
     /** Return a reference to the node handle so any function can use it */
     return GLOBAL_LIST_OF_ROS_NODE[node_name];
 }
 
+void ros_add_node_to_executor(const std::string& node_name)
+{
+    get_ros_executor()->add_node(node_name);
+}
+
 void ros_spin()
 {
-    RosExecutorPtr executor = get_ros_executor();
-    executor->spin();
+    get_ros_executor()->spin();
 }
 
 void ros_shutdown(std::string node_name)
@@ -194,12 +271,26 @@ void ros_shutdown(std::string node_name)
     {
         return;
     }
+    get_ros_executor()->remove_node(node_name);
     GLOBAL_LIST_OF_ROS_NODE.erase(node_name);
 }
 
 void ros_shutdown()
 {
     rclcpp::shutdown();
+}
+
+void ros_clean()
+{
+    ros_stop_spinning();
+    GlobalListOfRosNodeType::iterator ros_node_it =
+        GLOBAL_LIST_OF_ROS_NODE.begin();
+    while(!GLOBAL_LIST_OF_ROS_NODE.empty())
+    {
+        ros_shutdown(ros_node_it->first);
+        ros_node_it = GLOBAL_LIST_OF_ROS_NODE.begin();
+    }
+    GLOBAL_LIST_OF_ROS_NODE.clear();
 }
 
 bool ros_ok()
@@ -209,11 +300,12 @@ bool ros_ok()
 
 void ros_spin_non_blocking()
 {
-    if (!ROS_EXECUTOR_THREAD)
-    {
-        ROS_EXECUTOR_THREAD = std::make_shared<RosExecutorThread>();
-    }
-    ROS_EXECUTOR_THREAD->spin();
+    get_ros_executor()->spin_non_blocking();
+}
+
+void ros_stop_spinning()
+{
+    get_ros_executor()->stop_spinning();
 }
 
 }  // end of namespace dynamic_graph_manager.

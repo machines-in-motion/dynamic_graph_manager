@@ -13,13 +13,13 @@ import unittest
 import multiprocessing
 from multiprocessing import Process, Manager
 import subprocess
-import rospy
+import rclpy
 import dynamic_graph
 import signal
 from dynamic_graph_manager.msg import Vector
 from dynamic_graph_manager.device import Device
 from dynamic_graph_manager.ros import Ros
-from dynamic_graph_manager.device.robot import Robot
+from dynamic_graph_manager.dynamic_graph.device.robot import Robot
 from dynamic_graph_manager.wrapper import RosPythonInterpreterClient
 
 
@@ -49,7 +49,7 @@ class DgmProcess:
     def _run_demo_dynamic_graph_manager(condition):
 
         # start the demo dgm
-        bash_command = "rosrun dynamic_graph_manager demo_dynamic_graph_manager"
+        bash_command = "ros2 run dynamic_graph_manager demo_dynamic_graph_manager"
         dgm_subprocess = subprocess.Popen(
             bash_command.split(), stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
@@ -57,6 +57,7 @@ class DgmProcess:
         condition.acquire()
         condition.notify()
         condition.wait()
+
         # kill the demo dgm
         dgm_subprocess.send_signal(signal.SIGINT)
         dgm_subprocess.wait()

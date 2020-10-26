@@ -7,13 +7,7 @@
  * @date 2019-05-22
  */
 
-#include <gtest/gtest.h>
-
-#include <chrono>
-#include <sstream>
-#include <std_srvs/srv/empty.hpp>
-
-#include "dynamic_graph_manager/ros.hpp"
+#include "test_common.hpp"
 
 /***************************
  * SETUP THE TESTING CLASS *
@@ -27,6 +21,28 @@ using namespace dynamic_graph_manager;
  */
 class TestRosInit : public ::testing::Test
 {
+    /**
+     * @brief SetUp, is executed before the unit tests
+     */
+    void SetUp()
+    {
+        ros_spin_non_blocking();
+    }
+
+    /**
+     * @brief TearDown, is executed after the unit tests
+     */
+    void TearDown()
+    {
+        ros_clean();
+    }
+};
+
+/**
+ * @brief This is the test environment
+ */
+class TestRosInitGlobalVar : public ::testing::Test
+{
 };
 
 /*****************
@@ -36,52 +52,39 @@ class TestRosInit : public ::testing::Test
 /**
  * Here we check that we can create a ros node
  */
-TEST_F(TestRosInit, test_create_node)
+TEST_F(TestRosInitGlobalVar, test_create_node)
 {
-    // setup
+    /* Setup */
     std::string node_name = "my_global_node";
     get_ros_node(node_name);
 
-    // test
+    /* Test */
     ASSERT_TRUE(ros_node_exists(node_name));
 }
 
 /**
  * Here we check that we still have the ros node created (global variable)
  */
-TEST_F(TestRosInit, test_global_variable)
+TEST_F(TestRosInitGlobalVar, test_global_variable_deleted_after_tear_down)
 {
-    // setup
+    /* Setup */
     std::string node_name = "my_global_node";
 
-    // test
+    /* Test */
     ASSERT_TRUE(ros_node_exists(node_name));
 }
 
 /**
  * Here we check that the destruction of the variable
  */
-TEST_F(TestRosInit, test_delete_global_variable)
+TEST_F(TestRosInitGlobalVar, test_delete_global_variable)
 {
-    // setup
+    /* Setup */
     std::string node_name = "my_global_node";
     ros_shutdown(node_name);
 
-    // test
+    /* Test */
     ASSERT_FALSE(ros_node_exists(node_name));
-}
-
-/**
- * Here we check that we have a spinner running
- */
-TEST_F(TestRosInit, test_spinner)
-{
-    // setup
-    std::string node_name = "my_global_node";
-    RosExecutorPtr executor = get_ros_executor();
-
-    // test
-    ASSERT_TRUE(executor != nullptr);
 }
 
 /**
@@ -89,12 +92,14 @@ TEST_F(TestRosInit, test_spinner)
  */
 TEST_F(TestRosInit, test_multiple_shutdown_call)
 {
-    // setup
+    /* Setup */
     std::string node_name = "my_global_node";
 
-    // test
-    ASSERT_NO_THROW(
-        for (unsigned i = 0; i < 200; ++i) { ros_shutdown(node_name); });
+    /* Test */
+    ASSERT_NO_THROW(for (unsigned i = 0; i < 20; ++i) {
+        ros_shutdown(node_name);
+        real_time_tools::Timer::sleep_sec(0.001);
+    });
 }
 
 /**
@@ -113,20 +118,18 @@ bool simple_service(std_srvs::srv::Empty::Request::SharedPtr,
  */
 TEST_F(TestRosInit, test_services_available)
 {
-    // setup
+    /* Setup */
     // create a node and a service
     RosNodePtr n0 = get_ros_node("node_0");
+    ros_add_node_to_executor("node_0");
     std::string service_name = "/simple_service";
     rclcpp::Service<std_srvs::srv::Empty>::SharedPtr server =
         n0->create_service<std_srvs::srv::Empty>(service_name, &simple_service);
 
-    // test
+    /* Test */
     rclcpp::Client<std_srvs::srv::Empty>::SharedPtr client =
-        n0->create_client<std_srvs::srv::Empty>("/node0" + service_name);
-    ASSERT_TRUE(client->wait_for_service());
-
-    // tear down
-    ros_shutdown("node_0");
+        n0->create_client<std_srvs::srv::Empty>(service_name);
+    ASSERT_TRUE(client->wait_for_service(1s));
 }
 
 /**
@@ -134,27 +137,26 @@ TEST_F(TestRosInit, test_services_available)
  */
 TEST_F(TestRosInit, test_services_shut_down)
 {
-    // setup
-    // create a node and a service and shutdown the node
-    RosNodePtr n0 = get_ros_node("node_0");
+    /* Setup */
     std::string service_name = "/simple_service";
-    rclcpp::Service<std_srvs::srv::Empty>::SharedPtr server =
-        n0->create_service<std_srvs::srv::Empty>(service_name, &simple_service);
-    ros_shutdown("node_0");
+
+    // create a node and a service and shutdown the node
+    {
+        RosNodePtr n0 = get_ros_node("node_0");
+        ros_add_node_to_executor("node_0");
+        rclcpp::Service<std_srvs::srv::Empty>::SharedPtr server =
+            n0->create_service<std_srvs::srv::Empty>(service_name,
+                                                     &simple_service);
+        ros_shutdown("node_0");
+    }
 
     // create a client to this service
     RosNodePtr n1 = get_ros_node("node_1");
     rclcpp::Client<std_srvs::srv::Empty>::SharedPtr client =
-        n1->create_client<std_srvs::srv::Empty>("/node0" + service_name);
+        n1->create_client<std_srvs::srv::Empty>(service_name);
 
-    // Activate all nodes.
-    ros_spin_non_blocking();
-
-    // test
+    /* Test */
     ASSERT_FALSE(client->wait_for_service(100ms));
-
-    // tear down
-    ros_shutdown("node_1");
 }
 
 /**
@@ -162,9 +164,9 @@ TEST_F(TestRosInit, test_services_shut_down)
  */
 TEST_F(TestRosInit, test_killall_nodes)
 {
-    // setup
+    /* Setup */
     // creates tones of nodes
-    unsigned int nb_nodes = 100;
+    unsigned int nb_nodes = 20;
     for (unsigned int i = 0; i < nb_nodes; ++i)
     {
         {
@@ -175,9 +177,9 @@ TEST_F(TestRosInit, test_killall_nodes)
     }
 
     // kill them all
-    ros_shutdown();
+    ros_clean();
 
-    // test if they are all killed
+    /* Test if they are all killed */
     for (unsigned int i = 0; i < nb_nodes; ++i)
     {
         {

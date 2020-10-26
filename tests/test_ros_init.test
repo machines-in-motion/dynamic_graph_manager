@@ -1,7 +1,0 @@
-<launch>
-<!-- ros_init_rostest is the name of the test library created in CMakeLists.txt file -->
-<!-- ros_init is the name of this catkin package -->
-<test test-name="ros_init_rostest"
-      type="ros_init_rostest"
-      pkg="dynamic_graph_manager"/>
-</launch>

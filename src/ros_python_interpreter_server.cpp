@@ -22,6 +22,7 @@ RosPythonInterpreterServer::RosPythonInterpreterServer()
       run_python_command_srv_(nullptr),
       run_python_file_srv_(nullptr)
 {
+    ros_add_node_to_executor("python_interpreter");
 }
 
 RosPythonInterpreterServer::~RosPythonInterpreterServer()

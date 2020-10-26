@@ -71,11 +71,11 @@ typedef std_srvs::srv::Empty EmptyServiceType;
 RosNodePtr get_ros_node(std::string node_name);
 
 /**
- * @brief Get ros executor global variable in order to execute the ROS nodes.
- *
- * @return RosExecutorPtr
+ * @brief Add a ros node to the global executor.
+ * 
+ * @param node_name 
  */
-RosExecutorPtr get_ros_executor();
+void ros_add_node_to_executor(const std::string& node_name);
 
 /**
  * @brief Checks if the Node has been created.
@@ -98,6 +98,11 @@ void ros_spin();
 void ros_spin_non_blocking();
 
 /**
+ * @brief Stop the ros spinning.
+ */
+void ros_stop_spinning();
+
+/**
  * @brief ros_shutdown shuts down ros and stop the ros spinner with the
  * associate name
  */
@@ -107,6 +112,11 @@ void ros_shutdown(std::string node_name);
  * @brief ros_shutdown shuts down ros and stop the ros spinners
  */
 void ros_shutdown();
+
+/**
+ * @brief Remove all node from the executor and delete it.
+ */
+void ros_clean();
 
 /**
  * @brief Check if ROS is fine.

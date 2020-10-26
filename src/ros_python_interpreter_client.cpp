@@ -26,9 +26,9 @@ RosPythonInterpreterClient::RosPythonInterpreterClient()
     run_command_request_ = std::make_shared<RunPythonCommandSrvType::Request>();
     connect_to_rosservice_run_python_command();
 
-    // Create a client for the python script reading service of the
+    // Create a client for the python file reading service of the
     // DynamicGraphManager.
-    run_script_service_name_ = "/dynamic_graph_manager/run_python_script";
+    run_script_service_name_ = "/dynamic_graph_manager/run_python_file";
     run_file_request_ = std::make_shared<RunPythonFileSrvType::Request>();
     connect_to_rosservice_run_python_script();
     timeout_connection_s_ = DurationSec(1);
@@ -89,10 +89,17 @@ std::string RosPythonInterpreterClient::run_python_command(
             return_string += response.get()->result;
         }
     }
+    catch(const std::exception& ex)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                    ex.what());
+        connect_to_rosservice_run_python_command(timeout_connection_s_);
+    }
     catch (...)
     {
         RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
-                    "Connection to remote server lost. Reconnecting...");
+                    "Error caught, maybe the connection to remote server is "
+                    "lost. Reconnecting...");
         connect_to_rosservice_run_python_command(timeout_connection_s_);
     }
     return return_string;

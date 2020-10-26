@@ -99,7 +99,7 @@ DynamicGraphManager::~DynamicGraphManager()
         kill(pid_dynamic_graph_process(), SIGKILL);
         while (!has_dynamic_graph_process_died())
         {
-            usleep(1000);
+            real_time_tools::Timer::sleep_sec(0.1);
         }
     }
 }
@@ -268,7 +268,7 @@ void DynamicGraphManager::wait_start_dynamic_graph()
 {
     while (is_dynamic_graph_stopped() && ros_ok())
     {
-        usleep(1000);
+        real_time_tools::Timer::sleep_sec(0.1);
     }
 }
 
@@ -276,7 +276,7 @@ void DynamicGraphManager::wait_stop_dynamic_graph()
 {
     while (!is_dynamic_graph_stopped() && ros_ok())
     {
-        usleep(100000);
+        real_time_tools::Timer::sleep_sec(0.1);
     }
     stop_dynamic_graph();
     if (thread_dynamic_graph_)
@@ -290,7 +290,7 @@ void DynamicGraphManager::wait_stop_hardware_communication()
 {
     while (!is_hardware_communication_stopped())
     {
-        usleep(100000);
+        real_time_tools::Timer::sleep_sec(0.1);
     }
     stop_hardware_communication();
     if (thread_hardware_communication_)
@@ -337,7 +337,7 @@ void DynamicGraphManager::initialize_dynamic_graph_process()
     shared_memory::set<std::string>(shared_memory_name_, "log_dir", log_dir_);
 
     // we create the device of the DG and implicitly the DG itself
-    device_.reset(new Device(robot_name));
+    device_ = std::make_unique<Device>(robot_name);
     device_->initialize(params_["device"]);
 
     // we start the ros services for the DGM (python command + start/stop DG)
@@ -428,6 +428,7 @@ void DynamicGraphManager::run_hardware_communication_process()
 {
     // from here on this process is a ros node
     get_ros_node(hw_com_ros_node_name_);
+    ros_add_node_to_executor(hw_com_ros_node_name_);
 
     // we build the condition variables after the fork (seems safer this way)
     cond_var_.reset(
@@ -465,6 +466,7 @@ void DynamicGraphManager::start_ros_service()
 {
     // Advertize the service to start and stop the dynamic graph
     RosNodePtr ros_node_handle = get_ros_node(dg_ros_node_name_);
+    ros_add_node_to_executor(dg_ros_node_name_);
     ros_service_start_dg_ =
         ros_node_handle->create_service<std_srvs::srv::Empty>(
             "start_dynamic_graph",
