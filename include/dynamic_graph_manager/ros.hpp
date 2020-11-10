@@ -12,8 +12,8 @@
 // ROS includes
 #include "std_srvs/srv/empty.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "dynamic_graph_manager/srv/run_python_command.hpp"
-#include "dynamic_graph_manager/srv/run_python_file.hpp"
+#include "mim_msgs/srv/run_python_command.hpp"
+#include "mim_msgs/srv/run_python_file.hpp"
 
 
 namespace dynamic_graph_manager
@@ -32,7 +32,7 @@ typedef rclcpp::executors::MultiThreadedExecutor RosExecutor;
 typedef std::shared_ptr<RosExecutor> RosExecutorPtr;
 
 // Python commands shortcuts
-typedef dynamic_graph_manager::srv::RunPythonCommand RunPythonCommandSrvType;
+typedef mim_msgs::srv::RunPythonCommand RunPythonCommandSrvType;
 typedef rclcpp::Service<RunPythonCommandSrvType>::SharedPtr
     RunPythonCommandServerPtr;
 typedef rclcpp::Client<RunPythonCommandSrvType>::SharedPtr
@@ -45,7 +45,7 @@ typedef std::shared_future<std::shared_ptr<RunPythonCommandSrvType::Response> >
     RunPythonCommandResponseFuturePtr;
 
 // Parse python file shortcuts.
-typedef dynamic_graph_manager::srv::RunPythonFile RunPythonFileSrvType;
+typedef mim_msgs::srv::RunPythonFile RunPythonFileSrvType;
 typedef rclcpp::Service<RunPythonFileSrvType>::SharedPtr RunPythonFileServerPtr;
 typedef rclcpp::Client<RunPythonFileSrvType>::SharedPtr RunPythonFileClientPtr;
 typedef std::shared_ptr<RunPythonFileSrvType::Request> RunPythonFileRequestPtr;

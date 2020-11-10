@@ -7,7 +7,7 @@
  * @date 2019-05-22
  */
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
-#include "dynamic_graph_manager/srv/test_user_cmd_bool.hpp"
+#include "mim_msgs/srv/test_user_cmd_bool.hpp"
 
 namespace dynamic_graph_manager
 {
@@ -41,8 +41,8 @@ public:
         RosNodePtr ros_node_handle =
             get_ros_node(DynamicGraphManager::hw_com_ros_node_name_);
         std::function<void(
-            dynamic_graph_manager::srv::TestUserCmdBool::Request::SharedPtr,
-            dynamic_graph_manager::srv::TestUserCmdBool::Response::SharedPtr)>
+            mim_msgs::srv::TestUserCmdBool::Request::SharedPtr,
+            mim_msgs::srv::TestUserCmdBool::Response::SharedPtr)>
             user_command_callback_function =
                 std::bind(&SimpleDGM::user_command_callback,
                           this,
@@ -51,7 +51,7 @@ public:
         /** initialize the user commands */
         user_command_service_ =
             ros_node_handle
-                ->create_service<dynamic_graph_manager::srv::TestUserCmdBool>(
+                ->create_service<mim_msgs::srv::TestUserCmdBool>(
                     "set_a_boolean", user_command_callback_function);
     }
     /**
@@ -100,8 +100,8 @@ public:
      * @return false in case of failure
      */
     void user_command_callback(
-        dynamic_graph_manager::srv::TestUserCmdBool::Request::SharedPtr req,
-        dynamic_graph_manager::srv::TestUserCmdBool::Response::SharedPtr res)
+        mim_msgs::srv::TestUserCmdBool::Request::SharedPtr req,
+        mim_msgs::srv::TestUserCmdBool::Response::SharedPtr res)
     {
         // parse and register the command for further call.
         add_user_command(
@@ -155,7 +155,7 @@ private:
     std::atomic_bool boolean_set_by_user_cmd_;
 
     // Service for calling the user_command on the hardware side.
-    rclcpp::Service<dynamic_graph_manager::srv::TestUserCmdBool>::SharedPtr
+    rclcpp::Service<mim_msgs::srv::TestUserCmdBool>::SharedPtr
         user_command_service_;
 
     // Control

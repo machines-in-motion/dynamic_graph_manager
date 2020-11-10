@@ -3,9 +3,10 @@
 #
 add_library(${PROJECT_NAME}_cpp_bindings MODULE
             dynamic_graph_manager.cpp ros_python_interpreter_client.cpp)
-target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE pybind11::module)
-target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE ${PYTHON_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_cpp_bindings PRIVATE ${PROJECT_NAME})
+# Link to the messages
+target_link_libraries(${PROJECT_NAME}_cpp_bindings pybind11::module)
+target_link_libraries(${PROJECT_NAME}_cpp_bindings ${PYTHON_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_cpp_bindings ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME}_cpp_bindings
                       PROPERTIES PREFIX "" SUFFIX "${PYTHON_MODULE_EXTENSION}")
 target_include_directories(

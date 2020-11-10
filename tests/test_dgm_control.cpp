@@ -128,7 +128,7 @@ TEST_F(TestDynamicGraphManagerControl,
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
     RosNodePtr ros_node = get_ros_node(dgm.dg_ros_node_name_);
-    auto client = ros_node->create_client<srv::RunPythonCommand>(
+    auto client = ros_node->create_client<mim_msgs::srv::RunPythonCommand>(
         "/dynamic_graph_manager/run_python_command");
 
     /** Test */
@@ -148,7 +148,7 @@ TEST_F(TestDynamicGraphManagerControl,
     dgm.initialize(params_);
     dgm.initialize_dynamic_graph_process();
     RosNodePtr ros_node = get_ros_node(dgm.dg_ros_node_name_);
-    auto client = ros_node->create_client<srv::RunPythonFile>(
+    auto client = ros_node->create_client<mim_msgs::srv::RunPythonFile>(
         "/dynamic_graph_manager/run_python_file");
 
     /** Test */

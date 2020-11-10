@@ -7,8 +7,6 @@
 add_executable(demo_dynamic_graph_manager main.cpp simple_dgm.hpp)
 # link the dependecies to it
 target_link_libraries(demo_dynamic_graph_manager dynamic_graph_manager)
-rosidl_target_interfaces(demo_dynamic_graph_manager ${PROJECT_NAME}_msg_srv
-                         "rosidl_typesupport_cpp")
 # Set the location of the device.so in the rpath.
 set_target_properties(
   demo_dynamic_graph_manager
@@ -36,8 +34,6 @@ add_executable(demo_ros_python_interpreter_server
                demo_ros_python_interpreter_server.cpp)
 # link the dependecies to it
 target_link_libraries(demo_ros_python_interpreter_server dynamic_graph_manager)
-rosidl_target_interfaces(demo_ros_python_interpreter_server
-                         ${PROJECT_NAME}_msg_srv "rosidl_typesupport_cpp")
 # Set the location of the device.so in the rpath.
 set_target_properties(
   demo_ros_python_interpreter_server
@@ -59,8 +55,6 @@ install(
 add_executable(demo_dynamic_graph_controller demo_dynamic_graph_controller.cpp)
 # link the dependecies to it
 target_link_libraries(demo_dynamic_graph_controller dynamic_graph_manager)
-rosidl_target_interfaces(demo_dynamic_graph_controller ${PROJECT_NAME}_msg_srv
-                         "rosidl_typesupport_cpp")
 # Set the location of the device.so in the rpath.
 set_target_properties(
   demo_dynamic_graph_controller

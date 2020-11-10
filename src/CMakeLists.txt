@@ -1,3 +1,5 @@
+set(all_src_targets)
+
 #
 # Create the device library
 #
@@ -24,78 +26,87 @@ target_link_libraries(device dynamic-graph::dynamic-graph)
 target_link_libraries(device dynamic-graph-python::dynamic-graph-python)
 target_link_libraries(device yaml_utils::yaml_utils)
 # Install the target and it's python bindings.
-install_dynamic_graph_plugin(device)
+install_dynamic_graph_plugin_python_bindings(device)
+# Install the plugin.
+get_dynamic_graph_plugin_install_path(plugin_install_path)
+install(
+  TARGETS device
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION ${plugin_install_path}
+  ARCHIVE DESTINATION ${plugin_install_path}
+  RUNTIME DESTINATION ${plugin_install_path}
+  INCLUDES
+  DESTINATION include)
 
 #
 # create the dynamic graph manager library
 #
 add_library(
-  dynamic_graph_manager SHARED
+  ${PROJECT_NAME} SHARED
   dynamic_graph_manager.cpp ros.cpp ros_python_interpreter_server.cpp
   ros_python_interpreter_client.cpp)
 # Includes
 target_include_directories(
-  dynamic_graph_manager PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-                               $<INSTALL_INTERFACE:include>)
+  ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                         $<INSTALL_INTERFACE:include>)
 # Dependencies
-ament_target_dependencies(dynamic_graph_manager rclcpp)
-ament_target_dependencies(dynamic_graph_manager std_srvs)
-target_link_libraries(dynamic_graph_manager dynamic-graph::dynamic-graph)
-target_link_libraries(dynamic_graph_manager
+ament_target_dependencies(${PROJECT_NAME} rclcpp)
+ament_target_dependencies(${PROJECT_NAME} std_srvs)
+ament_target_dependencies(${PROJECT_NAME} std_msgs)
+ament_target_dependencies(${PROJECT_NAME} geometry_msgs)
+ament_target_dependencies(${PROJECT_NAME} mim_msgs)
+target_link_libraries(${PROJECT_NAME} dynamic-graph::dynamic-graph)
+target_link_libraries(${PROJECT_NAME}
                       dynamic-graph-python::dynamic-graph-python)
-target_link_libraries(dynamic_graph_manager yaml_utils::yaml_utils)
-target_link_libraries(dynamic_graph_manager Eigen3::Eigen)
-target_link_libraries(dynamic_graph_manager shared_memory::shared_memory)
-target_link_libraries(dynamic_graph_manager real_time_tools::real_time_tools)
-target_link_libraries(dynamic_graph_manager device)
-rosidl_target_interfaces(dynamic_graph_manager ${PROJECT_NAME}_msg_srv
-                         "rosidl_typesupport_cpp")
+target_link_libraries(${PROJECT_NAME} yaml_utils::yaml_utils)
+target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
+target_link_libraries(${PROJECT_NAME} shared_memory::shared_memory)
+target_link_libraries(${PROJECT_NAME} real_time_tools::real_time_tools)
+target_link_libraries(${PROJECT_NAME} device)
 # Set the location of the device.so in the rpath.
 set_target_properties(
-  dynamic_graph_manager
+  ${PROJECT_NAME}
   PROPERTIES
     INSTALL_RPATH
     "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/lib/dynamic_graph_plugins")
-# Export the target.
-ament_export_interfaces(export_dynamic_graph_manager HAS_LIBRARY_TARGET)
-# For the installation
-list(APPEND all_targets dynamic_graph_manager)
-list(APPEND all_target_exports export_dynamic_graph_manager)
+# Export the main library.
+list(APPEND all_src_targets ${PROJECT_NAME})
 
 #
 # Export some default entities used for ROS<->DG communication
 #
 # deprecated module: ros_queued_subscribe ros_tf_listener ros_time
 # ros_robot_state_publisher ros_robot_state_publisher_mt
-set(LIST_ROS_ENTITIES ros_publish ros_subscribe)
+set(ROS_ENTITIES_SRC
+    ros_entities/ros_publish.cpp ros_entities/ros_subscribe.cpp
+    ros_entities/dg_ros_mapping.cpp)
 
-foreach(ROS_ENTITY ${LIST_ROS_ENTITIES})
-  add_library(${ROS_ENTITY} SHARED ros_entities/${ROS_ENTITY}.cpp
-                                   ros_entities/dg_ros_mapping.cpp)
-  # Includes
-  target_include_directories(
-    ${ROS_ENTITY} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-                         $<INSTALL_INTERFACE:include>)
-  # Linked libraries
-  ament_target_dependencies(${ROS_ENTITY} rclcpp)
-  ament_target_dependencies(${ROS_ENTITY} geometry_msgs)
-  ament_target_dependencies(${ROS_ENTITY} std_msgs)
-  target_link_libraries(${ROS_ENTITY} dynamic_graph_manager)
-  target_link_libraries(${ROS_ENTITY} dynamic-graph::dynamic-graph)
-  target_link_libraries(${ROS_ENTITY}
-                        dynamic-graph-python::dynamic-graph-python)
-  rosidl_target_interfaces(${ROS_ENTITY} ${PROJECT_NAME}_msg_srv
-                           "rosidl_typesupport_cpp")
-  # Export/Install
-  install_dynamic_graph_plugin(${ROS_ENTITY})
-endforeach()
+add_library(ros_entities SHARED ${ROS_ENTITIES_SRC})
+# Includes
+target_include_directories(
+  ros_entities PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                      $<INSTALL_INTERFACE:include>)
+# Linked libraries
+target_link_libraries(ros_entities dynamic_graph_manager)
+# Install the target and it's python bindings.
+install_dynamic_graph_plugin_python_bindings(ros_entities)
+# Install the plugin.
+get_dynamic_graph_plugin_install_path(plugin_install_path)
+install(
+  TARGETS ros_entities
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION ${plugin_install_path}
+  ARCHIVE DESTINATION ${plugin_install_path}
+  RUNTIME DESTINATION ${plugin_install_path}
+  INCLUDES
+  DESTINATION include)
 
 # Install the libraries
 install(
-  TARGETS ${all_targets}
-  EXPORT ${all_target_exports}
+  TARGETS ${all_src_targets}
+  EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
   INCLUDES
   DESTINATION include)

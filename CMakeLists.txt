@@ -32,14 +32,8 @@ find_package(ament_cmake_python REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
-# Declare the ROS message and service files to be built. This is here because
-# otherwise the Python include_dir is not found...
-rosidl_generate_interfaces(
-  ${PROJECT_NAME}_msg_srv "msg/Matrix.msg" "msg/Vector.msg"
-  "srv/RunPythonCommand.srv" "srv/RunPythonFile.srv" "srv/TestUserCmdBool.srv")
-
+find_package(mim_msgs REQUIRED)
 # Standard dependencies.
 find_package(Eigen3 REQUIRED)
 # Pybind11
@@ -57,6 +51,7 @@ find_package(dynamic-graph-python REQUIRED)
 
 # export de dependencies
 ament_export_dependencies(
+  mim_msgs
   std_srvs
   geometry_msgs
   dynamic-graph
@@ -67,9 +62,10 @@ ament_export_dependencies(
   yaml_utils
   rosidl_default_runtime)
 
+#
 # prepare to export all needed targets
-set(all_targets)
-set(all_target_exports)
+#
+ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
 #
 # manage python file install
@@ -77,19 +73,13 @@ set(all_target_exports)
 ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR python/${PROJECT_NAME})
 
 #
-# Install the ROS nodes
+# Install the python ROS nodes
 #
 install(
   FILES ${PROJECT_SOURCE_DIR}/ros_nodes/remote_python_client.py
   RENAME remote_python_client
   DESTINATION lib/${PROJECT_NAME}
   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
-
-#
-# Prepare the target installation
-#
-set(all_targets)
-set(all_target_exports)
 
 #
 # manage the creation of the libraries and executables
@@ -109,9 +99,10 @@ add_subdirectory(demos)
 #
 # manage the unit tests
 #
-add_subdirectory(tests)
-
-# 
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
+#
 # Add Python unit-tests / catkin_add_nosetests(tests)
 #
 
@@ -119,15 +110,6 @@ add_subdirectory(tests)
 # Install the package
 #
 install(DIRECTORY include/ DESTINATION include)
-
-install(
-  TARGETS ${all_targets}
-  EXPORT ${all_target_exports}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES
-  DESTINATION include)
 
 #
 # Building documentation.

@@ -25,6 +25,7 @@
     <depend>std_srvs</depend>
     <depend>std_msgs</depend>
     <depend>geometry_msgs</depend>
+    <depend>mim_msgs</depend>
 
     <!-- Dynamic Graph dependency. -->
     <depend>dynamic_graph</depend>

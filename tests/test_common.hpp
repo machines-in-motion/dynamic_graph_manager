@@ -23,7 +23,7 @@
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 
 // Service for the user command unittest
-#include "dynamic_graph_manager/srv/test_user_cmd_bool.hpp"
+#include "mim_msgs/srv/test_user_cmd_bool.hpp"
 
 // SimpleDGM class, the header is located in the demos/ folder of this repos.
 #include "simple_dgm.hpp"
@@ -89,13 +89,15 @@ void start_run_python_command_ros_service(const std::string& cmd,
     std::string service_name = "/dynamic_graph_manager/run_python_command";
     // Create a client from a temporary node.
     RosNodePtr ros_node = get_ros_node(ROS_NODE_NAME);
-    auto client = ros_node->create_client<srv::RunPythonCommand>(service_name);
+    auto client =
+        ros_node->create_client<mim_msgs::srv::RunPythonCommand>(service_name);
     ASSERT_TRUE(client->wait_for_service(1s));
 
     // Fill the command message.
-    srv::RunPythonCommand::Request::SharedPtr request =
-        std::make_shared<srv::RunPythonCommand::Request>();
-    std::shared_future<srv::RunPythonCommand::Response::SharedPtr> response;
+    mim_msgs::srv::RunPythonCommand::Request::SharedPtr request =
+        std::make_shared<mim_msgs::srv::RunPythonCommand::Request>();
+    std::shared_future<mim_msgs::srv::RunPythonCommand::Response::SharedPtr>
+        response;
     request->input = cmd;
     // Call the service.
     response = client->async_send_request(request);
@@ -118,13 +120,15 @@ void start_run_python_script_ros_service(const std::string& file_name,
     std::string service_name = "/dynamic_graph_manager/run_python_file";
     // Create a client from a temporary node.
     RosNodePtr ros_node = get_ros_node(ROS_NODE_NAME);
-    auto client = ros_node->create_client<srv::RunPythonFile>(service_name);
+    auto client =
+        ros_node->create_client<mim_msgs::srv::RunPythonFile>(service_name);
     ASSERT_TRUE(client->wait_for_service(1s));
 
     // Fill the command message.
-    srv::RunPythonFile::Request::SharedPtr request =
-        std::make_shared<srv::RunPythonFile::Request>();
-    std::shared_future<srv::RunPythonFile::Response::SharedPtr> response;
+    mim_msgs::srv::RunPythonFile::Request::SharedPtr request =
+        std::make_shared<mim_msgs::srv::RunPythonFile::Request>();
+    std::shared_future<mim_msgs::srv::RunPythonFile::Response::SharedPtr>
+        response;
     request->input = file_name;
     // Call the service.
     response = client->async_send_request(request);
@@ -144,13 +148,15 @@ void user_cmd_ros_service(bool user_input)
     std::string service_name = "/dynamic_graph_manager/set_a_boolean";
     // Create a client from a temporary node.
     RosNodePtr ros_node = get_ros_node(ROS_NODE_NAME);
-    auto client = ros_node->create_client<srv::TestUserCmdBool>(service_name);
+    auto client =
+        ros_node->create_client<mim_msgs::srv::TestUserCmdBool>(service_name);
     ASSERT_TRUE(client->wait_for_service(1s));
 
     // Fill the command message.
-    srv::TestUserCmdBool::Request::SharedPtr request =
-        std::make_shared<srv::TestUserCmdBool::Request>();
-    std::shared_future<srv::TestUserCmdBool::Response::SharedPtr> response;
+    mim_msgs::srv::TestUserCmdBool::Request::SharedPtr request =
+        std::make_shared<mim_msgs::srv::TestUserCmdBool::Request>();
+    std::shared_future<mim_msgs::srv::TestUserCmdBool::Response::SharedPtr>
+        response;
     request->input_boolean = user_input;
     // Call the service.
     response = client->async_send_request(request);

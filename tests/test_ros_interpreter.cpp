@@ -135,7 +135,7 @@ TEST_F(TestRosInterpreter, test_run_cmd_available_after_init)
 
     // Fetch the information using ROS.
     auto client = get_ros_node(node_name_)
-                      ->create_client<srv::RunPythonCommand>(
+                      ->create_client<mim_msgs::srv::RunPythonCommand>(
                           "/dynamic_graph_manager/run_python_command");
 
     /* Test. */
@@ -152,7 +152,7 @@ TEST_F(TestRosInterpreter, test_run_file_available_after_init)
 
     // Fetch the information using ROS.
     auto client = get_ros_node(node_name_)
-                      ->create_client<srv::RunPythonFile>(
+                      ->create_client<mim_msgs::srv::RunPythonFile>(
                           "/dynamic_graph_manager/run_python_file");
 
     /* Test. */

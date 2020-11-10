@@ -28,12 +28,13 @@
 #include <std_msgs/msg/u_int32.hpp>
 
 // internal DG types
+#include "dynamic_graph_manager/ros_entities/time_point_io.hpp"
 #include "dynamic_graph_manager/ros_entities/matrix_geometry.hpp"
 
 // internal ros types
-#include "dynamic_graph_manager/msg/matrix.hpp"
-#include "dynamic_graph_manager/msg/vector.hpp"
 #include "dynamic_graph_manager/ros.hpp"
+#include "mim_msgs/msg/matrix.hpp"
+#include "mim_msgs/msg/vector.hpp"
 
 namespace dynamic_graph_manager
 {
@@ -42,9 +43,9 @@ typedef dynamicgraph::Vector DgVector;
 /** @brief Conventient renaming for ease of implementation. */
 typedef dynamicgraph::Matrix DgMatrix;
 /** @brief Conventient renaming for ease of implementation. */
-typedef dynamic_graph_manager::msg::Vector RosVector;
+typedef mim_msgs::msg::Vector RosVector;
 /** @brief Conventient renaming for ease of implementation. */
-typedef dynamic_graph_manager::msg::Matrix RosMatrix;
+typedef mim_msgs::msg::Matrix RosMatrix;
 
 struct DgRosTypes
 {
@@ -107,9 +108,6 @@ public:
     typedef std::shared_ptr<RosType> ros_shared_ptr_t;
     /** @brief Output signal type. */
     typedef dynamicgraph::SignalTimeDependent<dg_t, int> signal_out_t;
-    /** @brief Type of the time stamp used in ROS */
-    typedef std::chrono::time_point<std::chrono::high_resolution_clock>
-        timestamp_t;
     /** @brief Output signal type. */
     typedef dynamicgraph::SignalTimeDependent<timestamp_t, int>
         signal_timestamp_out_t;
@@ -146,9 +144,9 @@ public:
 
     /**
      * @brief Convert ROS time to std::chrono.
-     * 
-     * @param ros_time 
-     * @return timestamp_t 
+     *
+     * @param ros_time
+     * @return timestamp_t
      */
     static timestamp_t from_ros_time(rclcpp::Time ros_time)
     {
@@ -157,14 +155,13 @@ public:
 
     /**
      * @brief Get epoch time as ROS time start from there.
-     * 
-     * @return timestamp_t 
+     *
+     * @return timestamp_t
      */
     static timestamp_t epoch_time()
     {
         return std::chrono::time_point<std::chrono::high_resolution_clock>{};
     }
-
 
     /**
      * @brief Convert a ROS object into DG one.
