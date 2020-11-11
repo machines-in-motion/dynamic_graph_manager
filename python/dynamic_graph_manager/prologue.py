@@ -12,18 +12,15 @@ Device and some tracers
 """
 
 import shared_memory
-from dynamic_graph.entity import PyEntityFactoryClass
+from dynamic_graph_manager.dynamic_graph.device import Device
 from .robot import Robot
-
-# Get the declaration of the Device class.
-DeviceClass = PyEntityFactoryClass("Device")
 
 # Get the name of the device from the shared_memory
 shared_memory_name = shared_memory.get_string("dgm_shm_name", "shared_memory_name")
 device_name = shared_memory.get_string(shared_memory_name, "device_name")
 
 # Create the robot using the device.
-device_cpp_object = DeviceClass(device_name)
+device_cpp_object = Device(device_name)
 
 # We create a small class that will own the device object and a real time tracer.
 robot = Robot(name=device_name, device=device_cpp_object)

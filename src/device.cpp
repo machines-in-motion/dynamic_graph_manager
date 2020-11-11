@@ -46,14 +46,9 @@ Device::Device(const std::string& input_name)
       Entity(input_name)
 {
     /*******************************************
-     * Initilize the command upon construction. *
+     * Initialize the command upon construction. *
      ********************************************/
-    // I am not sure why bu this as to take place in the constructor
-
-    // Handle commands and signals called in a synchronous way
-    periodic_call_before_.addSpecificCommands(*this, commandMap, "before.");
-    periodic_call_after_.addSpecificCommands(*this, commandMap, "after.");
-
+    
     // Add a initialize command to parametrize the device from a yaml file
     addCommand("initialize",
                dynamicgraph::command::makeCommandVoid1(
@@ -62,14 +57,6 @@ Device::Device(const std::string& input_name)
                    dynamicgraph::command::docCommandVoid1(
                        "Initialize the device from a YAML file.",
                        "string (valid path to the yaml configuration file)")));
-
-    addCommand("executeGraph",
-               dynamicgraph::command::makeCommandVoid0(
-                   *this,
-                   &Device::execute_graph_deprecated,
-                   dynamicgraph::command::docCommandVoid0(
-                       "Deprecated Execute the current control graph using the "
-                       "currentsensor signals.")));
 
     addCommand("execute_graph",
                dynamicgraph::command::makeCommandVoid0(

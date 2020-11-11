@@ -11,7 +11,7 @@ set_target_properties(${PROJECT_NAME}_cpp_bindings
                       PROPERTIES PREFIX "" SUFFIX "${PYTHON_MODULE_EXTENSION}")
 target_include_directories(
   ${PROJECT_NAME}_cpp_bindings
-  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
          $<INSTALL_INTERFACE:include> SYSTEM
   PUBLIC ${PYTHON_INCLUDE_DIRS})
 _ament_cmake_python_get_python_install_dir()

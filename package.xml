@@ -28,10 +28,10 @@
     <depend>mim_msgs</depend>
 
     <!-- Dynamic Graph dependency. -->
-    <depend>dynamic_graph</depend>
+    <depend>dynamic-graph</depend>
   
     <!-- Dynamic Graph python bindings and python interpreter. -->
-    <depend>dynamic_graph_python</depend>
+    <depend>dynamic-graph-python</depend>
 
     <!-- Eigen interface. -->
     <depend>Eigen3</depend>
