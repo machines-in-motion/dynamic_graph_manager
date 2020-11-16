@@ -69,7 +69,10 @@ BOOST_PYTHON_MODULE(device)
             });
 
     using dynamic_graph_manager::Device;
-    dynamicgraph::python::exposeEntity<Device>()
+    dynamicgraph::python::exposeEntity<
+        Device,
+        boost::python::bases<dynamicgraph::Entity>,
+        dynamicgraph::python::AddCommands>()
         .add_property("after",
                       bp::make_function(&Device::get_periodic_call_after,
                                         reference_existing_object()))
