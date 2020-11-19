@@ -36,7 +36,7 @@ public:
      */
     typedef std::tuple<std::shared_ptr<dynamicgraph::SignalBase<int> >,
                        std::shared_ptr<dynamicgraph::SignalBase<int> >,
-                       std::shared_ptr<rclcpp::SubscriptionBase> >
+                       rclcpp::SubscriptionBase::SharedPtr>
         BindedSignal;
 
     /**

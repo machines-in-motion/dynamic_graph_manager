@@ -51,7 +51,18 @@ public:
     Executor() : ros_executor_(rclcpp::executor::ExecutorArgs(), 4)
     {
         is_thread_running_ = false;
+        is_spinning_ = false;
         list_node_added_.clear();
+    }
+
+    /**
+     * @brief Upon destruction close the thread and stop spinning.
+     *
+     * @return
+     */
+    ~Executor()
+    {
+        stop_spinning();
     }
 
     /**
@@ -59,9 +70,9 @@ public:
      */
     void spin_non_blocking()
     {
-        stop_spinning();
-        if (!is_thread_running_)
+        if (!is_thread_running_ && !is_spinning_)
         {
+            std::cout << "Start ros spin in thread." << std::endl;
             thread_ = std::thread(&Executor::thread_callback, this);
         }
     }
@@ -71,7 +82,17 @@ public:
      */
     void spin()
     {
-        ros_executor_.spin();
+        if(is_thread_running_)
+        {
+            while(ros_ok() && is_thread_running_)
+            {
+                real_time_tools::Timer::sleep_sec(0.1);
+            }
+        }else{
+            is_spinning_ = true;
+            ros_executor_.spin();
+            is_spinning_ = false;
+        }        
     }
 
     void add_node(const std::string& ros_node_name)
@@ -105,7 +126,7 @@ public:
      */
     void stop_spinning()
     {
-        while(is_thread_running_)
+        while(is_thread_running_ || is_spinning_)
         {
             ros_executor_.cancel();
             real_time_tools::Timer::sleep_sec(0.1);
@@ -114,16 +135,6 @@ public:
         {
             thread_.join();
         }
-    }
-
-    /**
-     * @brief Upon destruction close the thread and stop spinning.
-     *
-     * @return
-     */
-    ~Executor()
-    {
-        stop_spinning();
     }
 
 private:
@@ -141,6 +152,11 @@ private:
      * @brief Check if the thread is running.
      */
     std::atomic<bool> is_thread_running_;
+
+    /**
+     * @brief Check if the the executor is spinning.
+     */
+    std::atomic<bool> is_spinning_;
 
     /**
      * @brief Thread in which the EXECUTOR spins.
@@ -259,11 +275,6 @@ void ros_add_node_to_executor(const std::string& node_name)
     get_ros_executor()->add_node(node_name);
 }
 
-void ros_spin()
-{
-    get_ros_executor()->spin();
-}
-
 void ros_shutdown(std::string node_name)
 {
     if (GLOBAL_LIST_OF_ROS_NODE.find(node_name) ==
@@ -296,6 +307,11 @@ void ros_clean()
 bool ros_ok()
 {
     return rclcpp::ok() && rclcpp::is_initialized();
+}
+
+void ros_spin()
+{
+    get_ros_executor()->spin();
 }
 
 void ros_spin_non_blocking()

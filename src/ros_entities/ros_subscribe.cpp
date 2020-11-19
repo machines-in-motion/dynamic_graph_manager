@@ -28,6 +28,8 @@ const std::string RosSubscribe::doc_string_(
 RosSubscribe::RosSubscribe(const std::string& n) : dynamicgraph::Entity(n)
 {
     ros_node_ = get_ros_node(DG_ROS_NODE_NAME);
+    ros_add_node_to_executor(DG_ROS_NODE_NAME);
+    ros_spin_non_blocking();
     binded_signals_.clear();
     std::string doc_string =
         "\n"

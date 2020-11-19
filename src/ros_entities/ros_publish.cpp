@@ -36,9 +36,11 @@ RosPublish::RosPublish(const std::string& n)
     signalRegistration(trigger_);
 
     ros_node_ = get_ros_node(DG_ROS_NODE_NAME);
+    ros_add_node_to_executor(DG_ROS_NODE_NAME);
+    ros_spin_non_blocking();
     binded_signals_.clear();
     /** @todo Check this needUpdateFromAllChildren */
-    // trigger_.setNeedUpdateFromAllChildren(true);
+    trigger_.setNeedUpdateFromAllChildren(true);
     try
     {
         last_publicated_ = ros_node_->get_clock()->now();

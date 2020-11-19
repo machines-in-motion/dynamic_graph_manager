@@ -28,7 +28,7 @@ void RosSubscribe::callback(
     // Some convenient shortcut.
     using ros_t = typename DgRosMapping<RosType, DgType>::ros_t;
     using dg_t = typename DgRosMapping<RosType, DgType>::dg_t;
- 
+
     // Create a dynamic graph object to copy the information in. Not real time
     // safe?
     dg_t value;
@@ -57,6 +57,12 @@ void RosSubscribe::add(const std::string& signal_name,
     using signal_timestamp_out_t =
         typename DgRosMapping<RosType, DgType>::signal_timestamp_out_t;
 
+    if (binded_signals_.find(signal_name) != binded_signals_.end())
+    {
+        std::cout << "Signal already created, nothing to be done." << std::endl;
+        return;
+    }
+
     // Initialize the binded_signal object.
     RosSubscribe::BindedSignal binded_signal;
 
@@ -75,10 +81,9 @@ void RosSubscribe::add(const std::string& signal_name,
     std::shared_ptr<signal_timestamp_out_t> signal_timestamp_ptr = nullptr;
     if (message_filters::message_traits::HasHeader<ros_t>())
     {
-        std::string full_time_stamp_signal_name = this->getClassName() + "(" +
-                                                  this->getName() + ")::" +
-                                                  signal_name +
-                                                  "_timestamp";
+        std::string full_time_stamp_signal_name =
+            this->getClassName() + "(" + this->getName() + ")::" + signal_name +
+            "_timestamp";
         signal_timestamp_ptr = std::make_shared<signal_timestamp_out_t>(
             full_time_stamp_signal_name);
         signal_timestamp_ptr->setConstant(
@@ -96,9 +101,11 @@ void RosSubscribe::add(const std::string& signal_name,
                   signal_ptr,
                   signal_timestamp_ptr,
                   std::placeholders::_1);
-    std::get<2>(binded_signal) =
+    typename rclcpp::Subscription<ros_t>::SharedPtr sub =
         ros_node_->create_subscription<ros_t>(topic_name, 10, callback);
+    std::get<2>(binded_signal) = sub;
 
+    // Store the different pointers.
     binded_signals_[signal_name] = binded_signal;
 };
 

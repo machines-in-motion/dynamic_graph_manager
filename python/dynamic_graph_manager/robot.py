@@ -156,27 +156,8 @@ class Robot(object):
         if topic_type is None:
             topic_type = "vector"
 
-        self.ros.rosPublish.add(topic_type, new_signal_name, topic_name)
-        plug(signal, self.ros.rosPublish.signal(new_signal_name))
-
-    def add_robot_state_to_ros(self, entity_name, signal_name, base_link_name, joint_names, tf_prefix, joint_state_topic_name):
-        # Lookup the entity's signal by name
-        signal = Entity.entities[entity_name].signal(signal_name)
-
-        new_signal_name = "dg__" + entity_name + '__' + signal_name
-
-        joint_names_string = ""
-        for s in joint_names:
-            joint_names_string += s + " "
-
-        self.ros.rosRobotStatePublisher.add(
-          base_link_name,
-          joint_names_string,
-          tf_prefix,
-          new_signal_name,
-          joint_state_topic_name,
-        )
-        plug(signal, self.ros.rosRobotStatePublisher.signal(new_signal_name))
+        self.ros.ros_publish.add(topic_type, new_signal_name, topic_name)
+        plug(signal, self.ros.ros_publish.signal(new_signal_name))
 
     def add_ros_and_trace(self, entityName, signalName, topic_name=None, topic_type=None):
         self.add_trace(entityName, signalName)

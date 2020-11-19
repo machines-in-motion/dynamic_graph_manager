@@ -48,15 +48,6 @@ Device::Device(const std::string& input_name)
     /*******************************************
      * Initialize the command upon construction. *
      ********************************************/
-    
-    // Add a initialize command to parametrize the device from a yaml file
-    addCommand("initialize",
-               dynamicgraph::command::makeCommandVoid1(
-                   *this,
-                   &Device::initialize_from_file,
-                   dynamicgraph::command::docCommandVoid1(
-                       "Initialize the device from a YAML file.",
-                       "string (valid path to the yaml configuration file)")));
 
     addCommand("execute_graph",
                dynamicgraph::command::makeCommandVoid0(

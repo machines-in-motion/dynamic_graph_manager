@@ -59,8 +59,7 @@ ament_export_dependencies(
   Eigen3
   shared_memory
   real_time_tools
-  yaml_utils
-  rosidl_default_runtime)
+  yaml_utils)
 
 #
 # prepare to export all needed targets

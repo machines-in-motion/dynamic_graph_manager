@@ -223,44 +223,35 @@ void DynamicGraphManager::initialize(YAML::Node param)
 
 void DynamicGraphManager::run()
 {
-    if (is_real_robot_)
+    pid_t child_pid = fork();
+    if (child_pid == 0)  // child process
     {
-        pid_t child_pid = fork();
-        if (child_pid == 0)  // child process
-        {
-            pid_dynamic_graph_process_ = getpid();
-            pid_hardware_communication_process_ = getppid();
+        pid_dynamic_graph_process_ = getpid();
+        pid_hardware_communication_process_ = getppid();
 
-            initialize_dynamic_graph_process();
-            run_dynamic_graph_process();
-            dynamic_graph_manager::ros_spin();
-            dynamic_graph_manager::ros_shutdown();
-            std::cout << "DG: End of the dynamic graph process." << std::endl;
-            exit(0);
-        }
-        else if (child_pid > 0)  // parent process
-        {
-            pid_dynamic_graph_process_ = child_pid;
-            pid_hardware_communication_process_ = getpid();
-            std::cout << "pid of dynamic graph process: "
-                      << pid_dynamic_graph_process_ << std::endl;
-            std::cout << "pid of hardware communication process: "
-                      << pid_hardware_communication_process_ << std::endl;
+        initialize_dynamic_graph_process();
+        run_dynamic_graph_process();
+        dynamic_graph_manager::ros_spin();
+        dynamic_graph_manager::ros_shutdown();
+        std::cout << "DG: End of the dynamic graph process." << std::endl;
+        exit(0);
+    }
+    else if (child_pid > 0)  // parent process
+    {
+        pid_dynamic_graph_process_ = child_pid;
+        pid_hardware_communication_process_ = getpid();
+        std::cout << "pid of dynamic graph process: "
+                    << pid_dynamic_graph_process_ << std::endl;
+        std::cout << "pid of hardware communication process: "
+                    << pid_hardware_communication_process_ << std::endl;
 
-            initialize_hardware_communication_process();
-            run_hardware_communication_process();
-        }
-        else
-        {
-            throw(std::runtime_error(
-                "DynamicGraphManager::run(): the fork failed"));
-        }
+        initialize_hardware_communication_process();
+        run_hardware_communication_process();
     }
     else
     {
-        initialize_dynamic_graph_process();
-        initialize_hardware_communication_process();
-        run_single_process();
+        throw(std::runtime_error(
+            "DynamicGraphManager::run(): the fork failed"));
     }
 }
 
@@ -451,15 +442,21 @@ void DynamicGraphManager::run_hardware_communication_process()
 
 void DynamicGraphManager::run_single_process()
 {
-    printf("wait to start dynamic graph\n");
-    wait_start_dynamic_graph();
+    initialize_dynamic_graph_process();
 
-    // launch the real time thread and ros spin
+    initialize_hardware_communication_process();
+    get_ros_node(hw_com_ros_node_name_);
+    ros_add_node_to_executor(hw_com_ros_node_name_);
+    start_hardware_communication();
+    
+    // launch the real time thread
     thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
     thread_dynamic_graph_->create_realtime_thread(
         &DynamicGraphManager::single_process_real_time_loop_helper, this);
 
-    printf("single process dynamic graph loop started\n");
+    // Ros spin
+    ros_spin();
+    ros_shutdown();
 }
 
 void DynamicGraphManager::start_ros_service()
@@ -712,8 +709,10 @@ void DynamicGraphManager::compute_safety_controls()
 
 void* DynamicGraphManager::single_process_real_time_loop()
 {
-    // //std::cout << "DG: Locking scope..." << std::endl;
-    std::cout << "DG: Start loop" << std::endl;
+    printf("SINGLE PROCESS: Wait to start dynamic graph\n");
+    wait_start_dynamic_graph();
+
+    printf("SINGLE PROCESS: Single process dynamic graph loop started\n");
     while (!is_dynamic_graph_stopped() && ros_ok())
     {
         // acquire the sensors data
@@ -731,7 +730,7 @@ void* DynamicGraphManager::single_process_real_time_loop()
     // we need to make sure that the flag is set properly
     stop_dynamic_graph();
     // printf("dynamic graph thread stopped\n");
-    std::cout << "DG: Stop loop" << std::endl;
+    printf("SINGLE PROCESS: Stop loop\n");
 
     return THREAD_FUNCTION_RETURN_VALUE;
 }
