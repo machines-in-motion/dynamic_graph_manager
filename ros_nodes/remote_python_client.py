@@ -88,8 +88,10 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         try:
             # we copy the line in a tmp var
             code_string = self.lines_pushed[:-1]
-            self.write(self.ros_python_interpreter.run_python_command(code_string))
-            self.write("\n")
+            result = self.ros_python_interpreter.run_python_command(code_string)
+            self.write(result)
+            if not result.endswith("\n"):
+                self.write("\n")
             # we reset the cache here
             self.lines_pushed = ""
         except Exception as e:
@@ -141,8 +143,9 @@ if __name__ == "__main__":
         response = dg_console.ros_python_interpreter.run_python_script(
             os.path.abspath(infile)
         )
-        print(dg_console.ros_python_interpreter.run_python_command(
-              "print('File parsed')"))
+        print(
+            dg_console.ros_python_interpreter.run_python_command("print('File parsed')")
+        )
 
     signal.signal(signal.SIGINT, signal_handler)
     dg_console.interact("Interacting with remote python server.")

@@ -44,8 +44,6 @@ DynamicGraphManager::DynamicGraphManager()
     stop_dynamic_graph();
     stop_hardware_communication();
 
-    is_real_robot_ = true;
-
     pid_dynamic_graph_process_ = 0;
     pid_hardware_communication_process_ = 0;
 
@@ -178,17 +176,6 @@ void DynamicGraphManager::initialize(YAML::Node param)
         std::cerr << e.what() << std::endl;
         throw ExceptionYamlCpp(ExceptionYamlCpp::PARSING_DOUBLE,
                                error_str + "maximum_time_for_user_cmd");
-    }
-    try
-    {
-        is_real_robot_ = params_["is_real_robot"].as<bool>();
-    }
-    catch (std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-        throw ExceptionYamlCpp(
-            ExceptionYamlCpp::PARSING_BOOL,
-            "Fail to parse yaml file. Node is: \nis_real_robot");
     }
 
     log_dir_ = real_time_tools::get_log_dir("dynamic_graph_manager");

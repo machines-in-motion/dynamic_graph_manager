@@ -9,6 +9,7 @@
 
 #include "dynamic_graph_manager/ros_python_interpreter_server.hpp"
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <functional>
 #include <memory>
 
@@ -37,8 +38,8 @@ void RosPythonInterpreterServer::start_ros_service()
                   std::placeholders::_1,
                   std::placeholders::_2);
     run_python_command_srv_ =
-        ros_node_->create_service<RunPythonCommandSrvType>(
-            "run_python_command", runCommandCb);
+        ros_node_->create_service<RunPythonCommandSrvType>("run_python_command",
+                                                           runCommandCb);
 
     run_python_file_callback_t runPythonFileCb =
         std::bind(&RosPythonInterpreterServer::runPythonFileCallback,
@@ -52,8 +53,24 @@ void RosPythonInterpreterServer::start_ros_service()
 void RosPythonInterpreterServer::runCommandCallback(
     RunPythonCommandRequestPtr req, RunPythonCommandResponsePtr res)
 {
+    std::stringstream buffer;
+    std::streambuf* old = std::cout.rdbuf(buffer.rdbuf());
+
     run_python_command(
         req->input, res->result, res->standard_output, res->standard_error);
+
+    if (!buffer.str().empty())
+    {
+        if (!boost::algorithm::ends_with(res->standard_output, "\n") &&
+            !res->standard_output.empty())
+        {
+            res->standard_output += "\n";
+        }
+        res->standard_output += buffer.str();
+    }
+    std::cout.rdbuf(old);
+
+    std::cout << res->standard_output << std::endl;
 }
 
 void RosPythonInterpreterServer::runPythonFileCallback(

@@ -630,12 +630,6 @@ protected:
     clock::duration hw_meas_active_time_;
 
     /**
-     * @brief is_real_robot this boolean is a parameter to indicate if yes or no
-     * we are in simulation or in a real robot mode.
-     */
-    bool is_real_robot_;
-
-    /**
      * @brief dg_active_timer_file_ this is the path to the file that will
      * contain the computation time of each of the dynamic graph complete
      * execution.

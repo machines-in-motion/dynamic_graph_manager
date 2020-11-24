@@ -72,16 +72,10 @@ std::string RosPythonInterpreterClient::run_python_command(
         }
 
         // Get the standard output (print).
-        if (response.get()->standard_output != "")
-        {
-            return_string += response.get()->standard_output;
-        }
+        return_string += response.get()->standard_output;
 
         // Get the error.
-        if (response.get()->standard_error != "")
-        {
-            return_string += response.get()->standard_error;
-        }
+        return_string += response.get()->standard_error;
 
         // Get the Result and print it is any.
         if (response.get()->result != "None")
@@ -137,19 +131,13 @@ std::string RosPythonInterpreterClient::run_python_script(
             rclcpp::executor::FutureReturnCode::SUCCESS)
         {
             // Get the error.
-            if (response.get()->standard_error != "")
-            {
-                return_string += response.get()->standard_error;
-            }
+            return_string += response.get()->standard_error;
 
             // Get the Result and print it is any.
-            if (response.get()->result != "None")
+            return_string += response.get()->result;
+            if (!boost::algorithm::ends_with(return_string, "\n"))
             {
-                return_string += response.get()->result;
-                if (!boost::algorithm::ends_with(return_string, "\n"))
-                {
-                    return_string += "\n";
-                }
+                return_string += "\n";
             }
         }
         else
