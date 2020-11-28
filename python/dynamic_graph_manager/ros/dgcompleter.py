@@ -36,7 +36,7 @@ its input.
 """
 
 import ast
-from dynamic_graph_manager.wrapper import RosPythonInterpreterClient
+from dynamic_graph_manager_cpp_bindings import RosPythonInterpreterClient
 
 __all__ = ["DGCompleter"]
 

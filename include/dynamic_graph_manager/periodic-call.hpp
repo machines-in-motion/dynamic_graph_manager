@@ -85,13 +85,7 @@ public:
     }
 
     void display(std::ostream& os) const;
-    bool commandLine(const std::string& cmdLine,
-                     std::istringstream& cmdArgs,
-                     std::ostream& os);
-    void addSpecificCommands(dynamicgraph::Entity& ent,
-                             dynamicgraph::Entity::CommandMap_t& commap,
-                             const std::string& prefix = "");
-
+ 
     void setPyInterpreter(dynamicgraph::python::Interpreter* py_interpreter)
     {
         py_interpreter_ = py_interpreter;

@@ -11,6 +11,7 @@
 #include <dynamic-graph/pool.h>
 #include <gtest/gtest.h>
 #include <yaml-cpp/yaml.h>
+
 #include <cstdlib>  // std::rand, std::srand
 #include <dynamic_graph_manager/device.hpp>
 #include <ostream>
@@ -83,10 +84,10 @@ TEST_F(TestDevice, test_constructor)
 {
     Device device("banana");
     device.initialize(empty_params_);
-    ASSERT_EQ(device.sensors_map_.size(), 0);
-    ASSERT_EQ(device.sensors_out_.size(), 0);
-    ASSERT_EQ(device.motor_controls_map_.size(), 0);
-    ASSERT_EQ(device.motor_controls_in_.size(), 0);
+    ASSERT_EQ(device.sensors_map_.size(), std::size_t(0));
+    ASSERT_EQ(device.sensors_out_.size(), std::size_t(0));
+    ASSERT_EQ(device.motor_controls_map_.size(), std::size_t(0));
+    ASSERT_EQ(device.motor_controls_in_.size(), std::size_t(0));
 }
 
 TEST_F(TestDevice, test_destructor)
@@ -94,9 +95,9 @@ TEST_F(TestDevice, test_destructor)
     {
         Device device("banana");
         device.initialize(empty_params_);
-        ASSERT_EQ(entity_map_.count("banana"), 1);
+        ASSERT_EQ(entity_map_.count("banana"), std::size_t(1));
     }
-    ASSERT_EQ(entity_map_.count("banana"), 0);
+    ASSERT_EQ(entity_map_.count("banana"), std::size_t(0));
 }
 
 TEST_F(TestDevice, test_parse_yaml_file)
@@ -104,12 +105,12 @@ TEST_F(TestDevice, test_parse_yaml_file)
     Device device("simple_robot");
     device.initialize(params_);
     const Device::SignalMap& sig_map = device.getSignalMap();
-    ASSERT_EQ(sig_map.count("encoders"), 1);
-    ASSERT_EQ(sig_map.count("imu_accelerometer"), 1);
-    ASSERT_EQ(sig_map.count("imu_gyroscope"), 1);
-    ASSERT_EQ(sig_map.count("imu"), 1);
-    ASSERT_EQ(sig_map.count("torques"), 1);
-    ASSERT_EQ(sig_map.count("positions"), 1);
+    ASSERT_EQ(sig_map.count("encoders"), std::size_t(1));
+    ASSERT_EQ(sig_map.count("imu_accelerometer"), std::size_t(1));
+    ASSERT_EQ(sig_map.count("imu_gyroscope"), std::size_t(1));
+    ASSERT_EQ(sig_map.count("imu"), std::size_t(1));
+    ASSERT_EQ(sig_map.count("torques"), std::size_t(1));
+    ASSERT_EQ(sig_map.count("positions"), std::size_t(1));
     ASSERT_EQ(device.sensors_out_["encoders"]->accessCopy().size(), 5);
     ASSERT_EQ(device.sensors_out_["imu_accelerometer"]->accessCopy().size(), 3);
     ASSERT_EQ(device.sensors_out_["imu_gyroscope"]->accessCopy().size(), 3);

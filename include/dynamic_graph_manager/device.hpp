@@ -10,14 +10,14 @@
 #ifndef DEVICE_HH
 #define DEVICE_HH
 
-#include <yaml-cpp/yaml.h>
-
 #include <dynamic-graph/all-signals.h>
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/linear-algebra.h>
 
 #include <dynamic_graph_manager/periodic-call.hpp>
 #include <dynamic_graph_manager/tools.hpp>
+
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 namespace dynamic_graph_manager
 {
@@ -97,27 +97,31 @@ public:
     virtual void execute_graph();
 
     /**
-     * @brief execute_graph is a fonction that execute the graph.
-     *
-     * In order it does:
-     *  - Execute a first set of synchrounous commands.
-     *  - Execute the graph.
-     *  - Execute a second set of synchronous commands.
-     *
-     */
-    void execute_graph_deprecated()
-    {
-        std::cout << "\"device.executeGraph\" python command is deprecated, "
-                  << "please use \"device.execute_graph()\"" << std::endl;
-        execute_graph();
-    }
-
-    /**
      * @brief get_controls_to_map is a parser that feed the map "controls" with
      * the output of the DynamicGraph.
      * @param controls is the map containing the controls.
      */
     virtual void get_controls_to_map(VectorDGMap& motor_controls);
+
+    /**
+     * @brief Get periodic call before.
+     * 
+     * @return PeriodicCall& 
+     */
+    PeriodicCall& get_periodic_call_before()
+    {
+        return periodic_call_before_;
+    }
+    
+    /**
+     * @brief Get periodic call after.
+     * 
+     * @return PeriodicCall& 
+     */
+    PeriodicCall& get_periodic_call_after()
+    {
+        return periodic_call_after_;
+    }
 
     /****************************************************************
      * DEVICE OUPUT SIGNALS // INPUT OF THE GRAPH <=> SENSOR VALUES *

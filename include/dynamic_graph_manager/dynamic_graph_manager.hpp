@@ -29,11 +29,7 @@
 #include <mutex>
 
 // get the yaml configuration
-#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
-
-// ROS includes
-#include <ros/ros.h>
-#include <std_srvs/Empty.h>
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 // used to spawn the real time thread
 #include "real_time_tools/thread.hpp"
@@ -48,7 +44,7 @@
 #include "shared_memory/locked_condition_variable.hpp"
 
 // import the python interpreter ros binding
-#include "dynamic_graph_manager/ros_interpreter.hpp"
+#include "dynamic_graph_manager/ros_python_interpreter_server.hpp"
 
 // some useful tools like the yaml parsing
 #include "dynamic_graph_manager/tools.hpp"
@@ -407,33 +403,30 @@ private:
     /**
      * @brief start_dg is the callback method of the ROS service start dynamic
      * graph.
-     * @return true.
      */
-    bool start_dynamic_graph(std_srvs::Empty::Request&,
-                             std_srvs::Empty::Response&)
+    void start_dynamic_graph(std_srvs::srv::Empty::Request::SharedPtr,
+                             std_srvs::srv::Empty::Response::SharedPtr)
     {
         start_dynamic_graph();
-        return true;
     }
 
     /**
      * @brief stop_dg is the callback method of the ROS service stop dynamic
      * graph
-     * @return
      */
-    bool stop_dynamic_graph(std_srvs::Empty::Request&,
-                            std_srvs::Empty::Response&)
+    void stop_dynamic_graph(std_srvs::srv::Empty::Request::SharedPtr,
+                            std_srvs::srv::Empty::Response::SharedPtr)
     {
         stop_dynamic_graph();
-        return true;
     }
 
+public:
     /**
      * @brief start_ros_service is the method that advertise the different ros
      * services.
      */
-    void start_ros_service(ros::NodeHandle& ros_node_handle);
-
+    void start_ros_service();
+private:
     /**
      * @brief dynamic_graph_real_time_loop is the method used to execute the
      * dynamic graph.
@@ -498,14 +491,14 @@ protected:
      * It simply sets a flags that is used to wait the user call. Only used in
      * the dynamic_graph process.
      */
-    ros::ServiceServer ros_service_start_dg_;
+    EmptyServicePtr ros_service_start_dg_;
 
     /**
      * @brief ros_service_stop_dg_ allows to stop the dynamic graph on call.
      * It simply sets a flags that stop the main real time the control loop.
      * Only used in the dynamic_graph process.
      */
-    ros::ServiceServer ros_service_stop_dg_;
+    EmptyServicePtr ros_service_stop_dg_;
 
     /**
      * @brief is_dynamic_graph_stopped_ is the flag reflecting the state of the
@@ -529,7 +522,7 @@ protected:
      * @brief ros_python_interpreter_ptr_ is a ROS wrapper around a python
      * interpreter.
      */
-    std::unique_ptr<dynamic_graph_manager::RosPythonInterpreter>
+    std::unique_ptr<dynamic_graph_manager::RosPythonInterpreterServer>
         ros_python_interpreter_;
 
     /**
@@ -635,12 +628,6 @@ protected:
      * communication process is supposed to sleep.
      */
     clock::duration hw_meas_active_time_;
-
-    /**
-     * @brief is_real_robot this boolean is a parameter to indicate if yes or no
-     * we are in simulation or in a real robot mode.
-     */
-    bool is_real_robot_;
 
     /**
      * @brief dg_active_timer_file_ this is the path to the file that will
@@ -769,7 +756,7 @@ protected:
      * @brief This is the list of the ros user commands. The class inheriting
      * from this one can add services for the hardware communication process.
      */
-    std::deque<ros::ServiceServer> ros_user_commands_;
+    std::vector<ServiceBasePtr> ros_user_commands_;
 
     /**
      * @brief control_period_sec_ this is the control period in Seconds

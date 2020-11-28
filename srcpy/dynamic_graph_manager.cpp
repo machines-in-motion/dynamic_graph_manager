@@ -19,13 +19,13 @@ void bind_ros_python_interpreter_client(pybind11::module &module);
 /**
  * Python bindings for the dynamic_graph_manager namespace.
  */
-PYBIND11_MODULE(wrapper, m)
+PYBIND11_MODULE(dynamic_graph_manager_cpp_bindings, m)
 {
     // Docs.
     m.doc() = R"pbdoc(
         dynamic_graph_manager python bindings
         -------------------------------------
-        .. currentmodule:: dynamic_graph_manager.wrapper
+        .. currentmodule:: dynamic_graph_manager_cpp_bindings
         .. autosummary::
            :toctree: _generate
            add

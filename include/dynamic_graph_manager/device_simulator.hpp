@@ -10,7 +10,7 @@
 #ifndef DEVICE_SIMULATOR_HH
 #define DEVICE_SIMULATOR_HH
 
-#include <yaml-cpp/yaml.h>
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 #include <dynamic-graph/entity.h>
 #include <dynamic_graph_manager/device.hpp>

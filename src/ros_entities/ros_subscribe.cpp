@@ -7,137 +7,46 @@
  * @date 2019-05-22
  */
 
-#include <boost/assign.hpp>
-#include <boost/bind.hpp>
-#include <boost/format.hpp>
-#include <boost/function.hpp>
-#include <boost/make_shared.hpp>
-
-#include <ros/ros.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/UInt32.h>
+#include "dynamic_graph_manager/ros_entities/ros_subscribe.hpp"
 
 #include <dynamic-graph/factory.h>
 
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
-#include "dynamic_graph_manager/ros_init.hpp"
-
-#include "ros_entities/ros_subscribe.hpp"
 
 namespace dynamic_graph_manager
 {
+/*
+ * RosSubscribe
+ */
 DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN(RosSubscribe, "RosSubscribe");
 
-namespace command
-{
-namespace rosSubscribe
-{
-Clear::Clear(RosSubscribe& entity, const std::string& docstring)
-    : Command(entity, std::vector<Value::Type>(), docstring)
-{
-}
-
-Value Clear::doExecute()
-{
-    RosSubscribe& entity = static_cast<RosSubscribe&>(owner());
-
-    entity.clear();
-    return Value();
-}
-
-List::List(RosSubscribe& entity, const std::string& docstring)
-    : Command(entity, std::vector<Value::Type>(), docstring)
-{
-}
-
-Value List::doExecute()
-{
-    RosSubscribe& entity = static_cast<RosSubscribe&>(owner());
-    return Value(entity.list());
-}
-
-Add::Add(RosSubscribe& entity, const std::string& docstring)
-    : Command(
-          entity,
-          boost::assign::list_of(Value::STRING)(Value::STRING)(Value::STRING),
-          docstring)
-{
-}
-
-Value Add::doExecute()
-{
-    RosSubscribe& entity = static_cast<RosSubscribe&>(owner());
-    std::vector<Value> values = getParameterValues();
-
-    const std::string& type = values[0].value();
-    const std::string& signal = values[1].value();
-    const std::string& topic = values[2].value();
-
-    if (type == "double")
-        entity.add<double>(signal, topic);
-    else if (type == "unsigned")
-        entity.add<unsigned int>(signal, topic);
-    else if (type == "matrix")
-        entity.add<dg::Matrix>(signal, topic);
-    else if (type == "vector")
-        entity.add<dg::Vector>(signal, topic);
-    else if (type == "vector3")
-        entity.add<specific::Vector3>(signal, topic);
-    else if (type == "vector3Stamped")
-        entity.add<std::pair<specific::Vector3, dg::Vector> >(signal, topic);
-    else if (type == "matrixHomo")
-        entity.add<MatrixHomogeneous>(signal, topic);
-    else if (type == "matrixHomoStamped")
-        entity.add<std::pair<MatrixHomogeneous, dg::Vector> >(signal, topic);
-    else if (type == "twist")
-        entity.add<specific::Twist>(signal, topic);
-    else if (type == "twistStamped")
-        entity.add<std::pair<specific::Twist, dg::Vector> >(signal, topic);
-    else
-        throw std::runtime_error("bad type");
-    return Value();
-}
-
-Rm::Rm(RosSubscribe& entity, const std::string& docstring)
-    : Command(entity, boost::assign::list_of(Value::STRING), docstring)
-{
-}
-
-Value Rm::doExecute()
-{
-    RosSubscribe& entity = static_cast<RosSubscribe&>(owner());
-    std::vector<Value> values = getParameterValues();
-    const std::string& signal = values[0].value();
-    entity.rm(signal);
-    return Value();
-}
-}  // namespace rosSubscribe
-}  // end of namespace command.
-
-const std::string RosSubscribe::docstring_(
+const std::string RosSubscribe::doc_string_(
     "Subscribe to a ROS topics and convert it into a dynamic-graph signals.\n"
     "\n"
     "  Use command \"add\" to subscribe to a new signal.\n");
 
-RosSubscribe::RosSubscribe(const std::string& n)
-    : dynamicgraph::Entity(n),
-      nh_(ros_init(DynamicGraphManager::dg_ros_node_name_, true)),
-      bindedSignal_()
+RosSubscribe::RosSubscribe(const std::string& n) : dynamicgraph::Entity(n)
 {
-    std::string docstring =
+    ros_node_ = get_ros_node(DG_ROS_NODE_NAME);
+    ros_add_node_to_executor(DG_ROS_NODE_NAME);
+    ros_spin_non_blocking();
+    binded_signals_.clear();
+    std::string doc_string =
         "\n"
-        "  Add a signal reading data from a ROS topic\n"
+        "  Add a signal reading data from a ROS topic.\n"
         "\n"
         "  Input:\n"
-        "    - type: string among ['double', 'matrix', 'vector', 'vector3',\n"
-        "                          'vector3Stamped', 'matrixHomo', "
-        "'matrixHomoStamped',\n"
-        "                          'twist', 'twistStamped'],\n"
+        "    - type: string among:\n";
+    for (unsigned int i = 0; i < DgRosTypes::type_list.size(); ++i)
+    {
+        doc_string += "        - " + DgRosTypes::type_list[i] + "\n";
+    }
+    doc_string +=
         "    - signal: the signal name in dynamic-graph,\n"
         "    - topic:  the topic name in ROS.\n"
         "\n";
-    addCommand("add", new command::rosSubscribe::Add(*this, docstring));
-    docstring =
+    addCommand("add", new command::ros_subscribe::Add(*this, doc_string));
+    doc_string =
         "\n"
         "  Remove a signal reading data from a ROS topic\n"
         "\n"
@@ -145,21 +54,21 @@ RosSubscribe::RosSubscribe(const std::string& n)
         "    - name of the signal to remove (see method list for the list of "
         "signals).\n"
         "\n";
-    addCommand("rm", new command::rosSubscribe::Rm(*this, docstring));
-    docstring =
+    addCommand("rm", new command::ros_subscribe::Rm(*this, doc_string));
+    doc_string =
         "\n"
         "  Remove all signals reading data from a ROS topic\n"
         "\n"
         "  No input:\n"
         "\n";
-    addCommand("clear", new command::rosSubscribe::Clear(*this, docstring));
-    docstring =
+    addCommand("clear", new command::ros_subscribe::Clear(*this, doc_string));
+    doc_string =
         "\n"
         "  List signals reading data from a ROS topic\n"
         "\n"
         "  No input:\n"
         "\n";
-    addCommand("list", new command::rosSubscribe::List(*this, docstring));
+    addCommand("list", new command::ros_subscribe::List(*this, doc_string));
 }
 
 RosSubscribe::~RosSubscribe()
@@ -177,21 +86,21 @@ void RosSubscribe::rm(const std::string& signal)
     std::string signalTs = signal + "Timestamp";
 
     signalDeregistration(signal);
-    bindedSignal_.erase(signal);
+    binded_signals_.erase(signal);
 
-    if (bindedSignal_.find(signalTs) != bindedSignal_.end())
+    if (binded_signals_.find(signalTs) != binded_signals_.end())
     {
         signalDeregistration(signalTs);
-        bindedSignal_.erase(signalTs);
+        binded_signals_.erase(signalTs);
     }
 }
 
 std::string RosSubscribe::list()
 {
     std::string result("[");
-    for (std::map<std::string, bindedSignal_t>::const_iterator it =
-             bindedSignal_.begin();
-         it != bindedSignal_.end();
+    for (std::map<std::string, BindedSignal>::const_iterator it =
+             binded_signals_.begin();
+         it != binded_signals_.end();
          it++)
     {
         result += "'" + it->first + "',";
@@ -202,16 +111,143 @@ std::string RosSubscribe::list()
 
 void RosSubscribe::clear()
 {
-    std::map<std::string, bindedSignal_t>::iterator it = bindedSignal_.begin();
-    for (; it != bindedSignal_.end();)
+    std::map<std::string, BindedSignal>::iterator it =
+        binded_signals_.begin();
+    for (; it != binded_signals_.end();)
     {
         rm(it->first);
-        it = bindedSignal_.begin();
+        it = binded_signals_.begin();
     }
 }
 
 std::string RosSubscribe::getDocString() const
 {
-    return docstring_;
+    return doc_string_;
 }
+
+/*
+ * Commands
+ */
+
+namespace command
+{
+namespace ros_subscribe
+{
+Clear::Clear(RosSubscribe& entity, const std::string& doc_string)
+    : Command(entity, std::vector<Value::Type>(), doc_string)
+{
+}
+
+Value Clear::doExecute()
+{
+    RosSubscribe& entity = static_cast<RosSubscribe&>(owner());
+
+    entity.clear();
+    return Value();
+}
+
+List::List(RosSubscribe& entity, const std::string& doc_string)
+    : Command(entity, std::vector<Value::Type>(), doc_string)
+{
+}
+
+Value List::doExecute()
+{
+    RosSubscribe& entity = static_cast<RosSubscribe&>(owner());
+    return Value(entity.list());
+}
+
+Add::Add(RosSubscribe& entity, const std::string& doc_string)
+    : Command(
+          entity,
+          boost::assign::list_of(Value::STRING)(Value::STRING)(Value::STRING),
+          doc_string)
+{
+}
+
+Value Add::doExecute()
+{
+    RosSubscribe& entity = static_cast<RosSubscribe&>(owner());
+    std::vector<Value> values = getParameterValues();
+
+    const std::string& type = values[0].value();
+    const std::string& signal_name = values[1].value();
+    const std::string& topic_name = values[2].value();
+
+    if (type == DgRosTypes::get_double())
+    {
+        entity.add<std_msgs::msg::Float64, double>(signal_name, topic_name);
+    }
+    else if (type == DgRosTypes::get_unsigned())
+    {
+        entity.add<std_msgs::msg::UInt32, unsigned int>(signal_name,
+                                                        topic_name);
+    }
+    else if (type == DgRosTypes::get_matrix())
+    {
+        entity.add<RosMatrix, DgMatrix>(signal_name, topic_name);
+    }
+    else if (type == DgRosTypes::get_vector())
+    {
+        entity.add<RosVector, DgVector>(signal_name, topic_name);
+    }
+    else if (type == DgRosTypes::get_vector3())
+    {
+        entity.add<geometry_msgs::msg::Vector3, DgVector>(signal_name,
+                                                          topic_name);
+    }
+    else if (type == DgRosTypes::get_vector3_stamped())
+    {
+        entity.add<geometry_msgs::msg::Vector3Stamped, DgVector>(signal_name,
+                                                                 topic_name);
+    }
+    else if (type == DgRosTypes::get_matrix_homogeneous())
+    {
+        entity.add<geometry_msgs::msg::Transform, MatrixHomogeneous>(
+            signal_name, topic_name);
+    }
+    else if (type == DgRosTypes::get_matrix_homogeneous_stamped())
+    {
+        entity.add<geometry_msgs::msg::TransformStamped, MatrixHomogeneous>(
+            signal_name, topic_name);
+    }
+    else if (type == DgRosTypes::get_twist())
+    {
+        entity.add<geometry_msgs::msg::Twist, DgVector>(signal_name,
+                                                        topic_name);
+    }
+    else if (type == DgRosTypes::get_twist_stamped())
+    {
+        entity.add<geometry_msgs::msg::TwistStamped, DgVector>(signal_name,
+                                                               topic_name);
+    }
+    else
+    {
+        std::cerr << "RosSubscribe(" << entity.getName()
+                  << ")::add(): bad type given (" << type << ")."
+                  << " Possible choice is among:";
+        for (unsigned int i = 0; i < DgRosTypes::type_list.size(); ++i)
+        {
+            std::cerr << "    - " << DgRosTypes::type_list[i] << std::endl;
+        }
+    }
+    return Value();
+}
+
+Rm::Rm(RosSubscribe& entity, const std::string& doc_string)
+    : Command(entity, boost::assign::list_of(Value::STRING), doc_string)
+{
+}
+
+Value Rm::doExecute()
+{
+    RosSubscribe& entity = static_cast<RosSubscribe&>(owner());
+    std::vector<Value> values = getParameterValues();
+    const std::string& signal = values[0].value();
+    entity.rm(signal);
+    return Value();
+}
+}  // namespace ros_subscribe
+}  // end of namespace command.
+
 }  // namespace dynamic_graph_manager

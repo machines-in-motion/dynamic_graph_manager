@@ -13,18 +13,19 @@ import unittest
 import multiprocessing
 from multiprocessing import Process, Manager
 import subprocess
-import rospy
-import dynamic_graph
 import signal
-from dynamic_graph_manager.msg import Vector
-from dynamic_graph_manager.device import Device
-from dynamic_graph_manager.ros import Ros
-from dynamic_graph_manager.device.robot import Robot
-from dynamic_graph_manager.wrapper import RosPythonInterpreterClient
+import numpy as np
+import dynamic_graph
+import rclpy
+from mim_msgs.msg import Vector
+from dynamic_graph_manager.dynamic_graph.device import Device
+from dynamic_graph_manager.ros.ros import Ros
+from dynamic_graph_manager.robot import Robot
+from dynamic_graph_manager_cpp_bindings import RosPythonInterpreterClient
 
 
 class DgmProcess:
-    """Create a class to spwan the DemoDGM in another process, to test the
+    """Create a class to spawn the DemoDGM in another process, to test the
     run_command C++ client and it's Python bindings.
     """
 
@@ -32,8 +33,8 @@ class DgmProcess:
         self.manager = Manager()
         self.condition = self.manager.Condition()
         self.another_process = Process(
-            target=DgmProcess._run_demo_dynamic_graph_manager,
-            args=(self.condition,))
+            target=DgmProcess._run_demo_dynamic_graph_manager, args=(self.condition,)
+        )
 
     def start_dgm(self):
         self.condition.acquire()
@@ -49,34 +50,49 @@ class DgmProcess:
     def _run_demo_dynamic_graph_manager(condition):
 
         # start the demo dgm
-        bash_command = "rosrun dynamic_graph_manager demo_dynamic_graph_manager"
+        bash_command = "ros2 run dynamic_graph_manager demo_dynamic_graph_manager"
         dgm_subprocess = subprocess.Popen(
-            bash_command.split(), stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            bash_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
 
         condition.acquire()
         condition.notify()
         condition.wait()
+
         # kill the demo dgm
         dgm_subprocess.send_signal(signal.SIGINT)
         dgm_subprocess.wait()
 
 
 def random_string():
-    return ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(10))
+    return "".join(
+        random.SystemRandom().choice(string.ascii_letters + string.digits)
+        for _ in range(10)
+    )
 
 
 class TestDynamicGraphManager(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Initialize the ROS context for the test node
+        rclpy.init()
+
+    @classmethod
+    def tearDownClass(cls):
+        # Shutdown the ROS context
+        rclpy.shutdown()
 
     def setUp(self):
-        rospy.init_node("dgm_ut", anonymous=True, disable_signals=False)
+        self.ros_node = rclpy.create_node(
+            "unit_test_node", namespace="dynamic_graph_manager"
+        )
 
         self.device_yaml_file = os.path.join(
-            os.path.dirname(__file__), "config", "simple_robot.yaml")
+            os.path.dirname(__file__), "config", "simple_robot.yaml"
+        )
 
     def tearDown(self):
-        # rospy.signal_shutdown("dgm_ut tear down")
-        pass
+        self.ros_node.destroy_node()
 
     def test_import_device(self):
         device_name = "simple_robot"
@@ -87,17 +103,15 @@ class TestDynamicGraphManager(unittest.TestCase):
         device_name = "simple_robot"
         d = Device(device_name)
         ros_interface = Ros(d, suffix="_ut")
-        self.assertEqual(ros_interface.rosPublish.name, "rosPublish_ut")
-        self.assertEqual(ros_interface.rosSubscribe.name, "rosSubscribe_ut")
-        self.assertEqual(ros_interface.rosTime.name, "rosTime_ut")
-        self.assertEqual(ros_interface.rosRobotStatePublisher.name,
-                         "rosRobotStatePublisher_ut")
+        self.assertEqual(ros_interface.ros_publish.name, "ros_publish_ut")
+        self.assertEqual(ros_interface.ros_subscribe.name, "ros_subscribe_ut")
 
-    def test_rosPublish(self):
+    def test_ros_publish(self):
         device_name = "simple_robot"
         d = Device(device_name)
         d.initialize(self.device_yaml_file)
-        ros_publish = Ros(d, suffix="_ut").rosPublish
+
+        ros_publish = Ros(d, suffix="_ut").ros_publish
 
         signal = d.encoders
         topic_type = "vector"
@@ -107,53 +121,81 @@ class TestDynamicGraphManager(unittest.TestCase):
         ros_publish.add(topic_type, new_signal_name, topic_name)
         dynamic_graph.plug(signal, ros_publish.signal(new_signal_name))
 
+        time.sleep(0.1)
         self.assertTrue(
-            "/dynamic_graph/" + topic_name in rospy.get_published_topics("/dynamic_graph")[0])
+            ("/dynamic_graph_manager/" + topic_name, ["mim_msgs/msg/Vector"])
+            in self.ros_node.get_topic_names_and_types()
+        )
 
-    def test_rosSubscribe(self):
+        msgs_rx = []
+        sub = self.ros_node.create_subscription(
+            Vector, topic_name, lambda msg: msgs_rx.append(msg), 10
+        )
+
+        i = 0
+        while True:
+            d.encoders.value = np.array([i, i + 1, i + 2])
+            ros_publish.signal("trigger").recompute(i)
+            rclpy.spin_once(self.ros_node, timeout_sec=0.1)
+            i += 1
+            if len(msgs_rx) > 5 or i > 20:
+                break
+
+        self.assertTrue(len(msgs_rx) > 5)
+        self.ros_node.destroy_subscription(sub)
+
+    def test_ros_subscribe(self):
         # parameters
         type_name = "vector"
         signal_name = "subscribed_vector"
         topic_name = "/a_published_vector"
-        # topic_name = "/" + random_string()
-        msg = (0.0, 1.0, 2.0, 3.0, 4.0, 5.0)
+        msg = Vector()
+        msg.data = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
 
         # publish a topic
-        pub = rospy.Publisher(topic_name, Vector, queue_size=10)
+        pub = self.ros_node.create_publisher(Vector, topic_name, 10)
 
         # subscribe the above topic
         device_name = "simple_robot"
-        d = Device(device_name)
-        ros_subscribe = Ros(d, suffix="_ut").rosSubscribe
+        device = Device(device_name)
+        ros_subscribe = Ros(device, suffix="_ut").ros_subscribe
         ros_subscribe.add(type_name, signal_name, topic_name)
 
+        time.sleep(0.1)
+        self.assertTrue(
+            (topic_name, ['mim_msgs/msg/Vector'])
+            in self.ros_node.get_topic_names_and_types()
+        )
+
         i = 0
-        while not ros_subscribe.signal(signal_name).value:
+        while ros_subscribe.signal(signal_name).value.size == 0:
             pub.publish(msg)
             ros_subscribe.signal(signal_name).recompute(i)
-            time.sleep(0.5)
             i += 1
             if i > 50:
-                break
+                self.fail("No messsage received by the subscription")
 
-        self.assertEqual(ros_subscribe.signal(signal_name).value, msg)
+        np.testing.assert_equal(ros_subscribe.signal(signal_name).value, msg.data)
 
-    def test_run_command(self):
-        # start the demo dgm
-        dgm = DgmProcess()
-        dgm.start_dgm()
+        self.ros_node.destroy_publisher(pub)
 
-        # create a python client
-        dgm_python_client = RosPythonInterpreterClient()
+    # def test_run_command(self):
+    #     # start the demo dgm
+    #     dgm = DgmProcess()
+    #     dgm.start_dgm()
 
-        # call to the python client
-        ret_cmd = dgm_python_client.run_python_command("1+1")
-        ret_script = dgm_python_client.run_python_script(
-            os.path.join(os.path.dirname(__file__), "config", "simple_add.py"))
+    #     # create a python client
+    #     dgm_python_client = RosPythonInterpreterClient()
 
-        # Stop the demo dgm
-        dgm.stop_dgm()
+    #     # call to the python client
+    #     ret_cmd = dgm_python_client.run_python_command("1+1")
+    #     ret_script = dgm_python_client.run_python_script(
+    #         os.path.join(os.path.dirname(__file__), "config", "simple_add.py")
+    #     )
 
-        # check the results
-        self.assertEqual(ret_cmd, "2")
-        self.assertEqual(ret_script, "2\n")
+    #     # Stop the demo dgm
+    #     dgm.stop_dgm()
+
+    #     # check the results
+    #     self.assertEqual(ret_cmd, "2")
+    #     self.assertEqual(ret_script, "2\n")

@@ -8,6 +8,7 @@
  */
 
 #include <gtest/gtest.h>
+
 #include <map>
 
 /**
@@ -106,14 +107,13 @@ TEST_F(TestCppFeatures, test_on_map_and_pointers)
     data["fifth"] = new double(5.0);
     for (map_data::iterator it = data.begin(); it != data.end(); ++it)
     {
-        //    std::cout << data.size() << " ; "
-        //              << it->first << " " << *(it->second)
-        //              << std::endl;
+        std::cout << data.size() << " ; " << it->first << " " << *(it->second)
+                  << std::endl;
         double* d = it->second;
         data.erase(it);
         delete d;
     }
-    //  std::cout << "******" << std::endl;
+    std::cout << "******" << std::endl;
     data["first"] = new double(1.0);
     data["second"] = new double(2.0);
     data["third"] = new double(3.0);
@@ -122,9 +122,8 @@ TEST_F(TestCppFeatures, test_on_map_and_pointers)
     for (map_data::iterator it = data.begin(); it != data.end();
          it = data.begin())
     {
-        //    std::cout << data.size() << " ; "
-        //              << it->first << " " << *(it->second)
-        //              << std::endl;
+        std::cout << data.size() << " ; " << it->first << " " << *(it->second)
+                  << std::endl;
         double* d = it->second;
         data.erase(it);
         delete d;

@@ -9,7 +9,7 @@
 
 #include <dynamic-graph/linear-algebra.h>
 
-#include "yaml_cpp_catkin/yaml_eigen.h"
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 #ifndef TOOLS_HH
 #define TOOLS_HH

@@ -9,6 +9,7 @@
  */
 
 #include "dynamic_graph_manager/ros_python_interpreter_client.hpp"
+
 #include <boost/algorithm/string.hpp>
 #include <fstream>
 
@@ -17,29 +18,20 @@ namespace dynamic_graph_manager
 RosPythonInterpreterClient::RosPythonInterpreterClient()
 {
     ros_node_name_ = "ros_python_interpreter_client";
-
-    /** call ros::init */
-    if (!ros::isInitialized())
-    {
-        int argc = 1;
-        char* arg0 = strdup(ros_node_name_.c_str());
-        char* argv[] = {arg0, nullptr};
-        ros::init(argc, argv, ros_node_name_,
-                  ros::init_options::AnonymousName |
-                  ros::init_options::NoSigintHandler);
-        free(arg0);
-    }
-    mode_handle_ = std::make_shared<ros::NodeHandle>();
+    ros_node_ = get_ros_node(ros_node_name_);
 
     // Create a client for the single python command service of the
     // DynamicGraphManager.
-    run_command_service_name_ = "/dynamic_graph/run_python_command";
+    run_command_service_name_ = "/dynamic_graph_manager/run_python_command";
+    run_command_request_ = std::make_shared<RunPythonCommandSrvType::Request>();
     connect_to_rosservice_run_python_command();
 
-    // Create a client for the python script reading service of the
+    // Create a client for the python file reading service of the
     // DynamicGraphManager.
-    run_script_service_name_ = "/dynamic_graph/run_python_script";
+    run_script_service_name_ = "/dynamic_graph_manager/run_python_file";
+    run_file_request_ = std::make_shared<RunPythonFileSrvType::Request>();
     connect_to_rosservice_run_python_script();
+    timeout_connection_s_ = DurationSec(1);
 }
 
 std::string RosPythonInterpreterClient::run_python_command(
@@ -55,50 +47,57 @@ std::string RosPythonInterpreterClient::run_python_command(
 
     try
     {
-        if (!command_client_.isValid())
+        if (!command_client_->wait_for_service(timeout_connection_s_))
         {
-            ROS_INFO("Connection to remote server lost. Reconnecting...");
+            RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                        "Connection to remote server lost. Reconnecting...");
             connect_to_rosservice_run_python_command(timeout_connection_s_);
             return return_string;
         }
 
-        run_command_srv_.request.input = code_string;
+        run_command_request_->input = code_string;
 
-        ros::service::waitForService(run_script_service_name_);
-        if (!command_client_.call(run_command_srv_))
+        auto response =
+            command_client_->async_send_request(run_command_request_);
+        // Wait for the result.
+        while (rclcpp::ok() &&
+               rclcpp::spin_until_future_complete(
+                   ros_node_,
+                   response,
+                   std::chrono::seconds(1)) !=
+                   rclcpp::executor::FutureReturnCode::SUCCESS)
         {
-            // We had an issue calling the service.
-            ROS_INFO("Error while parsing command.");
-            connect_to_rosservice_run_python_command();
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                         "Error while parsing command, retrying...");
         }
-        else
+
+        // Get the standard output (print).
+        return_string += response.get()->standard_output;
+
+        // Get the error.
+        return_string += response.get()->standard_error;
+
+        // Get the Result and print it is any.
+        if (response.get()->result != "None")
         {
-            // Get the standard output (print).
-            if (run_command_srv_.response.standard_output != "")
-            {
-                return_string += run_command_srv_.response.standard_output;
-            }
-
-            // Get the error.
-            if (run_command_srv_.response.standard_error != "")
-            {
-                return_string += run_command_srv_.response.standard_error;
-            }
-
-            // Get the Result and print it is any.
-            if (run_command_srv_.response.result != "None")
-            {
-                return_string += run_command_srv_.response.result;
-            }
+            return_string += response.get()->result;
         }
+    }
+    catch(const std::exception& ex)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                    ex.what());
+        connect_to_rosservice_run_python_command(timeout_connection_s_);
     }
     catch (...)
     {
-        ROS_INFO("Connection to remote server lost. Reconnecting...");
+        RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                    "Error caught, maybe the connection to remote server is "
+                    "lost. Reconnecting...");
         connect_to_rosservice_run_python_command(timeout_connection_s_);
     }
     return return_string;
-}
+}  // namespace dynamic_graph_manager
 
 std::string RosPythonInterpreterClient::run_python_script(
     const std::string& filename)
@@ -108,59 +107,53 @@ std::string RosPythonInterpreterClient::run_python_script(
     std::ifstream file_if(filename.c_str());
     if (!file_if.good())
     {
-        ROS_INFO("Provided file does not exist: %s", filename.c_str());
+        RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                    "Provided file does not exist: %s",
+                    filename.c_str());
         return return_string;
     }
 
     try
     {
-        if (!script_client_.isValid())
+        if (!script_client_->wait_for_service(timeout_connection_s_))
         {
-            ROS_INFO("Connection to remote server lost. Reconnecting...");
+            RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                        "Connection to remote server lost. Reconnecting...");
             connect_to_rosservice_run_python_script(timeout_connection_s_);
             return return_string;
         }
 
-        run_script_srv_.request.input = filename;
+        run_file_request_->input = filename;
 
-        if (!script_client_.call(run_script_srv_))
+        auto response = script_client_->async_send_request(run_file_request_);
+
+        if (rclcpp::spin_until_future_complete(ros_node_, response) ==
+            rclcpp::executor::FutureReturnCode::SUCCESS)
         {
-            // We had an issue calling the service.
-            ROS_INFO("Error while parsing scripts.");
-            return return_string;
+            // Get the error.
+            return_string += response.get()->standard_error;
+
+            // Get the Result and print it is any.
+            return_string += response.get()->result;
+            if (!boost::algorithm::ends_with(return_string, "\n"))
+            {
+                return_string += "\n";
+            }
         }
         else
         {
-            // Get the standard output (print).
-            if (run_command_srv_.response.standard_output != "")
-            {
-                return_string += run_command_srv_.response.standard_output;
-            }
-
-            // Get the error.
-            if (run_command_srv_.response.standard_error != "")
-            {
-                return_string += run_command_srv_.response.standard_error;
-            }
-
-            // Get the Result and print it is any.
-            if (run_command_srv_.response.result != "None")
-            {
-                return_string += run_command_srv_.response.result;
-                if (!boost::algorithm::ends_with(return_string, "\n"))
-                {
-                    return_string += "\n";
-                }
-            }
+            // We had an issue calling the service.
+            RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                        "Error while parsing scripts.");
         }
-        return return_string;
     }
     catch (...)
     {
-        ROS_INFO("Connection to remote server lost. Reconnecting...");
+        RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
+                    "Connection to remote server lost. Reconnecting...");
         connect_to_rosservice_run_python_script(timeout_connection_s_);
-        return return_string;
     }
+    return return_string;
 }
 
 }  // namespace dynamic_graph_manager

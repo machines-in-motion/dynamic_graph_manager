@@ -84,5 +84,9 @@ def create_simple_graph():
 def draw_simple_graph():
     writeGraph('/tmp/robot_state_reference_from_slider.dot')
 
+print("Creating graph...")
 create_simple_graph()
+print("Graph loaded.")
+print("Dumping graph structure in a file...")
 draw_simple_graph()
+print("Graph saved.")

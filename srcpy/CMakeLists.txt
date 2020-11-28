@@ -1,18 +1,23 @@
-################################
-# python bindings with pybind11#
-################################
-pybind11_add_module(py_${PROJECT_NAME}
-    dynamic_graph_manager.cpp
-    ros_python_interpreter_client.cpp
-)
-target_link_libraries(
-    py_${PROJECT_NAME} PRIVATE ${PROJECT_NAME} ${catkin_LIBRARIES})
-set_target_properties(py_${PROJECT_NAME} PROPERTIES
-  LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
-  OUTPUT_NAME wrapper
-)
-add_dependencies(py_${PROJECT_NAME}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-install(TARGETS py_${PROJECT_NAME} DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+#
+# Python wrapper #
+#
+add_library(${PROJECT_NAME}_cpp_bindings MODULE
+            dynamic_graph_manager.cpp ros_python_interpreter_client.cpp)
+# Link to the messages
+target_link_libraries(${PROJECT_NAME}_cpp_bindings pybind11::module)
+target_link_libraries(${PROJECT_NAME}_cpp_bindings ${PYTHON_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_cpp_bindings ${PROJECT_NAME})
+set_target_properties(${PROJECT_NAME}_cpp_bindings
+                      PROPERTIES PREFIX "" SUFFIX "${PYTHON_MODULE_EXTENSION}")
+target_include_directories(
+  ${PROJECT_NAME}_cpp_bindings
+  PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+         $<INSTALL_INTERFACE:include> SYSTEM
+  PUBLIC ${PYTHON_INCLUDE_DIRS})
+_ament_cmake_python_get_python_install_dir()
+install(TARGETS ${PROJECT_NAME}_cpp_bindings DESTINATION ${PYTHON_INSTALL_DIR})
+set_target_properties(
+  ${PROJECT_NAME}_cpp_bindings
+  PROPERTIES
+    INSTALL_RPATH
+    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/lib/dynamic_graph_plugins")
