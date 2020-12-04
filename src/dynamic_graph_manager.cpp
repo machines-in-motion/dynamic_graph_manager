@@ -375,6 +375,8 @@ void DynamicGraphManager::python_prologue()
     run_python_command(aof,
                        "if not hasattr(sys, \'argv\'):\n"
                        "    sys.argv  = ['dynamic_graph_manager']");
+    // help setting signals
+    run_python_command(aof, "import numpy as np");
     // Create the device or get a pointer to the c++ object if it already exist
     run_python_command(aof, "from dynamic_graph_manager.prologue import robot");
 
@@ -479,12 +481,11 @@ void DynamicGraphManager::start_ros_service()
 
 void* DynamicGraphManager::dynamic_graph_real_time_loop()
 {
-    // std::cout << "DG: Locking scope..." << std::endl;
-    cond_var_->lock_scope();
-    get_ros_node(dg_ros_node_name_);
-
     wait_start_dynamic_graph();
+    
     rt_printf("DG: Start loop\n");
+    get_ros_node(dg_ros_node_name_);
+    cond_var_->lock_scope();
 
     // initialize the timers
     dg_active_timer_.tic();
