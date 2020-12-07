@@ -33,4 +33,5 @@ PYBIND11_MODULE(dynamic_graph_manager_cpp_bindings, m)
     )pbdoc";
     // List of all the bindings.
     bind_ros_python_interpreter_client(m);
+    bind_dgm_head(m);
 }
