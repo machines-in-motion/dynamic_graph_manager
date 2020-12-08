@@ -9,6 +9,9 @@
 
 #include "dynamic_graph_manager/dgm_head.hpp"
 
+#include <pybind11/eigen.h>
+#include <pybind11/pybind11.h>
+
 using namespace dynamic_graph_manager;
 
 void bind_dgm_head(pybind11::module &module)
@@ -23,3 +26,4 @@ void bind_dgm_head(pybind11::module &module)
         .def("read", &DGMHead::read)
         .def("put_notify_wait", &DGMHead::put_notify_wait);
 }
+

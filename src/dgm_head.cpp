@@ -27,7 +27,7 @@ DGMHead::DGMHead(std::string& yaml_file)
         cond_var_name_, false);
 
     std::cout << "Loading parameters from " << yaml_file << std::endl;
-    YAML::Node param = YAML::LoadFile(yaml_params_file);
+    YAML::Node param = YAML::LoadFile(yaml_file);
     parse_yaml_node(param["device"], sensors_map_, motor_controls_map_);
 
     cond_var_->lock_scope();
@@ -57,7 +57,7 @@ Eigen::Ref<Eigen::VectorXd> DGMHead::get_sensor(std::string& name)
 {
     if (sensors_map_.count(name) == 0)
     {
-        throw std::runtime_error('Unknown sensor name: ' + name);
+        throw std::runtime_error("Unknown sensor name: " + name);
     }
     return sensors_map_[name];
 }
@@ -66,7 +66,7 @@ void DGMHead::set_control(std::string& name, Eigen::Ref<Eigen::VectorXd> vector)
 {
     if (motor_controls_map_.count(name) == 0)
     {
-        throw std::runtime_error('Unknown control name: ' + name);
+        throw std::runtime_error("Unknown control name: " + name);
     }
     motor_controls_map_[name] = vector;
 }

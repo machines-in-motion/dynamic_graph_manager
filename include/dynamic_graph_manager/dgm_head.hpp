@@ -11,6 +11,8 @@
 
 #include <Eigen/Dense>
 
+#include "shared_memory/locked_condition_variable.hpp"
+
 #include <dynamic_graph_manager/tools.hpp>
 
 namespace dynamic_graph_manager
@@ -18,6 +20,7 @@ namespace dynamic_graph_manager
 
 class DGMHead
 {
+public:
     DGMHead(std::string& yaml_file);
 
     Eigen::Ref<Eigen::VectorXd> get_sensor(std::string& name);
@@ -46,6 +49,6 @@ protected:
      * the dynamic graph just after the acquisition of the sensors
      */
     std::unique_ptr<shared_memory::LockedConditionVariable> cond_var_;
-}
+};
 
 }
