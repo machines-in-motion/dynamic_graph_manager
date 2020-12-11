@@ -24,6 +24,15 @@ void bind_dgm_head(pybind11::module &module)
         .def("set_control", &DGMHead::set_control)
 
         .def("read", &DGMHead::read)
-        .def("put_notify_wait", &DGMHead::put_notify_wait);
+        .def("write", &DGMHead::write)
+        .def("notify_all", &DGMHead::notify_all)
+        .def("wait", &DGMHead::wait)
+
+        .def("lock_conditional_variable", &DGMHead::lock_conditional_variable)
+        .def("unlock_conditional_variable", &DGMHead::unlock_conditional_variable)
+        .def("start_realtime_processing_thread", &DGMHead::start_realtime_processing_thread)
+        .def("end_processing_data", &DGMHead::end_processing_data)
+        ;
+
 }
 

@@ -12,6 +12,7 @@
 #include <Eigen/Dense>
 
 #include "shared_memory/locked_condition_variable.hpp"
+#include <real_time_tools/thread.hpp>
 
 #include <dynamic_graph_manager/tools.hpp>
 
@@ -27,11 +28,30 @@ public:
 
     void set_control(std::string& name, Eigen::Ref<Eigen::VectorXd> vector);
 
+    void lock_conditional_variable();
+    void unlock_conditional_variable();
+
     void read();
 
-    void put_notify_wait();
+    void write();
+
+    void notify_all();
+
+    void wait();
+
+    void processing_data();
+
+    void end_processing_data();
+
+    void start_realtime_processing_thread();
 
 protected:
+    static THREAD_FUNCTION_RETURN_TYPE processing_data(void* instance_pointer)
+    {
+        ((DGMHead*)(instance_pointer))->processing_data();
+        return THREAD_FUNCTION_RETURN_VALUE;
+    }
+
     /**
      * @brief sensors_map_ is a map of dynamicgraph::Vector. They represent
      * all the sensors data measured on the robot.
@@ -49,6 +69,13 @@ protected:
      * the dynamic graph just after the acquisition of the sensors
      */
     std::unique_ptr<shared_memory::LockedConditionVariable> cond_var_;
+
+    /**
+     * @brief Thread used to read and write the data.
+     */
+    real_time_tools::RealTimeThread processing_thread_;
+
+    bool is_alive_;
 };
 
 }

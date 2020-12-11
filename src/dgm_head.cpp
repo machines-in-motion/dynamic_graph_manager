@@ -21,16 +21,51 @@ const std::string shared_memory_name_ = "DGM_ShM";
 const std::string cond_var_name_ = "cond_var";
 
 DGMHead::DGMHead(std::string& yaml_file)
+: is_alive_(true)
 {
-    // we build the condition variables after the fork (seems safer this way)
-    cond_var_ = std::make_unique<shared_memory::LockedConditionVariable>(
-        cond_var_name_, false);
-
     std::cout << "Loading parameters from " << yaml_file << std::endl;
     YAML::Node param = YAML::LoadFile(yaml_file);
     parse_yaml_node(param["device"], sensors_map_, motor_controls_map_);
 
+    std::cout << "Seting up cond_var" << std::endl;
+    // we build the condition variables after the fork (seems safer this way)
+    cond_var_ = std::make_unique<shared_memory::LockedConditionVariable>(
+        cond_var_name_, false);
+}
+
+void DGMHead::lock_conditional_variable()
+{
     cond_var_->lock_scope();
+}
+
+void DGMHead::unlock_conditional_variable()
+{
+    cond_var_->unlock_scope();
+}
+
+void DGMHead::processing_data()
+{
+    lock_conditional_variable();
+
+    while (is_alive_) {
+        read();
+        write();
+        notify_all();
+        wait();
+    }
+
+    unlock_conditional_variable();
+}
+
+void DGMHead::end_processing_data()
+{
+    is_alive_ = false;
+}
+
+void DGMHead::start_realtime_processing_thread()
+{
+    is_alive_ = true;
+    processing_thread_.create_realtime_thread(&DGMHead::processing_data, this);
 }
 
 void DGMHead::read()
@@ -39,16 +74,22 @@ void DGMHead::read()
     shared_memory::get(shared_memory_name_, sensors_map_name_, sensors_map_);
 }
 
-void DGMHead::put_notify_wait()
+void DGMHead::write()
 {
     // Write the command to the shared memory.
     shared_memory::set(
         shared_memory_name_, motor_controls_map_name_, motor_controls_map_);
+}
 
+void DGMHead::notify_all()
+{
     // Notify the hardware_communication process that the control has been
     // done.
     cond_var_->notify_all();
+}
 
+void DGMHead::wait()
+{
     // Wait that the hardware_communication process acquiers the data.
     cond_var_->wait();
 }
