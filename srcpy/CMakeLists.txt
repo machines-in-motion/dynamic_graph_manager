@@ -15,9 +15,10 @@ target_include_directories(
          $<INSTALL_INTERFACE:include> SYSTEM
   PUBLIC ${PYTHON_INCLUDE_DIRS})
 _ament_cmake_python_get_python_install_dir()
+get_dynamic_graph_plugin_install_path(dg_plugin_install_path)
 install(TARGETS ${PROJECT_NAME}_cpp_bindings DESTINATION ${PYTHON_INSTALL_DIR})
 set_target_properties(
   ${PROJECT_NAME}_cpp_bindings
   PROPERTIES
     INSTALL_RPATH
-    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/lib/dynamic_graph_plugins")
+    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/${dg_plugin_install_path}")
