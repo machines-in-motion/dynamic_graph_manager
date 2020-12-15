@@ -22,27 +22,74 @@ namespace dynamic_graph_manager
 class DGMHead
 {
 public:
+    /**
+     * @brief Given a DGM yaml file, creates a DGMHead to interact via shared
+     * memory with the dynamic graph manager hardware process.
+     */
     DGMHead(std::string& yaml_file);
 
+    /**
+     * @brief Given the name, returns the sensor value by reference.
+     */
     Eigen::Ref<Eigen::VectorXd> get_sensor(std::string& name);
 
+    /**
+     * @brief Sets the control value for a given name.
+     */
     void set_control(std::string& name, Eigen::Ref<Eigen::VectorXd> vector);
 
+    /**
+     * @brief Locks the scope of the conditional variable used to synchronize
+     * the DGM hardware and control process.
+     */
     void lock_conditional_variable();
+
+    /**
+     * @brief Unlocks the scope of the conditional variable used to synchronize
+     * the DGM hardware and control process.
+     */
     void unlock_conditional_variable();
 
+    /**
+     * @brief Reads the current sensor values from shared memory. The values
+     * returned from `get_sensor` are updated after this call.
+     */
     void read();
 
+    /**
+     * @brief Writes the control updates made via calls to `set_control` to the
+     * shared memory.
+     */
     void write();
 
+    /**
+     * @brief Calls `notify_all` on the shared conditional variable used to
+     * synchronize the hardware and control process.
+     */
     void notify_all();
 
+    /**
+     * @brief Waits until the conditional variable used to synchronize the
+     * hardware and control process becomes available and locks it. Used to
+     * synchronize the hardware and control process.
+     */
     void wait();
 
+    /**
+     * @brief Implementation of the real time processing thread.
+     */
     void processing_data();
 
+    /**
+     * @brief Notifies the real time processing thread to stop processing the
+     * data.
+     */
     void end_processing_data();
 
+    /**
+     * @brief Starts the real time processing thread to read/write data from
+     * shared memory.
+     */
     void start_realtime_processing_thread();
 
 protected:
@@ -75,6 +122,9 @@ protected:
      */
     real_time_tools::RealTimeThread processing_thread_;
 
+    /**
+     * @brief If the processing thread should be alive or not.
+     */
     bool is_alive_;
 };
 

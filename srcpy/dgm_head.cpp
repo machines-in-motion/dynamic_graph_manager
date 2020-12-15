@@ -33,6 +33,4 @@ void bind_dgm_head(pybind11::module &module)
         .def("start_realtime_processing_thread", &DGMHead::start_realtime_processing_thread)
         .def("end_processing_data", &DGMHead::end_processing_data)
         ;
-
 }
-
