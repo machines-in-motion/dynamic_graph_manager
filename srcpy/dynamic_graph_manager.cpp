@@ -17,6 +17,12 @@
 void bind_ros_python_interpreter_client(pybind11::module &module);
 
 /**
+ * @brief Bindings for the DGMHead class.
+ */
+void bind_dgm_head(pybind11::module &module);
+
+
+/**
  * Python bindings for the dynamic_graph_manager namespace.
  */
 PYBIND11_MODULE(dynamic_graph_manager_cpp_bindings, m)
@@ -33,4 +39,5 @@ PYBIND11_MODULE(dynamic_graph_manager_cpp_bindings, m)
     )pbdoc";
     // List of all the bindings.
     bind_ros_python_interpreter_client(m);
+    bind_dgm_head(m);
 }

@@ -2,7 +2,8 @@
 # Python wrapper #
 #
 add_library(${PROJECT_NAME}_cpp_bindings MODULE
-            dynamic_graph_manager.cpp ros_python_interpreter_client.cpp)
+            dynamic_graph_manager.cpp ros_python_interpreter_client.cpp
+            dgm_head.cpp)
 # Link to the messages
 target_link_libraries(${PROJECT_NAME}_cpp_bindings pybind11::module)
 target_link_libraries(${PROJECT_NAME}_cpp_bindings ${PYTHON_LIBRARIES})
