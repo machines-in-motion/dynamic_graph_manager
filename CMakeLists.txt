@@ -37,7 +37,6 @@ find_package(mim_msgs REQUIRED)
 # Standard dependencies.
 find_package(Eigen3 REQUIRED)
 # Pybind11
-find_package(pybind11_vendor REQUIRED)
 find_package(pybind11 REQUIRED)
 # MiM dependencies.
 find_package(mpi_cmake_modules REQUIRED)
