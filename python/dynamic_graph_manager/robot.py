@@ -27,14 +27,15 @@ def matrixToTuple(M):
         res.append(tuple(i))
     return tuple(res)
 
+
 class Robot(object):
     """
     This class instantiates a robot
     """
 
-    init_pos = (0.0)
-    init_vel = (0.0)
-    init_acc = (0.0)
+    init_pos = 0.0
+    init_vel = 0.0
+    init_acc = 0.0
 
     """
     Tracer used to log data.
@@ -44,7 +45,7 @@ class Robot(object):
     """
     How much data will be logged.
     """
-    tracerSize = 2**22
+    tracerSize = 2 ** 22
 
     """
     Automatically recomputed signals through the use
@@ -59,40 +60,41 @@ class Robot(object):
     """
     timeStep = 0.005
 
-    def __init__(self, name, device = None, tracer = None):
+    def __init__(self, name, device=None, tracer=None):
         self.name = name
         self.device = device
         # Initialize tracer if necessary.
-        if tracer:
-            self.tracer = tracer
+        self.tracer = tracer
         self.initialize_tracer()
 
         # We trace by default all signals of the device.
         self.device_signals_names = []
         for signal in self.device.signals():
-          signal_name = signal.name.split('::')[-1]
-          self.add_trace(self.device.name, signal_name)
-          self.device_signals_names.append(signal_name)
+            signal_name = signal.name.split("::")[-1]
+            self.add_trace(self.device.name, signal_name)
+            self.device_signals_names.append(signal_name)
 
         # Prepare potential ros import/export
         self.ros = Ros(self.device)
         # self.export_device_dg_to_ros()
 
     def __del__(self):
-        if self.tracer:
-            self.stop_tracer()
+        self.stop_tracer()
 
     def add_trace(self, entityName, signalName):
         if self.tracer:
             addTrace(self, self.tracer, entityName, signalName)
 
-    def _tracer_log_dir(self):
+    def get_new_tracer_log_dir(self):
         import os
         import os.path
         import time
-        log_dir = os.path.join(os.path.expanduser("~"),
-                                "dynamic_graph_manager",
-                                time.strftime("%Y-%m-%d_%H-%M-%S"))
+
+        log_dir = os.path.join(
+            os.path.expanduser("~"),
+            "dynamic_graph_manager",
+            time.strftime("%Y-%m-%d_%H-%M-%S"),
+        )
 
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
@@ -103,27 +105,27 @@ class Robot(object):
         Initialize the tracer and by default dump the files in
          ~/dynamic_graph/[date_time]/
         """
-        if not self.tracer:
-            self.tracer = TracerRealTime('trace')
+        if self.tracer is None:
+            self.tracer_log_dir = self.get_new_tracer_log_dir()
+            self.tracer = TracerRealTime("trace")
             self.tracer.setBufferSize(self.tracerSize)
+            self.tracer.open(self.tracer_log_dir, "dg_", ".dat")
 
         # Recompute trace.triger at each iteration to enable tracing.
-        self.device.after.addSignal('{0}.triger'.format(self.tracer.name))
+        self.device.after.addSignal("{0}.triger".format(self.tracer.name))
 
     def start_tracer(self):
         """
         Start the tracer if it has not already been stopped.
         """
-        if self.tracer:
-            self.tracer_log_dir = self._tracer_log_dir()
-            self.tracer.open(self.tracer_log_dir, 'dg_', '.dat')
+        if self.tracer is not None:
             self.tracer.start()
 
     def stop_tracer(self):
         """
         Stop and destroy tracer.
         """
-        if self.tracer:
+        if self.tracer is not None:
             self.tracer.dump()
             self.tracer.stop()
             self.tracer.close()
@@ -133,11 +135,13 @@ class Robot(object):
             # tracer should keep it's traced signals attached.
 
             # Null the tracer object, such that initialize_tracer() will reopen it.
-            self.trace = None
+            self.tracer = None
 
             self.initialize_tracer()
 
-    def add_to_ros(self, entityName, signalName, topic_name=None, topic_type=None):
+    def add_to_ros(
+        self, entityName, signalName, topic_name=None, topic_type=None
+    ):
         """
         arg: topic_type is a string among:
               ['double', 'matrix', 'vector', 'vector3', 'vector3Stamped',
@@ -151,17 +155,24 @@ class Robot(object):
         signal = Entity.entities[entityName].signal(signalName)
 
         if topic_name is None:
-            topic_name = "/dg__" + entityName + '__' + signalName
-            new_signal_name = "dg__" + entityName + '__' + signalName
+            topic_name = "/dg__" + entityName + "__" + signalName
+            new_signal_name = "dg__" + entityName + "__" + signalName
         if topic_type is None:
             topic_type = "vector"
 
         self.ros.ros_publish.add(topic_type, new_signal_name, topic_name)
         plug(signal, self.ros.ros_publish.signal(new_signal_name))
 
-    def add_ros_and_trace(self, entityName, signalName, topic_name=None, topic_type=None):
+    def add_ros_and_trace(
+        self, entityName, signalName, topic_name=None, topic_type=None
+    ):
         self.add_trace(entityName, signalName)
-        self.add_to_ros(entityName, signalName, topic_name=topic_name, topic_type=topic_type)
+        self.add_to_ros(
+            entityName,
+            signalName,
+            topic_name=topic_name,
+            topic_type=topic_type,
+        )
 
     def export_device_dg_to_ros(self):
         """
