@@ -1,6 +1,8 @@
 # Here we create a simple dgm for the purpose of documentation. It displays how
 # to build a new DGM for a specific robot.
 
+get_dynamic_graph_plugin_install_path(plugin_install_path)
+
 #
 # demo_dynamic_graph_manager
 #
@@ -12,7 +14,7 @@ set_target_properties(
   demo_dynamic_graph_manager
   PROPERTIES
     INSTALL_RPATH
-    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/lib/dynamic_graph_plugins")
+    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/${plugin_install_path}")
 # add some preprocessor variable
 install(FILES simple_robot.yaml DESTINATION share/resources)
 target_compile_definitions(
@@ -39,7 +41,7 @@ set_target_properties(
   demo_ros_python_interpreter_server
   PROPERTIES
     INSTALL_RPATH
-    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/lib/dynamic_graph_plugins")
+    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/${plugin_install_path}")
 # install so that ros2 run sees it.
 install(
   TARGETS demo_ros_python_interpreter_server
@@ -60,7 +62,7 @@ set_target_properties(
   demo_dynamic_graph_controller
   PROPERTIES
     INSTALL_RPATH
-    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/lib/dynamic_graph_plugins")
+    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/${plugin_install_path}")
 # Get the config file.
 target_compile_definitions(
   demo_dynamic_graph_controller

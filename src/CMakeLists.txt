@@ -68,7 +68,7 @@ set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES
     INSTALL_RPATH
-    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/lib/dynamic_graph_plugins")
+    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/${plugin_install_path}")
 # Export the main library.
 list(APPEND all_src_targets ${PROJECT_NAME})
 
