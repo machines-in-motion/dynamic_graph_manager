@@ -4,7 +4,7 @@ from IPython.zmq.blockingkernelmanager import BlockingKernelManager
 class IPythonKernelServer:
 
     def __init__(self):
-        IPython.start_kernel()
+        IPython.start_kernel(argv=[])
 
 class IPythonKernelClient:
 

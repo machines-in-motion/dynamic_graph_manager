@@ -107,6 +107,6 @@ void RosSubscribe::add(const std::string& signal_name,
 
     // Store the different pointers.
     binded_signals_[signal_name] = binded_signal;
-};
+}
 
 }  // namespace dynamic_graph_manager
