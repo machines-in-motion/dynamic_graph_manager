@@ -7,10 +7,9 @@
  * @brief Purge the shared memory used by the dynamic_graph_manager
  */
 
-#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
+#include "shared_memory/shared_memory.hpp"
 
 int main()
 {
-    shared_memory::clear_shared_memory(
-        dynamic_graph_manager::DynamicGraphManager::shared_memory_name_);
+    shared_memory::clear_shared_memory("DGM_ShM");
 }

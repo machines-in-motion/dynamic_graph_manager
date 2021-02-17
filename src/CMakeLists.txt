@@ -121,13 +121,6 @@ target_include_directories(
                         $<INSTALL_INTERFACE:include>)
 # Link the dependencies.
 target_link_libraries(delete_dgm_shm shared_memory::shared_memory)
-target_link_libraries(delete_dgm_shm dynamic_graph_manager)
-# Set the location of the device.so in the rpath.
-set_target_properties(
-  delete_dgm_shm
-  PROPERTIES
-    INSTALL_RPATH
-    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/${plugin_install_path}")
 # install so that ros2 run sees it.
 install(
   TARGETS delete_dgm_shm
