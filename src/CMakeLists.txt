@@ -110,3 +110,29 @@ install(
   RUNTIME DESTINATION lib/${PROJECT_NAME}
   INCLUDES
   DESTINATION include)
+
+#
+# Delete the ShM program
+#
+add_executable(delete_dgm_shm "program/delete_dgm_shm.cpp")
+# Add the include dependencies.
+target_include_directories(
+  delete_dgm_shm PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                        $<INSTALL_INTERFACE:include>)
+# Link the dependencies.
+target_link_libraries(delete_dgm_shm shared_memory::shared_memory)
+target_link_libraries(delete_dgm_shm dynamic_graph_manager)
+# Set the location of the device.so in the rpath.
+set_target_properties(
+  delete_dgm_shm
+  PROPERTIES
+    INSTALL_RPATH
+    "${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/${plugin_install_path}")
+# install so that ros2 run sees it.
+install(
+  TARGETS delete_dgm_shm
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  INCLUDES
+  DESTINATION include)
