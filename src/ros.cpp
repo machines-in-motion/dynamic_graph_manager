@@ -36,7 +36,7 @@ typedef std::map<std::string, RosNodePtr> GlobalListOfRosNodeType;
  * If the node handle does not exist we call the global method rclcpp::init.
  * This method has for purpose to initialize the ROS environment. The
  * creation of ROS object is permitted only after the call of this function.
- * After rclcpp::init being called we create the node hanlde which allows in
+ * After rclcpp::init being called we create the node handle which allows in
  * turn to advertize the ROS services, or create topics (data pipe).
  *
  */
@@ -288,7 +288,7 @@ void ros_shutdown(std::string node_name)
 
 void ros_shutdown()
 {
-    rclcpp::shutdown();
+    // rclcpp::shutdown();
 }
 
 void ros_clean()

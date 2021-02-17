@@ -218,8 +218,8 @@ void DynamicGraphManager::run()
 
         initialize_dynamic_graph_process();
         run_dynamic_graph_process();
-        dynamic_graph_manager::ros_spin();
-        dynamic_graph_manager::ros_shutdown();
+        ros_spin();
+        ros_shutdown();
         std::cout << "DG: End of the dynamic graph process." << std::endl;
         exit(0);
     }
@@ -234,6 +234,8 @@ void DynamicGraphManager::run()
 
         initialize_hardware_communication_process();
         run_hardware_communication_process();
+        ros_spin();
+        ros_shutdown();
     }
     else
     {
@@ -572,12 +574,13 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     hwc_mutex_.lock();
     while (!is_hardware_communication_stopped() && ros_ok())
     {
-        // call the sensors
+        // rt_printf("HARDWARE: Call the sensors. \n");
         if (!is_hardware_communication_stopped() && ros_ok())
         {
             get_sensors_to_map(sensors_map_);
         }
 
+        // rt_printf("HARDWARE: Write sensors in the shared memory. \n");
         if (cond_var_->owns() || cond_var_->try_lock())
         {
             // write the sensors to the shared memory
@@ -604,7 +607,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
             {
                 user_commands_[0]();
                 user_commands_.pop_front();
-                rt_printf("HARDWARE: Executed user command\n");
+                rt_printf("HARDWARE: Executed user command. \n");
             }
         }
 
@@ -613,6 +616,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
         hwc_timer_.tac_tic();
 
         // Sleeps for one period. This clocks the motor process.
+        // rt_printf("HARDWARE: Sleep. \n");
         hwc_sleep_timer_.tic();
         hwc_mutex_.unlock();
         hwc_spinner_.spin();
