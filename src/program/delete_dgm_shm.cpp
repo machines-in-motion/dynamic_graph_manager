@@ -11,5 +11,6 @@
 
 int main()
 {
+    shared_memory::clear_shared_memory("dgm_shm_name");
     shared_memory::clear_shared_memory("DGM_ShM");
 }
