@@ -73,6 +73,8 @@ public:
         if (!is_thread_running_ && !is_spinning_)
         {
             std::cout << "Start ros spin in thread." << std::endl;
+            // Marking thread as started to avoid a second thread from getting started.
+            is_thread_running_ = true;
             thread_ = std::thread(&Executor::thread_callback, this);
         }
     }
@@ -92,7 +94,7 @@ public:
             is_spinning_ = true;
             ros_executor_.spin();
             is_spinning_ = false;
-        }        
+        }
     }
 
     void add_node(const std::string& ros_node_name)
@@ -143,7 +145,6 @@ private:
      */
     void thread_callback()
     {
-        is_thread_running_ = true;
         ros_executor_.spin();
         is_thread_running_ = false;
     }
