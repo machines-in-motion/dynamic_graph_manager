@@ -234,6 +234,8 @@ void DynamicGraphManager::run()
 
         initialize_hardware_communication_process();
         run_hardware_communication_process();
+
+        std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
         ros_spin();
         ros_shutdown();
     }
