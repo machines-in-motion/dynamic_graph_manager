@@ -15,6 +15,18 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
                      VectorDGMap& out_sensors_map,
                      VectorDGMap& out_motor_controls_map)
 {
+    if(!sensors_and_controls["sensors"])
+    {
+        throw std::runtime_error(
+            "dynamic_graph_manager::parse_yaml_node: 'sensors' does not exists "
+            "in the given YAML node.");
+    }
+    if(!sensors_and_controls["controls"])
+    {
+        throw std::runtime_error(
+            "dynamic_graph_manager::parse_yaml_node: 'controls' does not exists "
+            "in the given YAML node.");
+    }
     const YAML::Node& sensors = sensors_and_controls["sensors"];
     const YAML::Node& controls = sensors_and_controls["controls"];
     std::string hardware_name("");
@@ -32,7 +44,7 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
          ++sensor_it)
     {
         hardware_name = sensor_it->first.as<std::string>();
-        size = sensor_it->second["size"].as<int>();
+        YAML::ReadParameter(sensor_it->second, "size", size);
         out_sensors_map[hardware_name] = dynamicgraph::Vector(size);
         out_sensors_map[hardware_name].setZero();
     }
@@ -45,7 +57,7 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
          ++control_it)
     {
         hardware_name = control_it->first.as<std::string>();
-        size = control_it->second["size"].as<int>();
+        YAML::ReadParameter(control_it->second, "size", size);
         out_motor_controls_map[hardware_name] = dynamicgraph::Vector(size);
         out_motor_controls_map[hardware_name].setZero();
     }
