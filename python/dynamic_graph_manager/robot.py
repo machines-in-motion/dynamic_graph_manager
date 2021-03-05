@@ -109,6 +109,11 @@ class Robot(object):
             self.tracer_log_dir = self.get_new_tracer_log_dir()
             self.tracer = TracerRealTime("trace")
             self.tracer.setBufferSize(self.tracerSize)
+            self.tracer.close()
+            self.tracer.open(self.tracer_log_dir, "dg_", ".dat")
+        else:
+            self.tracer_log_dir = self.get_new_tracer_log_dir()
+            self.tracer.close()
             self.tracer.open(self.tracer_log_dir, "dg_", ".dat")
 
         # Recompute trace.triger at each iteration to enable tracing.
@@ -118,26 +123,18 @@ class Robot(object):
         """
         Start the tracer if it has not already been stopped.
         """
-        if self.tracer is not None:
-            self.tracer.start()
+        self.initialize_tracer()
+        self.tracer.start()
 
     def stop_tracer(self):
         """
         Stop and destroy tracer.
         """
         if self.tracer is not None:
-            self.tracer.dump()
             self.tracer.stop()
+            self.tracer.dump()
             self.tracer.close()
             print("Stored trace in:", self.tracer_log_dir)
-
-            # NOTE: Not calling self.tracer.clear() here, as by default the
-            # tracer should keep it's traced signals attached.
-
-            # Null the tracer object, such that initialize_tracer() will reopen it.
-            self.tracer = None
-
-            self.initialize_tracer()
 
     def add_to_ros(
         self, entityName, signalName, topic_name=None, topic_type=None
