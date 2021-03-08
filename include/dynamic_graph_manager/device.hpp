@@ -30,7 +30,7 @@ class Device : public dynamicgraph::Entity
 {
 public:
     /**
-     * @brief This is the name of the classe that is used to store the object
+     * @brief This is the name of the class that is used to store the object
      * in the dynamic graph
      */
     static const std::string CLASS_NAME;

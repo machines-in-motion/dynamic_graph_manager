@@ -22,8 +22,7 @@
 
 using namespace dynamic_graph_manager;
 
-const std::string DynamicGraphManager::dg_ros_node_name_ = DG_ROS_NODE_NAME
-;
+const std::string DynamicGraphManager::dg_ros_node_name_ = DG_ROS_NODE_NAME;
 const std::string DynamicGraphManager::hw_com_ros_node_name_ =
     HWC_ROS_NODE_NAME;
 const std::string DynamicGraphManager::sensors_map_name_ = "sensors_map";
@@ -228,9 +227,9 @@ void DynamicGraphManager::run()
         pid_dynamic_graph_process_ = child_pid;
         pid_hardware_communication_process_ = getpid();
         std::cout << "pid of dynamic graph process: "
-                    << pid_dynamic_graph_process_ << std::endl;
+                  << pid_dynamic_graph_process_ << std::endl;
         std::cout << "pid of hardware communication process: "
-                    << pid_hardware_communication_process_ << std::endl;
+                  << pid_hardware_communication_process_ << std::endl;
 
         initialize_hardware_communication_process();
         run_hardware_communication_process();
@@ -241,8 +240,8 @@ void DynamicGraphManager::run()
     }
     else
     {
-        throw(std::runtime_error(
-            "DynamicGraphManager::run(): the fork failed"));
+        throw(
+            std::runtime_error("DynamicGraphManager::run(): the fork failed"));
     }
 }
 
@@ -441,7 +440,7 @@ void DynamicGraphManager::run_single_process()
     get_ros_node(hw_com_ros_node_name_);
     ros_add_node_to_executor(hw_com_ros_node_name_);
     start_hardware_communication();
-    
+
     // launch the real time thread
     thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
     thread_dynamic_graph_->create_realtime_thread(
@@ -485,8 +484,6 @@ void DynamicGraphManager::start_ros_service()
 
 void* DynamicGraphManager::dynamic_graph_real_time_loop()
 {
-    wait_start_dynamic_graph();
-    
     rt_printf("DG: Start loop\n");
     get_ros_node(dg_ros_node_name_);
     cond_var_->lock_scope();
@@ -496,7 +493,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
     dg_sleep_timer_.tic();
     dg_timer_.tic();
 
-    while (!is_dynamic_graph_stopped() && ros_ok())
+    while (ros_ok())
     {
         // measure the complete iteration time
         dg_timer_.tac_tic();
@@ -506,14 +503,21 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
         shared_memory::get(
             shared_memory_name_, sensors_map_name_, sensors_map_);
 
-        // call the dynamic graph
+        // Feed the graph with the sensors values.
         device_->set_sensors_from_map(sensors_map_);
-        device_->execute_graph();
-        device_->get_controls_to_map(motor_controls_map_);
 
-        // write the command to the shared memory
-        shared_memory::set(
-            shared_memory_name_, motor_controls_map_name_, motor_controls_map_);
+        // If the graph is considered "started" then we execute the graph.
+        if (is_dynamic_graph_stopped())
+        {
+            // Execute the graph.
+            device_->execute_graph();
+
+            // write the command to the shared memory
+            device_->get_controls_to_map(motor_controls_map_);
+            shared_memory::set(shared_memory_name_,
+                               motor_controls_map_name_,
+                               motor_controls_map_);
+        }
 
         // measure the active time
         dg_active_timer_.tac();
@@ -524,7 +528,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
         // done
         cond_var_->notify_all();
 
-        // wait that the hardware_communication process acquiers the data.
+        // wait that the hardware_communication process acquires the data.
         cond_var_->wait();
 
         // measure the sleep time
@@ -567,7 +571,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     hwc_active_timer_.tic();
     hwc_timer_.tic();
 
-    // time the loop so it respect the input frequence/period
+    // time the loop so it respect the input frequency/period
     hwc_spinner_.set_period(control_period_sec_);
     hwc_spinner_.initialize();
 
