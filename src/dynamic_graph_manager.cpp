@@ -507,7 +507,7 @@ void* DynamicGraphManager::dynamic_graph_real_time_loop()
         device_->set_sensors_from_map(sensors_map_);
 
         // If the graph is considered "started" then we execute the graph.
-        if (is_dynamic_graph_stopped())
+        if (!is_dynamic_graph_stopped())
         {
             // Execute the graph.
             device_->execute_graph();
