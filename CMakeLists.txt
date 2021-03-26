@@ -40,7 +40,6 @@ find_package(Eigen3 REQUIRED)
 find_package(pybind11 REQUIRED)
 # MiM dependencies.
 find_package(mpi_cmake_modules REQUIRED)
-find_package(Python REQUIRED)
 find_package(shared_memory REQUIRED)
 find_package(real_time_tools REQUIRED)
 find_package(yaml_utils REQUIRED)
