@@ -392,6 +392,7 @@ void DynamicGraphManager::python_prologue()
 void DynamicGraphManager::run_dynamic_graph_process()
 {
     printf("wait to start dynamic graph\n");
+    wait_start_dynamic_graph();
     if (ros_ok())
     {
         // launch the real time thread
