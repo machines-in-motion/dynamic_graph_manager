@@ -19,8 +19,9 @@ void bind_dgm_head(pybind11::module &module)
     pybind11::class_<DGMHead>(module, "DGMHead")
         .def(pybind11::init<std::string &>())
 
-        .def("get_sensor", &DGMHead::get_sensor,
-            pybind11::return_value_policy::reference_internal)
+        .def("get_sensor",
+             &DGMHead::get_sensor,
+             pybind11::return_value_policy::reference_internal)
         .def("set_control", &DGMHead::set_control)
 
         .def("read", &DGMHead::read)
@@ -29,8 +30,9 @@ void bind_dgm_head(pybind11::module &module)
         .def("wait", &DGMHead::wait)
 
         .def("lock_conditional_variable", &DGMHead::lock_conditional_variable)
-        .def("unlock_conditional_variable", &DGMHead::unlock_conditional_variable)
-        .def("start_realtime_processing_thread", &DGMHead::start_realtime_processing_thread)
-        .def("end_processing_data", &DGMHead::end_processing_data)
-        ;
+        .def("unlock_conditional_variable",
+             &DGMHead::unlock_conditional_variable)
+        .def("start_realtime_processing_thread",
+             &DGMHead::start_realtime_processing_thread)
+        .def("end_processing_data", &DGMHead::end_processing_data);
 }

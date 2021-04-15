@@ -73,7 +73,8 @@ public:
         if (!is_thread_running_ && !is_spinning_)
         {
             std::cout << "Start ros spin in thread." << std::endl;
-            // Marking thread as started to avoid a second thread from getting started.
+            // Marking thread as started to avoid a second thread from getting
+            // started.
             is_thread_running_ = true;
             thread_ = std::thread(&Executor::thread_callback, this);
         }
@@ -84,13 +85,15 @@ public:
      */
     void spin()
     {
-        if(is_thread_running_)
+        if (is_thread_running_)
         {
-            while(ros_ok() && is_thread_running_)
+            while (ros_ok() && is_thread_running_)
             {
                 real_time_tools::Timer::sleep_sec(0.1);
             }
-        }else{
+        }
+        else
+        {
             is_spinning_ = true;
             ros_executor_.spin();
             is_spinning_ = false;
@@ -128,7 +131,7 @@ public:
      */
     void stop_spinning()
     {
-        while(is_thread_running_ || is_spinning_)
+        while (is_thread_running_ || is_spinning_)
         {
             ros_executor_.cancel();
             real_time_tools::Timer::sleep_sec(0.1);
@@ -297,7 +300,7 @@ void ros_clean()
     ros_stop_spinning();
     GlobalListOfRosNodeType::iterator ros_node_it =
         GLOBAL_LIST_OF_ROS_NODE.begin();
-    while(!GLOBAL_LIST_OF_ROS_NODE.empty())
+    while (!GLOBAL_LIST_OF_ROS_NODE.empty())
     {
         ros_shutdown(ros_node_it->first);
         ros_node_it = GLOBAL_LIST_OF_ROS_NODE.begin();

@@ -28,8 +28,8 @@
 #include <std_msgs/msg/u_int32.hpp>
 
 // internal DG types
-#include "dynamic_graph_manager/ros_entities/time_point_io.hpp"
 #include "dynamic_graph_manager/ros_entities/matrix_geometry.hpp"
+#include "dynamic_graph_manager/ros_entities/time_point_io.hpp"
 
 // internal ros types
 #include "dynamic_graph_manager/ros.hpp"

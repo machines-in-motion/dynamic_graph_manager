@@ -88,7 +88,9 @@ class DynamicGraphInteractiveConsole(code.InteractiveConsole):
         try:
             # we copy the line in a tmp var
             code_string = self.lines_pushed[:-1]
-            result = self.ros_python_interpreter.run_python_command(code_string)
+            result = self.ros_python_interpreter.run_python_command(
+                code_string
+            )
             self.write(result)
             if not result.endswith("\n"):
                 self.write("\n")
@@ -144,7 +146,9 @@ if __name__ == "__main__":
             os.path.abspath(infile)
         )
         print(
-            dg_console.ros_python_interpreter.run_python_command("print('File parsed')")
+            dg_console.ros_python_interpreter.run_python_command(
+                "print('File parsed')"
+            )
         )
 
     signal.signal(signal.SIGINT, signal_handler)

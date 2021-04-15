@@ -426,6 +426,7 @@ public:
      * services.
      */
     void start_ros_service();
+
 private:
     /**
      * @brief dynamic_graph_real_time_loop is the method used to execute the

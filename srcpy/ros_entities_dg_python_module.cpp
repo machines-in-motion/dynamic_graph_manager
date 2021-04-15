@@ -27,7 +27,7 @@ BOOST_PYTHON_MODULE(ros_entities)
 
     dynamicgraph::python::exposeEntity<RosPublish>();
     dynamicgraph::python::exposeEntity<RosSubscribe>();
-    
+
     dg::python::exposeSignalsOfType<dynamic_graph_manager::timestamp_t, int>(
         "Timestamp");
 }

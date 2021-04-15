@@ -21,7 +21,6 @@ void bind_ros_python_interpreter_client(pybind11::module &module);
  */
 void bind_dgm_head(pybind11::module &module);
 
-
 /**
  * Python bindings for the dynamic_graph_manager namespace.
  */

@@ -20,10 +20,12 @@ class Ros(object):
     def __init__(self, device, suffix=""):
         self.device = device
         self.ros_publish = RosPublish("ros_publish" + suffix)
-        self.ros_subscribe = RosSubscribe("ros_subscribe" +suffix)
+        self.ros_subscribe = RosSubscribe("ros_subscribe" + suffix)
 
         # make sure that the publishing is done by plugging the refresh
         # (trigger) to the device periodic call system
-        self.device.after.addDownsampledSignal(self.ros_publish.name + ".trigger", 1)
+        self.device.after.addDownsampledSignal(
+            self.ros_publish.name + ".trigger", 1
+        )
         # not needed for self.ros_subscribe and self.ros_subscribe as they get
         # the information from ROS, they do not have output signals

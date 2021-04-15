@@ -119,7 +119,6 @@ TEST_F(TestDynamicGraphManagerCommon, test_initialize_no_hwc_node_handle)
     ASSERT_FALSE(ros_node_exists(dgm.hw_com_ros_node_name_));
 }
 
-
 /**
  * @brief Test the standard behavior of the DGM until the safety mode is
  * activated

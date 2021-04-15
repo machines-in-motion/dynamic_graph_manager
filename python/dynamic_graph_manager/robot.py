@@ -70,9 +70,9 @@ class Robot(object):
     def get_new_tracer_log_dir(self):
         """Create a log directory name."""
         log_dir = (
-            Path.home() /
-            "dynamic_graph_manager" /
-            deepcopy(time.strftime("%Y-%m-%d_%H-%M-%S"))
+            Path.home()
+            / "dynamic_graph_manager"
+            / deepcopy(time.strftime("%Y-%m-%d_%H-%M-%S"))
         )
         log_dir.mkdir(parents=True, exist_ok=True)
         return str(log_dir)
@@ -151,4 +151,4 @@ class Robot(object):
             self.add_to_ros(self.device.name, sig_name)
 
 
-__all__ = ['Robot']
+__all__ = ["Robot"]

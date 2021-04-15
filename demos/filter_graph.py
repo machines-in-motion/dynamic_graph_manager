@@ -1,10 +1,14 @@
 from dynamic_graph import plug
 from dynamic_graph.sot.core.vector_constant import VectorConstant
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
-from dynamic_graph.sot.core.operator import (Multiply_double_vector,
-                                             Selec_of_vector, Stack_of_vector,
-                                             Substract_of_vector)
+from dynamic_graph.sot.core.operator import (
+    Multiply_double_vector,
+    Selec_of_vector,
+    Stack_of_vector,
+    Substract_of_vector,
+)
 from dynamic_graph import writeGraph
+
 
 def create_simple_graph():
     """
@@ -29,7 +33,7 @@ def create_simple_graph():
     filter_size = 200
     slider_filtered.setSize(filter_size)
     for i in range(filter_size):
-        slider_filtered.setElement(i, 1.0/float(filter_size))
+        slider_filtered.setElement(i, 1.0 / float(filter_size))
     # we plug the centered sliders output to the input of the filter.
     plug(centered_slider.sout, slider_filtered.sin)
 
@@ -45,28 +49,24 @@ def create_simple_graph():
     for i, leg in enumerate(["fr", "hr", "hl", "fl"]):
         # first of all we define the references for the hip joint:
         state[leg + "_hip_qref"] = Selec_of_vector(leg + "_hip_qref")
-        state[leg + "_hip_qref"].selec(i, i+1)
+        state[leg + "_hip_qref"].selec(i, i + 1)
         plug(scaled_slider.sout, state[leg + "_hip_qref"].sin)
 
         # Then we define the reference for the knee joint. We want the knee to move
         # twice as much as the hip and on the opposite direction
-        state[leg + "_knee_qref"] = Multiply_double_vector(
-            leg + "_knee_qref")
-        
-        state[leg + "_knee_qref"].sin1.value = - 2.0
-        plug(state[leg + "_hip_qref"].sout,
-             state[leg + "_knee_qref"].sin2)
-      
+        state[leg + "_knee_qref"] = Multiply_double_vector(leg + "_knee_qref")
+
+        state[leg + "_knee_qref"].sin1.value = -2.0
+        plug(state[leg + "_hip_qref"].sout, state[leg + "_knee_qref"].sin2)
+
         # now we need to stack the signals 2 by 2:
         state[leg + "_qref"] = Stack_of_vector(leg + "_qref")
         state[leg + "_qref"].selec1(0, 1)
         state[leg + "_qref"].selec2(0, 1)
         # first element is the hip
-        plug(state[leg + "_hip_qref"].sout,
-             state[leg + "_qref"].sin1)
+        plug(state[leg + "_hip_qref"].sout, state[leg + "_qref"].sin1)
         # second element is the knee
-        plug(state[leg + "_knee_qref"].sout,
-             state[leg + "_qref"].sin2)
+        plug(state[leg + "_knee_qref"].sout, state[leg + "_qref"].sin2)
 
     robot_state_front_legs = Stack_of_vector("front_legs_state")
     plug(state["fr_qref"].sout, robot_state_front_legs.sin1)
@@ -82,7 +82,8 @@ def create_simple_graph():
 
 
 def draw_simple_graph():
-    writeGraph('/tmp/robot_state_reference_from_slider.dot')
+    writeGraph("/tmp/robot_state_reference_from_slider.dot")
+
 
 print("Creating graph...")
 create_simple_graph()

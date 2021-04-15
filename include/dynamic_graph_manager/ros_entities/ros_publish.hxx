@@ -13,13 +13,11 @@
 
 namespace dynamic_graph_manager
 {
-template <typename RosType, typename
- DgType>
+template <typename RosType, typename DgType>
 void RosPublish::send_data(
     std::shared_ptr<rclcpp::Publisher<
         typename DgRosMapping<RosType, DgType>::ros_t> > publisher,
-    std::shared_ptr<typename DgRosMapping<RosType, DgType>::signal_in_t>
-        signal)
+    std::shared_ptr<typename DgRosMapping<RosType, DgType>::signal_in_t> signal)
 {
     typename DgRosMapping<RosType, DgType>::ros_t msg;
     DgRosMapping<RosType, DgType>::dg_to_ros(signal->accessCopy(), msg);

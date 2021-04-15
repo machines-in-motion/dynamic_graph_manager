@@ -15,7 +15,6 @@
 
 namespace dynamic_graph_manager
 {
-
 /** @brief Time stamp type. */
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> timestamp_t;
 

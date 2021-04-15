@@ -33,7 +33,8 @@ class DgmProcess:
         self.manager = Manager()
         self.condition = self.manager.Condition()
         self.another_process = Process(
-            target=DgmProcess._run_demo_dynamic_graph_manager, args=(self.condition,)
+            target=DgmProcess._run_demo_dynamic_graph_manager,
+            args=(self.condition,),
         )
 
     def start_dgm(self):
@@ -50,9 +51,13 @@ class DgmProcess:
     def _run_demo_dynamic_graph_manager(condition):
 
         # start the demo dgm
-        bash_command = "ros2 run dynamic_graph_manager demo_dynamic_graph_manager"
+        bash_command = (
+            "ros2 run dynamic_graph_manager demo_dynamic_graph_manager"
+        )
         dgm_subprocess = subprocess.Popen(
-            bash_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            bash_command.split(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
 
         condition.acquire()
@@ -163,7 +168,7 @@ class TestDynamicGraphManager(unittest.TestCase):
 
         time.sleep(0.1)
         self.assertTrue(
-            (topic_name, ['mim_msgs/msg/Vector'])
+            (topic_name, ["mim_msgs/msg/Vector"])
             in self.ros_node.get_topic_names_and_types()
         )
 
@@ -175,7 +180,9 @@ class TestDynamicGraphManager(unittest.TestCase):
             if i > 50:
                 self.fail("No messsage received by the subscription")
 
-        np.testing.assert_equal(ros_subscribe.signal(signal_name).value, msg.data)
+        np.testing.assert_equal(
+            ros_subscribe.signal(signal_name).value, msg.data
+        )
 
         self.ros_node.destroy_publisher(pub)
 

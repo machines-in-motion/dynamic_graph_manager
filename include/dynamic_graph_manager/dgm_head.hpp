@@ -11,14 +11,13 @@
 
 #include <Eigen/Dense>
 
-#include "shared_memory/locked_condition_variable.hpp"
 #include <real_time_tools/thread.hpp>
+#include "shared_memory/locked_condition_variable.hpp"
 
 #include <dynamic_graph_manager/tools.hpp>
 
 namespace dynamic_graph_manager
 {
-
 class DGMHead
 {
 public:
@@ -128,4 +127,4 @@ protected:
     bool is_alive_;
 };
 
-}
+}  // namespace dynamic_graph_manager

@@ -68,8 +68,7 @@ RosPublish::RosPublish(const std::string& n)
         "    - signal: the signal name in dynamic-graph,\n"
         "    - topic:  the topic name in ROS.\n"
         "\n";
-    addCommand("add",
-               new command::ros_publish::Add(*this, doc_string));
+    addCommand("add", new command::ros_publish::Add(*this, doc_string));
     doc_string =
         "\n"
         "  Remove a signal writing data to a ROS topic.\n"

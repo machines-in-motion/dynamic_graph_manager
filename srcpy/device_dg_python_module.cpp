@@ -61,12 +61,11 @@ BOOST_PYTHON_MODULE(device)
         .def("clear",
              &PeriodicCall::clear,
              "Clear all signals and commands from the refresh list.")
-        .def(
-            "__str__", +[](const PeriodicCall &e) {
-                std::ostringstream os;
-                e.display(os);
-                return os.str();
-            });
+        .def("__str__", +[](const PeriodicCall &e) {
+            std::ostringstream os;
+            e.display(os);
+            return os.str();
+        });
 
     using dynamic_graph_manager::Device;
     dynamicgraph::python::exposeEntity<Device>()
@@ -76,15 +75,14 @@ BOOST_PYTHON_MODULE(device)
         .def_readonly("before",
                       bp::make_function(&Device::get_periodic_call_before,
                                         reference_existing_object()))
-        .def(
-            "initialize",
-            +[](boost::python::object obj,
-                const std::string &path_to_yaml_file) {
-                Device *device = boost::python::extract<Device *>(obj);
-                device->initialize_from_file(path_to_yaml_file);
-                return dynamicgraph::python::entity::addSignals(obj);
-            },
-            "Initialize the device from a YAML file."
-            "string (valid path to the yaml configuration file)",
-            bp::arg("path_to_yaml_file"));
+        .def("initialize",
+             +[](boost::python::object obj,
+                 const std::string &path_to_yaml_file) {
+                 Device *device = boost::python::extract<Device *>(obj);
+                 device->initialize_from_file(path_to_yaml_file);
+                 return dynamicgraph::python::entity::addSignals(obj);
+             },
+             "Initialize the device from a YAML file."
+             "string (valid path to the yaml configuration file)",
+             bp::arg("path_to_yaml_file"));
 }

@@ -8,7 +8,7 @@
  */
 #include "simple_dgm.hpp"
 
-int main(int, char*[])
+int main(int, char* [])
 {
     std::string yaml_params_file =
         DEMO_RESOURCES_PATH + std::string("simple_robot.yaml");
@@ -18,7 +18,7 @@ int main(int, char*[])
 
     dgm.initialize(param);
     dgm.run();
-    
+
     dynamic_graph_manager::ros_spin();
     dynamic_graph_manager::ros_shutdown();
 }

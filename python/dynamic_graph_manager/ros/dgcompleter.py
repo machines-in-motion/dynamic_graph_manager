@@ -59,15 +59,16 @@ class DGCompleter:
         else:
             self.client = ros_python_interpreter_client
 
-        cmd = (["if \"local_completer\" not in globals():\n"
-                "    print(\"Load the dg_completer\")\n"
-                "    from rlcompleter import Completer\n"
-                "    local_completer=Completer()\n"
-                "    import readline\n"
-                "    readline.set_completer(local_completer.complete)\n"
-                "    readline.parse_and_bind(\"tab: complete\")"
-        ])
-       
+        cmd = [
+            'if "local_completer" not in globals():\n'
+            '    print("Load the dg_completer")\n'
+            "    from rlcompleter import Completer\n"
+            "    local_completer=Completer()\n"
+            "    import readline\n"
+            "    readline.set_completer(local_completer.complete)\n"
+            '    readline.parse_and_bind("tab: complete")'
+        ]
+
         for python_command in cmd:
             print(python_command)
             self.client.run_python_command(python_command)
@@ -81,7 +82,7 @@ class DGCompleter:
         returns None. The completion should begin with 'text'.
         """
         # self.client.run_python_command("global local_completer")
-        cmd = "local_completer.complete(\""+text+"\","+str(state)+")"
+        cmd = 'local_completer.complete("' + text + '",' + str(state) + ")"
         response = self.client.run_python_command(cmd)
         if not response or response is "\n" or response is None:
             response = None

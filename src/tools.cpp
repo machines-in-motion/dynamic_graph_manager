@@ -15,16 +15,17 @@ void parse_yaml_node(const YAML::Node& sensors_and_controls,
                      VectorDGMap& out_sensors_map,
                      VectorDGMap& out_motor_controls_map)
 {
-    if(!sensors_and_controls["sensors"])
+    if (!sensors_and_controls["sensors"])
     {
         throw std::runtime_error(
             "dynamic_graph_manager::parse_yaml_node: 'sensors' does not exists "
             "in the given YAML node.");
     }
-    if(!sensors_and_controls["controls"])
+    if (!sensors_and_controls["controls"])
     {
         throw std::runtime_error(
-            "dynamic_graph_manager::parse_yaml_node: 'controls' does not exists "
+            "dynamic_graph_manager::parse_yaml_node: 'controls' does not "
+            "exists "
             "in the given YAML node.");
     }
     const YAML::Node& sensors = sensors_and_controls["sensors"];

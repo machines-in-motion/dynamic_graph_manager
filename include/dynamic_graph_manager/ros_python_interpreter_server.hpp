@@ -18,8 +18,6 @@
 
 namespace dynamic_graph_manager
 {
-
-
 /// \brief This class wraps the implementation of the runCommand
 /// service.
 ///
@@ -132,8 +130,8 @@ private:
      */
     RosNodePtr ros_node_;
     /**
-     * @brief run_python_command_srv_ is the "run_python_command" rclcpp::service
-     * c++ object
+     * @brief run_python_command_srv_ is the "run_python_command"
+     * rclcpp::service c++ object
      *
      * This kind of ros object require *NOT* to be destroyed. otherwize the
      * rclcpp::service is cancelled. This is the reason why this object is an
@@ -141,8 +139,8 @@ private:
      */
     RunPythonCommandServerPtr run_python_command_srv_;
     /**
-     * @brief run_python_file_srv_ is the "run_python_script" rclcpp::service c++
-     * object
+     * @brief run_python_file_srv_ is the "run_python_script" rclcpp::service
+     * c++ object
      *
      * This kind of ros object require *NOT* to be destroyed. otherwize the
      * rclcpp::service is cancelled. This is the reason why this object is an

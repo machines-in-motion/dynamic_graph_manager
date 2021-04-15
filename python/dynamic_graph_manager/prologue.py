@@ -16,7 +16,9 @@ from dynamic_graph_manager.dynamic_graph.device import Device
 from .robot import Robot
 
 # Get the name of the device from the shared_memory
-shared_memory_name = shared_memory.get_string("dgm_shm_name", "shared_memory_name")
+shared_memory_name = shared_memory.get_string(
+    "dgm_shm_name", "shared_memory_name"
+)
 device_name = shared_memory.get_string(shared_memory_name, "device_name")
 
 # Create the robot using the device.

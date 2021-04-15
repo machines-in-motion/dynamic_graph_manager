@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include <dynamic-graph/factory.h>
 #include <dynamic-graph/command.h>
 #include <dynamic-graph/entity.h>
+#include <dynamic-graph/factory.h>
 #include <dynamic-graph/signal-time-dependent.h>
 
 #include <iostream>
@@ -71,7 +71,7 @@ public:
 
     /**
      * @brief Add a signal to publish to ROS.
-     * 
+     *
      * @tparam RosType type of the ROS message.
      * @tparam DgType type of the Dynamic Graph signal data.
      * @param signal name.
@@ -98,7 +98,7 @@ public:
      * @brief Remove all signal published to ROS.
      */
     void clear();
-    
+
 private:
     /**
      * @brief Trigger signal callback method.
@@ -107,10 +107,9 @@ private:
      */
     int& trigger(int&, int);
 
-
     /**
      * @brief Send the data from the input signal to the ROS topic.
-     * 
+     *
      * @tparam RosType ROS message type.
      * @tparam DgType Dynamic graph signal data type.
      * @param publisher pointer to the ros publisher.

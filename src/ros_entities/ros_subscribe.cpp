@@ -111,8 +111,7 @@ std::string RosSubscribe::list()
 
 void RosSubscribe::clear()
 {
-    std::map<std::string, BindedSignal>::iterator it =
-        binded_signals_.begin();
+    std::map<std::string, BindedSignal>::iterator it = binded_signals_.begin();
     for (; it != binded_signals_.end();)
     {
         rm(it->first);

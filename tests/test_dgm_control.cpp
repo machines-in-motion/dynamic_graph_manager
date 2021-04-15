@@ -318,7 +318,7 @@ void manage_dg_process(DynamicGraphManager* dgm)
     dgm_cond_var.lock_scope();
 
     // Sleep a bit so the thread is launched and can spin 10 times exactly
-    for(unsigned int i = 0 ; i < 10 ; ++i)
+    for (unsigned int i = 0; i < 10; ++i)
     {
         dgm_cond_var.notify_all();
         dgm_cond_var.wait();

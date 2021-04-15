@@ -85,7 +85,7 @@ public:
     }
 
     void display(std::ostream& os) const;
- 
+
     void setPyInterpreter(dynamicgraph::python::Interpreter* py_interpreter)
     {
         py_interpreter_ = py_interpreter;

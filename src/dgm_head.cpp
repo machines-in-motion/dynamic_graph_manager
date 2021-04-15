@@ -14,14 +14,12 @@
 
 namespace dynamic_graph_manager
 {
-
 const std::string sensors_map_name_ = "sensors_map";
 const std::string motor_controls_map_name_ = "motor_controls_map";
 const std::string shared_memory_name_ = "DGM_ShM";
 const std::string cond_var_name_ = "cond_var";
 
-DGMHead::DGMHead(std::string& yaml_file)
-: is_alive_(true)
+DGMHead::DGMHead(std::string& yaml_file) : is_alive_(true)
 {
     std::cout << "Loading parameters from " << yaml_file << std::endl;
     YAML::Node param = YAML::LoadFile(yaml_file);
@@ -47,7 +45,8 @@ void DGMHead::processing_data()
 {
     lock_conditional_variable();
 
-    while (is_alive_) {
+    while (is_alive_)
+    {
         read();
         write();
         notify_all();
@@ -112,4 +111,4 @@ void DGMHead::set_control(std::string& name, Eigen::Ref<Eigen::VectorXd> vector)
     motor_controls_map_[name] = vector;
 }
 
-} // namespace dynamic_graph_manager
+}  // namespace dynamic_graph_manager

@@ -17,7 +17,7 @@ from dynamic_graph_manager_cpp_bindings import RosPythonInterpreterClient
 
 class DynamicGraphManagerClient(Node):
     """ Defines a helper to programmatically interact with a DGM instance. """
-    
+
     def __init__(self, node_name="dgm_client"):
         super().__init__(node_name)
 
@@ -64,6 +64,6 @@ class DynamicGraphManagerClient(Node):
 
     def start_tracer(self):
         self.run_python_command("robot.start_tracer()")
-    
+
     def stop_tracer(self):
         self.run_python_command("robot.stop_tracer()")

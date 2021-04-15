@@ -40,9 +40,8 @@ public:
         // get the hardware communication ros node handle
         RosNodePtr ros_node_handle =
             get_ros_node(DynamicGraphManager::hw_com_ros_node_name_);
-        std::function<void(
-            mim_msgs::srv::TestUserCmdBool::Request::SharedPtr,
-            mim_msgs::srv::TestUserCmdBool::Response::SharedPtr)>
+        std::function<void(mim_msgs::srv::TestUserCmdBool::Request::SharedPtr,
+                           mim_msgs::srv::TestUserCmdBool::Response::SharedPtr)>
             user_command_callback_function =
                 std::bind(&SimpleDGM::user_command_callback,
                           this,
@@ -50,9 +49,8 @@ public:
                           std::placeholders::_2);
         /** initialize the user commands */
         user_command_service_ =
-            ros_node_handle
-                ->create_service<mim_msgs::srv::TestUserCmdBool>(
-                    "set_a_boolean", user_command_callback_function);
+            ros_node_handle->create_service<mim_msgs::srv::TestUserCmdBool>(
+                "set_a_boolean", user_command_callback_function);
     }
     /**
      * @brief Get the sensors to the map object.

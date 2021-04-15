@@ -62,9 +62,7 @@ std::string RosPythonInterpreterClient::run_python_command(
         // Wait for the result.
         while (rclcpp::ok() &&
                rclcpp::spin_until_future_complete(
-                   ros_node_,
-                   response,
-                   std::chrono::seconds(1)) !=
+                   ros_node_, response, std::chrono::seconds(1)) !=
                    rclcpp::executor::FutureReturnCode::SUCCESS)
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
@@ -83,7 +81,7 @@ std::string RosPythonInterpreterClient::run_python_command(
             return_string += response.get()->result;
         }
     }
-    catch(const std::exception& ex)
+    catch (const std::exception& ex)
     {
         RCLCPP_INFO(rclcpp::get_logger("RosPythonInterpreterClient"),
                     ex.what());

@@ -105,18 +105,18 @@ public:
 
     /**
      * @brief Get periodic call before.
-     * 
-     * @return PeriodicCall& 
+     *
+     * @return PeriodicCall&
      */
     PeriodicCall& get_periodic_call_before()
     {
         return periodic_call_before_;
     }
-    
+
     /**
      * @brief Get periodic call after.
-     * 
-     * @return PeriodicCall& 
+     *
+     * @return PeriodicCall&
      */
     PeriodicCall& get_periodic_call_after()
     {

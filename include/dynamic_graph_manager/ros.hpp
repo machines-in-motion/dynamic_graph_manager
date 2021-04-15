@@ -10,18 +10,15 @@
 #include <memory>
 
 // ROS includes
-#include "std_srvs/srv/empty.hpp"
-#include "rclcpp/rclcpp.hpp"
 #include "mim_msgs/srv/run_python_command.hpp"
 #include "mim_msgs/srv/run_python_file.hpp"
-
+#include "rclcpp/rclcpp.hpp"
+#include "std_srvs/srv/empty.hpp"
 
 namespace dynamic_graph_manager
 {
-
 const std::string DG_ROS_NODE_NAME = "dynamic_graph";
 const std::string HWC_ROS_NODE_NAME = "hardware_communication";
-
 
 /*
  * A Bunch of convenient shortcuts.
@@ -37,8 +34,7 @@ typedef rclcpp::Service<RunPythonCommandSrvType>::SharedPtr
     RunPythonCommandServerPtr;
 typedef rclcpp::Client<RunPythonCommandSrvType>::SharedPtr
     RunPythonCommandClientPtr;
-typedef RunPythonCommandSrvType::Request::SharedPtr
-    RunPythonCommandRequestPtr;
+typedef RunPythonCommandSrvType::Request::SharedPtr RunPythonCommandRequestPtr;
 typedef std::shared_ptr<RunPythonCommandSrvType::Response>
     RunPythonCommandResponsePtr;
 typedef std::shared_future<std::shared_ptr<RunPythonCommandSrvType::Response> >
@@ -72,8 +68,8 @@ RosNodePtr get_ros_node(std::string node_name);
 
 /**
  * @brief Add a ros node to the global executor.
- * 
- * @param node_name 
+ *
+ * @param node_name
  */
 void ros_add_node_to_executor(const std::string& node_name);
 
@@ -120,10 +116,10 @@ void ros_clean();
 
 /**
  * @brief Check if ROS is fine.
- * 
- * @param node_name 
- * @return true 
- * @return false 
+ *
+ * @param node_name
+ * @return true
+ * @return false
  */
 bool ros_ok();
 
