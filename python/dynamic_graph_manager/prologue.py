@@ -15,17 +15,28 @@ import shared_memory
 from dynamic_graph_manager.dynamic_graph.device import Device
 from .robot import Robot
 
+print("import works")
+
 # Get the name of the device from the shared_memory
 shared_memory_name = shared_memory.get_string(
     "dgm_shm_name", "shared_memory_name"
 )
+
+print("Get ShM name")
+
 device_name = shared_memory.get_string(shared_memory_name, "device_name")
+
+print("Get device name")
 
 # Create the robot using the device.
 device_cpp_object = Device(device_name)
 
+print("get device")
+
 # We create a small class that will own the device object and a real time tracer.
 robot = Robot(name=device_name, device=device_cpp_object)
+
+print("Create robot")
 
 __all__ = ["robot"]
 

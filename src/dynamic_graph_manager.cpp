@@ -33,10 +33,6 @@ const std::string DynamicGraphManager::cond_var_name_ = "cond_var";
 
 DynamicGraphManager::DynamicGraphManager()
 {
-    shared_memory::clear_shared_memory("dgm_shm_name");
-    shared_memory::set<std::string>(
-        "dgm_shm_name", "shared_memory_name", shared_memory_name_);
-
     // Upon construction the graph is inactive
     params_.reset();
 
@@ -54,9 +50,6 @@ DynamicGraphManager::DynamicGraphManager()
     missed_control_count_ = 0;
     max_missed_control_ = 0;
     control_period_ = clock::duration(0);
-
-    // clean the shared memory
-    shared_memory::clear_shared_memory(shared_memory_name_);
 
     // files where to dump the timers
     log_dir_ = "/tmp/";
@@ -113,8 +106,6 @@ void DynamicGraphManager::initialize(YAML::Node param)
     pid_dynamic_graph_process_ = 0;
     pid_hardware_communication_process_ = 0;
 
-    // clean the shared memory
-    shared_memory::clear_shared_memory(shared_memory_name_);
     // we initialize the sensors and control maps in the common initializer
     parse_yaml_node(params_["device"], sensors_map_, motor_controls_map_);
     shared_memory::set(shared_memory_name_, sensors_map_name_, sensors_map_);
@@ -199,12 +190,6 @@ void DynamicGraphManager::initialize(YAML::Node param)
     hwc_timer_.set_memory_size(debug_timer_history_length);
 
     std::cout << "Log will be saved in : \"" << log_dir_ << "\"" << std::endl;
-
-    // we create and destroy the condition variable to free the shared memory
-    // and therefore the associated mutex which must be lockable at this state.
-    {
-        shared_memory::LockedConditionVariable(cond_var_name_, true);
-    }
 }
 
 void DynamicGraphManager::run()

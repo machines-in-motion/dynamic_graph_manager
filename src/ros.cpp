@@ -292,7 +292,7 @@ void ros_shutdown(std::string node_name)
 
 void ros_shutdown()
 {
-    // rclcpp::shutdown();
+     rclcpp::shutdown();
 }
 
 void ros_clean()
