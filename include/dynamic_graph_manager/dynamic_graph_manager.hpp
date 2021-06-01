@@ -36,6 +36,8 @@
 
 // use the realtime spinner to time the loops
 #include <real_time_tools/spinner.hpp>
+// cadence the single process.
+#include <real_time_tools/frequency_manager.hpp>
 
 // time measurement
 #include "real_time_tools/timer.hpp"
@@ -730,7 +732,13 @@ protected:
      * @brief This class allows us to time the real time thread for the hardware
      * communication.
      */
-    real_time_tools::Spinner hwc_spinner_;
+    real_time_tools::FrequencyManager hwc_spinner_;
+
+    /**
+     * @brief This class allows us to time the real time thread for the hardware
+     * communication.
+     */
+    real_time_tools::FrequencyManager single_process_spinner_;
 
     /**
      * @brief This corresponds to the predicted sleeping time for the hardware
@@ -738,6 +746,13 @@ protected:
      * then user commands to the hardware can be sent.
      */
     double hwc_predicted_sleeping_time_;
+
+    /**
+     * @brief This corresponds to the predicted sleeping time for the single
+     * process. If this time is bigger than a certain threshold
+     * then user commands to the hardware can be sent.
+     */
+    double sp_predicted_sleeping_time_;
 
     /**
      * @brief This the duration during which a user command can be executed.

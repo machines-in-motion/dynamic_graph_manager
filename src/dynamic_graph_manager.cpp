@@ -436,11 +436,18 @@ void DynamicGraphManager::run_hardware_communication_process()
 void DynamicGraphManager::run_single_process()
 {
     initialize_dynamic_graph_process();
+    std::cout << "INI" << std::endl;
 
     initialize_hardware_communication_process();
+    std::cout << "Hard" << std::endl;
     get_ros_node(hw_com_ros_node_name_);
+    std::cout << "Ros node" << std::endl;
     ros_add_node_to_executor(hw_com_ros_node_name_);
+    std::cout << "ross add " << std::endl;
     start_hardware_communication();
+
+    printf("SINGLE PROCESS: Please load your graph.\n");
+    wait_start_dynamic_graph();
 
     // launch the real time thread
     thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
@@ -574,7 +581,6 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
 
     // time the loop so it respect the input frequency/period
     hwc_spinner_.set_period(control_period_sec_);
-    hwc_spinner_.initialize();
 
     // we start the main loop
     rt_printf("HARDWARE: Start loop \n");
@@ -626,7 +632,7 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
         // rt_printf("HARDWARE: Sleep. \n");
         hwc_sleep_timer_.tic();
         hwc_mutex_.unlock();
-        hwc_spinner_.spin();
+        hwc_spinner_.wait();
         hwc_mutex_.lock();
         hwc_sleep_timer_.tac();
 
@@ -708,19 +714,38 @@ void DynamicGraphManager::compute_safety_controls()
 
 void* DynamicGraphManager::single_process_real_time_loop()
 {
-    printf("SINGLE PROCESS: Wait to start dynamic graph\n");
-    wait_start_dynamic_graph();
+    single_process_spinner_.set_period(control_period_sec_);
 
     printf("SINGLE PROCESS: Single process dynamic graph loop started\n");
     while (!is_dynamic_graph_stopped() && ros_ok())
     {
+        // predict here the sleeping time in the spinner
+        sp_predicted_sleeping_time_ = single_process_spinner_.predict_sleeping_time();
+        if (sp_predicted_sleeping_time_ > maximum_time_for_user_cmd_)
+        {
+            if (user_commands_.size() > 0)
+            {
+                user_commands_[0]();
+                user_commands_.pop_front();
+                rt_printf("SINGLE PROCESS: Executed user command. \n");
+            }
+        }
+
+        // sleep the amount of time needed to satisfy the frequency.
+        single_process_spinner_.wait();
+
         // acquire the sensors data
         get_sensors_to_map(sensors_map_);
 
         // call the dynamic graph
-        device_->set_sensors_from_map(sensors_map_);
-        device_->execute_graph();
-        device_->get_controls_to_map(motor_controls_map_);
+        if(!is_dynamic_graph_stopped())
+        {
+            device_->set_sensors_from_map(sensors_map_);
+            device_->execute_graph();
+            device_->get_controls_to_map(motor_controls_map_);
+        }else{
+            compute_safety_controls();
+        }
 
         // send the command to the motors
         set_motor_controls_from_map(motor_controls_map_);
