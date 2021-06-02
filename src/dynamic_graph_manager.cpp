@@ -436,14 +436,10 @@ void DynamicGraphManager::run_hardware_communication_process()
 void DynamicGraphManager::run_single_process()
 {
     initialize_dynamic_graph_process();
-    std::cout << "INI" << std::endl;
 
     initialize_hardware_communication_process();
-    std::cout << "Hard" << std::endl;
     get_ros_node(hw_com_ros_node_name_);
-    std::cout << "Ros node" << std::endl;
     ros_add_node_to_executor(hw_com_ros_node_name_);
-    std::cout << "ross add " << std::endl;
     start_hardware_communication();
 
     printf("SINGLE PROCESS: Please load your graph.\n");
