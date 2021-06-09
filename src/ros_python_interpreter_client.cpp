@@ -60,13 +60,13 @@ std::string RosPythonInterpreterClient::run_python_command(
         auto response =
             command_client_->async_send_request(run_command_request_);
         // Wait for the result.
-        while (rclcpp::ok() &&
-               rclcpp::spin_until_future_complete(
-                   ros_node_, response, std::chrono::seconds(1)) !=
-                   rclcpp::executor::FutureReturnCode::SUCCESS)
+        if (rclcpp::ok() &&
+            rclcpp::spin_until_future_complete(ros_node_, response) !=
+                rclcpp::executor::FutureReturnCode::SUCCESS)
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                         "Error while parsing command, retrying...");
+                         "Error while parsing command... Please check if the "
+                         "command has been applied.");
         }
 
         // Get the standard output (print).
