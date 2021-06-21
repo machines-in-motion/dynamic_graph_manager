@@ -14,7 +14,7 @@
 // use the ROS singleton to initialize and use ROS
 #include <dynamic_graph_manager/ros.hpp>
 // this file defines the class in this header
-#include <dynamic_graph_manager/dynamic_graph_manager.hpp>
+#include <dynamic_graph_manager/hardware_process.hpp>
 // in order to throw hand made exception
 #include <dynamic_graph_manager/exception/exception-yaml-cpp.hpp>
 
@@ -22,102 +22,78 @@
 
 using namespace dynamic_graph_manager;
 
-const std::string DynamicGraphManager::dg_ros_node_name_ = DG_ROS_NODE_NAME;
-const std::string DynamicGraphManager::hw_com_ros_node_name_ =
-    HWC_ROS_NODE_NAME;
-const std::string DynamicGraphManager::sensors_map_name_ = "sensors_map";
-const std::string DynamicGraphManager::motor_controls_map_name_ =
+const std::string HardwareProcess::sensors_map_name_ = "sensors_map";
+const std::string HardwareProcess::motor_controls_map_name_ =
     "motor_controls_map";
-const std::string DynamicGraphManager::shared_memory_name_ = "DGM_ShM";
-const std::string DynamicGraphManager::cond_var_name_ = "cond_var";
 
-DynamicGraphManager::DynamicGraphManager()
+HardwareProcess::HardwareProcess()
 {
-    shared_memory::clear_shared_memory("dgm_shm_name");
-    shared_memory::set<std::string>(
-        "dgm_shm_name", "shared_memory_name", shared_memory_name_);
-
     // Upon construction the graph is inactive
     params_.reset();
-
-    stop_dynamic_graph();
-    stop_hardware_communication();
-
-    pid_dynamic_graph_process_ = 0;
-    pid_hardware_communication_process_ = 0;
 
     sensors_map_.clear();
     motor_controls_map_.clear();
 
-    has_been_waken_by_dg_ = false;
+    has_been_waken_by_ctrl_ = false;
 
     missed_control_count_ = 0;
     max_missed_control_ = 0;
     control_period_ = clock::duration(0);
 
-    // clean the shared memory
-    shared_memory::clear_shared_memory(shared_memory_name_);
-
     // files where to dump the timers
     log_dir_ = "/tmp/";
-    dg_active_timer_file_ = "/tmp/dg_active_timer.dat";
-    dg_sleep_timer_file_ = "/tmp/dg_sleep_timer.dat";
-    dg_timer_file_ = "/tmp/dg_timer.dat";
-    hwc_active_timer_file_ = "/tmp/hwc_active_timer.dat";
-    hwc_sleep_timer_file_ = "/tmp/hwc_sleep_timer.dat";
-    hwc_timer_file_ = "/tmp/hwc_timer.dat";
+    active_timer_file_ = "/tmp/active_timer.dat";
+    sleep_timer_file_ = "/tmp/sleep_timer.dat";
+    timer_file_ = "/tmp/timer.dat";
 }
 
-DynamicGraphManager::~DynamicGraphManager()
+HardwareProcess::~HardwareProcess()
 {
     // kill all ros related stuff
     ros_shutdown();
-    // wait for the dynamic graph thread to stop
-    stop_dynamic_graph();
-    if (cond_var_)
-    {
-        cond_var_->notify_all();
-    }
-    wait_stop_dynamic_graph();
+
     // wait for the hardware communication thread to stop
-    stop_hardware_communication();
+    stop();
     if (cond_var_)
     {
         cond_var_->notify_all();
     }
     wait_stop_hardware_communication();
+
     // clean the shared memory
     shared_memory::clear_shared_memory(shared_memory_name_);
-    // destroy the python interpretor after the device
-    device_.reset(nullptr);
-    ros_python_interpreter_.reset(nullptr);
-    if (pid_hardware_communication_process_ == getpid())
-    {
-        kill(pid_dynamic_graph_process(), SIGKILL);
-        while (!has_dynamic_graph_process_died())
-        {
-            real_time_tools::Timer::sleep_sec(0.1);
-        }
-    }
 }
 
-void DynamicGraphManager::initialize(YAML::Node param)
+void HardwareProcess::initialize(std::string yaml_file_path)
 {
-    // Upon initialization the graph and the hardware com are inactive
-    stop_dynamic_graph();
-    stop_hardware_communication();
+    YAML::Node param = YAML::LoadFile(yaml_file_path);
 
     // copy the yaml node for further use
     params_ = param;
 
-    pid_dynamic_graph_process_ = 0;
-    pid_hardware_communication_process_ = 0;
+    YAML::ReadParameter(
+        params_["hardware_communication"], "shared_memory_name", shared_memory_name_);
+    cond_var_name_ = shared_memory_name_ + "_cond_var";
+
+    YAML::ReadParameter(
+        params_["hardware_communication"], "ros_node_name", com_ros_node_name_);
+
+    shared_memory::clear_shared_memory("dgm_shm_name");
+    shared_memory::set<std::string>(
+        "dgm_shm_name", "shared_memory_name", shared_memory_name_);
+
+    // clean the shared memory
+    shared_memory::clear_shared_memory(shared_memory_name_);
+
+    // Upon initialization the graph and the hardware com are inactive
+    stop();
 
     // clean the shared memory
     shared_memory::clear_shared_memory(shared_memory_name_);
     // we initialize the sensors and control maps in the common initializer
     parse_yaml_node(params_["device"], sensors_map_, motor_controls_map_);
-    shared_memory::set(shared_memory_name_, sensors_map_name_, sensors_map_);
+    shared_memory::set(
+        shared_memory_name_, sensors_map_name_, sensors_map_);
     shared_memory::set(
         shared_memory_name_, motor_controls_map_name_, motor_controls_map_);
 
@@ -178,12 +154,9 @@ void DynamicGraphManager::initialize(YAML::Node param)
     }
 
     log_dir_ = real_time_tools::get_log_dir("dynamic_graph_manager");
-    dg_active_timer_file_ = log_dir_ + "dg_active_timer.dat";
-    dg_sleep_timer_file_ = log_dir_ + "dg_sleep_timer.dat";
-    dg_timer_file_ = log_dir_ + "dg_timer.dat";
-    hwc_active_timer_file_ = log_dir_ + "hwc_active_timer.dat";
-    hwc_sleep_timer_file_ = log_dir_ + "hwc_sleep_timer.dat";
-    hwc_timer_file_ = log_dir_ + "hwc_timer.dat";
+    active_timer_file_ = log_dir_ + "active_timer.dat";
+    sleep_timer_file_ = log_dir_ + "sleep_timer.dat";
+    timer_file_ = log_dir_ + "timer.dat";
 
     unsigned int debug_timer_history_length = 0;
     YAML::ReadParameter(params_,
@@ -191,12 +164,9 @@ void DynamicGraphManager::initialize(YAML::Node param)
                         debug_timer_history_length,
                         true);
 
-    dg_active_timer_.set_memory_size(debug_timer_history_length);
-    dg_sleep_timer_.set_memory_size(debug_timer_history_length);
-    dg_timer_.set_memory_size(debug_timer_history_length);
-    hwc_active_timer_.set_memory_size(debug_timer_history_length);
-    hwc_sleep_timer_.set_memory_size(debug_timer_history_length);
-    hwc_timer_.set_memory_size(debug_timer_history_length);
+    active_timer_.set_memory_size(debug_timer_history_length);
+    sleep_timer_.set_memory_size(debug_timer_history_length);
+    timer_.set_memory_size(debug_timer_history_length);
 
     std::cout << "Log will be saved in : \"" << log_dir_ << "\"" << std::endl;
 
@@ -207,73 +177,47 @@ void DynamicGraphManager::initialize(YAML::Node param)
     }
 }
 
-void DynamicGraphManager::run()
+void HardwareProcess::run()
 {
-    pid_t child_pid = fork();
-    if (child_pid == 0)  // child process
-    {
-        pid_dynamic_graph_process_ = getpid();
-        pid_hardware_communication_process_ = getppid();
 
-        initialize_dynamic_graph_process();
-        run_dynamic_graph_process();
-        ros_spin();
-        ros_shutdown();
-        std::cout << "DG: End of the dynamic graph process." << std::endl;
-        exit(0);
-    }
-    else if (child_pid > 0)  // parent process
-    {
-        pid_dynamic_graph_process_ = child_pid;
-        pid_hardware_communication_process_ = getpid();
-        std::cout << "pid of dynamic graph process: "
-                  << pid_dynamic_graph_process_ << std::endl;
-        std::cout << "pid of hardware communication process: "
-                  << pid_hardware_communication_process_ << std::endl;
+    pid_t pid_hardware_communication_process_ = getpid();
+    std::cout << "pid of hardware communication process: "
+                << pid_hardware_communication_process_ << std::endl;
 
-        initialize_hardware_communication_process();
-        run_hardware_communication_process();
+    initialize_drivers();
 
-        std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
-        ros_spin();
-        ros_shutdown();
-    }
-    else
-    {
-        throw(
-            std::runtime_error("DynamicGraphManager::run(): the fork failed"));
-    }
+    // From here on this process is a ros node.
+    get_ros_node(com_ros_node_name_);
+    ros_add_node_to_executor(com_ros_node_name_);
+
+    // we build the condition variables after the fork (seems safer this way).
+    cond_var_.reset(
+        new shared_memory::LockedConditionVariable(cond_var_name_, true));
+
+    // Allow the hardware thread to run.
+    start();
+
+    // Launch the real time thread.
+    thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
+    thread_hardware_communication_->parameters_.cpu_id_.push_back(2);  // cpu 2
+    thread_hardware_communication_->create_realtime_thread(
+        &HardwareProcess::hardware_communication_real_time_loop_helper,
+        this);
+    printf("hardware communication loop started\n");
+
+    std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
+    // Start ros-spin till shutdown.
+    ros_spin();
+    ros_shutdown();
 }
 
-void DynamicGraphManager::wait_start_dynamic_graph()
-{
-    while (is_dynamic_graph_stopped() && ros_ok())
-    {
-        real_time_tools::Timer::sleep_sec(0.1);
-    }
-}
-
-void DynamicGraphManager::wait_stop_dynamic_graph()
-{
-    while (!is_dynamic_graph_stopped() && ros_ok())
-    {
-        real_time_tools::Timer::sleep_sec(0.1);
-    }
-    stop_dynamic_graph();
-    if (thread_dynamic_graph_)
-    {
-        cond_var_->notify_all();
-        thread_dynamic_graph_->join();
-    }
-}
-
-void DynamicGraphManager::wait_stop_hardware_communication()
+void HardwareProcess::wait_stop_hardware_communication()
 {
     while (!is_hardware_communication_stopped())
     {
         real_time_tools::Timer::sleep_sec(0.1);
     }
-    stop_hardware_communication();
+    stop();
     if (thread_hardware_communication_)
     {
         cond_var_->notify_all();
@@ -281,286 +225,14 @@ void DynamicGraphManager::wait_stop_hardware_communication()
     }
 }
 
-bool DynamicGraphManager::has_dynamic_graph_process_died()
+void* HardwareProcess::hardware_communication_real_time_loop()
 {
-    bool is_dg_proc_dead = false;
-    int status = 0;
-    pid_t p = 0;
-    p = waitpid(pid_dynamic_graph_process_, &status, WNOHANG);
-    if (p == 0)
-    {
-        is_dg_proc_dead = false;
-    }
-    else if (p > 0)
-    {
-        is_dg_proc_dead = true;
-    }
-    else
-    {
-        if (DYNAMIC_GRAPH_MANAGER_VERBOSE)
-        {
-            printf(
-                "DynamicGraphManager::has_dynamic_graph_process_died():"
-                " waitpid failed\n");
-        }
-        is_dg_proc_dead = true;
-    }
-    return is_dg_proc_dead;
-}
-
-void DynamicGraphManager::initialize_dynamic_graph_process()
-{
-    // export the robot name and the log directory from the yaml to the shared
-    // memory so we can access it in the python interpretor.
-    std::string robot_name = params_["device"]["name"].as<std::string>();
-    shared_memory::set<std::string>(
-        shared_memory_name_, "device_name", robot_name);
-    shared_memory::set<std::string>(shared_memory_name_, "log_dir", log_dir_);
-
-    // we create the device of the DG and implicitly the DG itself
-    device_ = std::make_unique<Device>(robot_name);
-    device_->initialize(params_["device"]);
-
-    // we start the ros services for the DGM (python command + start/stop DG)
-    start_ros_service();
-
-    // we call the prologue of the python interpreter
-    // we *NEED* to do this *AFTER* the device is created to fetch its pointer
-    // in the python interpreter
-    python_prologue();
-
-    // we build the condition variables after the fork (seems safer this way)
-    cond_var_ = std::make_unique<shared_memory::LockedConditionVariable>(
-        cond_var_name_, false);
-}
-
-void DynamicGraphManager::run_python_command(std::ostream& file,
-                                             const std::string& command)
-{
-    file << ">>> " << command << std::endl;
-    std::string lerr(""), lout(""), lres("");
-    ros_python_interpreter_->run_python_command(command, lres, lout, lerr);
-    if (lres != "None")
-    {
-        if (lres == "<NULL>")
-        {
-            file << lout << std::endl;
-            file << "------" << std::endl;
-            file << lerr << std::endl;
-        }
-        else
-        {
-            file << lres << std::endl;
-        }
-    }
-}
-
-void DynamicGraphManager::python_prologue()
-{
-    // open the log file
-    std::ofstream aof(python_log_file_.c_str());
-
-    run_python_command(aof,
-                       "print(\"Executing python interpreter prologue...\")");
-    // make sure that the current environment variable are setup in the current
-    // python interpreter.
-    run_python_command(aof, "import sys, os");
-    run_python_command(aof, "print(\"python version:\", sys.version)");
-    run_python_command(aof, "pythonpath = os.environ['PYTHONPATH']");
-    run_python_command(aof, "path = []");
-    run_python_command(aof,
-                       "for p in pythonpath.split(':'):\n"
-                       "  if p not in sys.path:\n"
-                       "    path.append(p)");
-    run_python_command(aof, "path.extend(sys.path)");
-    run_python_command(aof, "sys.path = path");
-    // used to be able to invoke rospy
-    run_python_command(aof,
-                       "if not hasattr(sys, \'argv\'):\n"
-                       "    sys.argv  = ['dynamic_graph_manager']");
-    // help setting signals
-    run_python_command(aof, "import numpy as np");
-    // Create the device or get a pointer to the c++ object if it already exist
-    run_python_command(aof, "from dynamic_graph_manager.prologue import robot");
-
-    run_python_command(
-        aof, "print(\"Executing python interpreter prologue... Done\")");
-    // close the log file
-    aof.close();
-}
-
-void DynamicGraphManager::run_dynamic_graph_process()
-{
-    printf("wait to start dynamic graph\n");
-    wait_start_dynamic_graph();
-    if (ros_ok())
-    {
-        // launch the real time thread
-        thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
-        thread_dynamic_graph_->parameters_.cpu_id_.push_back(0);  // cpu 0
-        thread_dynamic_graph_->create_realtime_thread(
-            &DynamicGraphManager::dynamic_graph_real_time_loop_helper, this);
-        printf("dynamic graph thread started\n");
-    }
-    else
-    {
-        printf("dynamic graph thread NOT started as ROS has been shutdown.\n");
-    }
-}
-
-void DynamicGraphManager::run_hardware_communication_process()
-{
-    // from here on this process is a ros node
-    get_ros_node(hw_com_ros_node_name_);
-    ros_add_node_to_executor(hw_com_ros_node_name_);
-
-    // we build the condition variables after the fork (seems safer this way)
-    cond_var_.reset(
-        new shared_memory::LockedConditionVariable(cond_var_name_, true));
-
-    // allow the hardware thread to run
-    start_hardware_communication();
-
-    // launch the real time thread and ros spin
-    std::vector<int> cpu_affinity;
-    cpu_affinity.clear();
-    cpu_affinity.push_back(2);  // cpu 1
-    thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
-    thread_hardware_communication_->parameters_.cpu_id_.push_back(2);  // cpu 2
-    thread_hardware_communication_->create_realtime_thread(
-        &DynamicGraphManager::hardware_communication_real_time_loop_helper,
-        this);
-    printf("hardware communication loop started\n");
-}
-
-void DynamicGraphManager::run_single_process()
-{
-    initialize_dynamic_graph_process();
-
-    initialize_hardware_communication_process();
-    get_ros_node(hw_com_ros_node_name_);
-    ros_add_node_to_executor(hw_com_ros_node_name_);
-    start_hardware_communication();
-
-    printf("SINGLE PROCESS: Please load your graph.\n");
-    wait_start_dynamic_graph();
-
-    // launch the real time thread
-    thread_dynamic_graph_.reset(new real_time_tools::RealTimeThread());
-    thread_dynamic_graph_->create_realtime_thread(
-        &DynamicGraphManager::single_process_real_time_loop_helper, this);
-
-    // Ros spin
-    ros_spin();
-    ros_shutdown();
-}
-
-void DynamicGraphManager::start_ros_service()
-{
-    // Advertize the service to start and stop the dynamic graph
-    RosNodePtr ros_node_handle = get_ros_node(dg_ros_node_name_);
-    ros_add_node_to_executor(dg_ros_node_name_);
-    ros_service_start_dg_ =
-        ros_node_handle->create_service<std_srvs::srv::Empty>(
-            "start_dynamic_graph",
-            std::bind(static_cast<void (DynamicGraphManager::*)(
-                          std_srvs::srv::Empty::Request::SharedPtr,
-                          std_srvs::srv::Empty::Response::SharedPtr)>(
-                          &DynamicGraphManager::start_dynamic_graph),
-                      this,
-                      std::placeholders::_1,
-                      std::placeholders::_2));
-    ros_service_stop_dg_ =
-        ros_node_handle->create_service<std_srvs::srv::Empty>(
-            "stop_dynamic_graph",
-            std::bind(static_cast<void (DynamicGraphManager::*)(
-                          std_srvs::srv::Empty::Request::SharedPtr,
-                          std_srvs::srv::Empty::Response::SharedPtr)>(
-                          &DynamicGraphManager::stop_dynamic_graph),
-                      this,
-                      std::placeholders::_1,
-                      std::placeholders::_2));
-    // advertize the ros::services associated to the python interpreter
-    // we create a python interpreter
-    ros_python_interpreter_ = std::make_unique<RosPythonInterpreterServer>();
-    ros_python_interpreter_->start_ros_service();
-}
-
-void* DynamicGraphManager::dynamic_graph_real_time_loop()
-{
-    rt_printf("DG: Start loop\n");
-    get_ros_node(dg_ros_node_name_);
+    // We acquiere the lock on the condition variable here.
     cond_var_->lock_scope();
 
-    // initialize the timers
-    dg_active_timer_.tic();
-    dg_sleep_timer_.tic();
-    dg_timer_.tic();
-
-    while (ros_ok())
-    {
-        // measure the complete iteration time
-        dg_timer_.tac_tic();
-        // measure the active time
-        dg_active_timer_.tic();
-        // read the sensor from the shared memory
-        shared_memory::get(
-            shared_memory_name_, sensors_map_name_, sensors_map_);
-
-        // Feed the graph with the sensors values.
-        device_->set_sensors_from_map(sensors_map_);
-
-        // If the graph is considered "started" then we execute the graph.
-        if (!is_dynamic_graph_stopped())
-        {
-            // Execute the graph.
-            device_->execute_graph();
-
-            // write the command to the shared memory
-            device_->get_controls_to_map(motor_controls_map_);
-            shared_memory::set(shared_memory_name_,
-                               motor_controls_map_name_,
-                               motor_controls_map_);
-        }
-
-        // measure the active time
-        dg_active_timer_.tac();
-        // measure the sleep time
-        dg_sleep_timer_.tic();
-
-        // notify the hardware_communication process that the control has been
-        // done
-        cond_var_->notify_all();
-
-        // wait that the hardware_communication process acquires the data.
-        cond_var_->wait();
-
-        // measure the sleep time
-        dg_sleep_timer_.tac();
-    }
-
-    // we use this function here because the loop might stop because of ROS
-    stop_dynamic_graph();
-
-    rt_printf("DG: Dumping time measurement\n");
-    dg_active_timer_.dump_measurements(dg_active_timer_file_);
-    dg_sleep_timer_.dump_measurements(dg_sleep_timer_file_);
-    dg_timer_.dump_measurements(dg_timer_file_);
-
-    cond_var_->unlock_scope();
-    rt_printf("DG: Stop Loop\n");
-
-    return THREAD_FUNCTION_RETURN_VALUE;
-}
-
-void* DynamicGraphManager::hardware_communication_real_time_loop()
-{
-    // we acquiere the lock on the condition variable here
-    cond_var_->lock_scope();
-
-    // some basic checks
+    // Some basic checks.
     assert(!is_hardware_communication_stopped_ && "The loop is started");
-    get_ros_node(hw_com_ros_node_name_);
+    get_ros_node(com_ros_node_name_);
     assert(ros_ok() && "Ros has to be initialized");
 
     // Initialize the motor_controls_map with zeros.
@@ -572,15 +244,14 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     }
 
     // Initialize the time measurements
-    hwc_active_timer_.tic();
-    hwc_timer_.tic();
+    active_timer_.tic();
+    timer_.tic();
 
     // time the loop so it respect the input frequency/period
-    hwc_spinner_.set_period(control_period_sec_);
+    spinner_.set_period(control_period_sec_);
 
     // we start the main loop
-    rt_printf("HARDWARE: Start loop \n");
-    hwc_mutex_.lock();
+    rt_printf("HARDWARE: Start main realtime control loop.\n");
     while (!is_hardware_communication_stopped() && ros_ok())
     {
         // rt_printf("HARDWARE: Call the sensors. \n");
@@ -609,31 +280,31 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
         }
 
         // predict here the sleeping time in the spinner
-        hwc_predicted_sleeping_time_ = hwc_spinner_.predict_sleeping_time();
-        if (hwc_predicted_sleeping_time_ > maximum_time_for_user_cmd_)
+        predicted_sleeping_time_ = spinner_.predict_sleeping_time();
+        if (predicted_sleeping_time_ > maximum_time_for_user_cmd_)
         {
             if (user_commands_.size() > 0)
             {
+                user_cmd_mutex_.lock();
                 user_commands_[0]();
                 user_commands_.pop_front();
+                user_cmd_mutex_.unlock();
                 rt_printf("HARDWARE: Executed user command. \n");
             }
         }
 
         // here is the end of the thread activity
-        hwc_active_timer_.tac();
-        hwc_timer_.tac_tic();
+        active_timer_.tac();
+        timer_.tac_tic();
 
         // Sleeps for one period. This clocks the motor process.
         // rt_printf("HARDWARE: Sleep. \n");
-        hwc_sleep_timer_.tic();
-        hwc_mutex_.unlock();
-        hwc_spinner_.wait();
-        hwc_mutex_.lock();
-        hwc_sleep_timer_.tac();
+        sleep_timer_.tic();
+        spinner_.wait();
+        sleep_timer_.tac();
 
         // here is the beginning of the thread activity
-        hwc_active_timer_.tic();
+        active_timer_.tic();
 
         // TODO: Check if realtime was lost here. Using realtime_check always
         // recorded switches for jviereck.
@@ -683,81 +354,23 @@ void* DynamicGraphManager::hardware_communication_real_time_loop()
     }
     // We use this function here because the loop might stop because of ROS
     // and we need the flag to be set to off
-    stop_hardware_communication();
+    stop();
 
     rt_printf("HARDWARE: Dump active time measurement \n");
-    hwc_active_timer_.dump_measurements(hwc_active_timer_file_);
+    active_timer_.dump_measurements(active_timer_file_);
     rt_printf("HARDWARE: sleep time measurement \n");
-    hwc_sleep_timer_.dump_measurements(hwc_sleep_timer_file_);
+    sleep_timer_.dump_measurements(sleep_timer_file_);
     rt_printf("HARDWARE: hwc time measurement \n");
-    hwc_timer_.dump_measurements(hwc_timer_file_);
+    timer_.dump_measurements(timer_file_);
     cond_var_->unlock_scope();
     rt_printf("HARDWARE: Stop loop \n");
 
     return THREAD_FUNCTION_RETURN_VALUE;
 }
 
-void DynamicGraphManager::compute_safety_controls()
+void HardwareProcess::add_user_command(std::function<void(void)> func)
 {
-    // VERY STUPID!!! TODO: FIND A BETTER WAY AND USE AT LEAST PID CONTROL
-    for (VectorDGMap::iterator ctrl = motor_controls_map_.begin();
-         ctrl != motor_controls_map_.end();
-         ++ctrl)
-    {
-        ctrl->second.fill(0.0);
-    }
-}
-
-void* DynamicGraphManager::single_process_real_time_loop()
-{
-    single_process_spinner_.set_period(control_period_sec_);
-
-    printf("SINGLE PROCESS: Single process dynamic graph loop started\n");
-    while (!is_dynamic_graph_stopped() && ros_ok())
-    {
-        // predict here the sleeping time in the spinner
-        sp_predicted_sleeping_time_ = single_process_spinner_.predict_sleeping_time();
-        if (sp_predicted_sleeping_time_ > maximum_time_for_user_cmd_)
-        {
-            if (user_commands_.size() > 0)
-            {
-                user_commands_[0]();
-                user_commands_.pop_front();
-                rt_printf("SINGLE PROCESS: Executed user command. \n");
-            }
-        }
-
-        // sleep the amount of time needed to satisfy the frequency.
-        single_process_spinner_.wait();
-
-        // acquire the sensors data
-        get_sensors_to_map(sensors_map_);
-
-        // call the dynamic graph
-        if(!is_dynamic_graph_stopped())
-        {
-            device_->set_sensors_from_map(sensors_map_);
-            device_->execute_graph();
-            device_->get_controls_to_map(motor_controls_map_);
-        }else{
-            compute_safety_controls();
-        }
-
-        // send the command to the motors
-        set_motor_controls_from_map(motor_controls_map_);
-    }
-    // we use this function here because the loop might stop because of ROS
-    // we need to make sure that the flag is set properly
-    stop_dynamic_graph();
-    // printf("dynamic graph thread stopped\n");
-    printf("SINGLE PROCESS: Stop loop\n");
-
-    return THREAD_FUNCTION_RETURN_VALUE;
-}
-
-void DynamicGraphManager::add_user_command(std::function<void(void)> func)
-{
-    hwc_mutex_.lock();
+    user_cmd_mutex_.lock();
     user_commands_.push_back(func);
-    hwc_mutex_.unlock();
+    user_cmd_mutex_.unlock();
 }

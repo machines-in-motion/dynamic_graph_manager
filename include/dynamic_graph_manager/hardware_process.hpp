@@ -7,8 +7,7 @@
  * @date 2019-05-22
  */
 
-#ifndef DYNAMIC_GRAPH_MANAGER_HH
-#define DYNAMIC_GRAPH_MANAGER_HH
+#pragma once
 
 // used to join the different processes
 #include <unistd.h>
@@ -65,24 +64,14 @@ typedef std::chrono::steady_clock clock;
 /**
  * This class has for purpose to manage the different processes during run time.
  * The main tasks are:
- *   - [1] Creates the Dynamic Graph device, the python interpreter, and the
- *         Drivers
- *   - [2] Ask the python interpreter to advertise its ROS services
- *   - [3] Ask the drivers to initialize the communication with the hardware
- *   - [4] Loads a yaml/urdf config file.
- *   - [5] Advertise the ROS services start/stop dynamic graph
- *   - [6] Wait for the ROS service start dynamic graph to be called
- *   - [7] Spawn the first real time process that executes the following:
- *      - [7.1] gets  the  sensor  data  using Drivers and  saves  them  in  the
+ *   - [1] Ask the drivers to initialize the communication with the hardware
+ *   - [2] Loads a yaml/urdf config file.
+ *   - [3] Spawn the first real time process that executes the following:
+ *      - [3.1] gets  the  sensor  data  using Drivers and  saves  them  in  the
  *              shared std::map sensors
- *      - [7.2] reads the control values in the shared std::map commands and
+ *      - [3.2] reads the control values in the shared std::map commands and
  *              send them to the motors via the Drivers
- *   - [8] Spawn the second real time process that executes the following:
- *      - [8.1] passes the std::map sensors to the Device, which copies the data
- *              to its output signals
- *      - [8.2] gets the control values from the Device (which triggers the
- *              evaluation of  the  dynamic  graph)  and  copies  them  into
- *              the shared std::map commands.
+ *
  * In this class we heavily depend on std::unique pointers in order to
  * initialize the DynamicGraph process and the hardware communication process
  * independently.
@@ -109,10 +98,8 @@ public:
     void initialize(std::string yaml_file_path);
 
     /**
-     * @brief run() splits the process in the dynamic_graph process and the
-     * hadware_communication process. It initialize them and run them. WARNING
-     * this a NONE blocking function. One can spin endlessly using the ROS:
-     * ros::waitForShutdown(), for example.
+     * @brief run() Initializes the hardware_communication drivers, spawns
+     * a realtime thread for the communication and starts the thread.
      */
     void run();
 
@@ -127,9 +114,9 @@ public:
      ***************************/
 
     /**
-     * @brief initialize_hardware_communication_process instanciate all
-     * variables related to the hardware communication. In addition it spawns
-     * the real time thread. WARNING, this function needs to be overloaded using
+     * @brief initialize_drivers instanciate all variables related to the
+     * hardware communication. In addition it spawns the real time thread.
+     * WARNING, this function needs to be overloaded using
      * the actual drivers of the robot.
      */
     virtual void initialize_drivers() = 0;
@@ -156,7 +143,7 @@ public:
      * @brief is_in_safety_mode check if the dynamic graph is still alive and
      * sending commands at a descent frequency.
      * @return true if there is a problem
-     * 
+     *
      * @todo implement heart beat check.
      */
     virtual bool is_in_safety_mode() = 0;
@@ -207,13 +194,13 @@ public:
      * @brief com_ros_node_name_ this is the ros node name of the harware
      * communication process
      */
-    static const std::string com_ros_node_name_;
+    std::string com_ros_node_name_;
 
     /**
      * @brief shared_memory_name is the name of the shared memory segment to be
      * used
      */
-    static const std::string shared_memory_name_;
+    std::string shared_memory_name_;
 
     /**
      * @brief sensors_map_name is the name of the sensor map inside the shared
@@ -231,7 +218,7 @@ public:
      * @brief cond_var_sensors_name_ is the name of the condition variable in
      * the shared memory
      */
-    static const std::string cond_var_name_;
+    std::string cond_var_name_;
 
     /**
      * Method inherited
@@ -391,24 +378,6 @@ protected:
     std::string app_dir_;
 
     /**
-     * @brief dg_active_timer_ is the timer measuring the computation time of
-     * the dynamic graph loop.
-     */
-    real_time_tools::Timer dg_active_timer_;
-
-    /**
-     * @brief dg_sleep_timer_ is the timer measuring the time during which
-     * the dynamic graph loop sleeps.
-     */
-    real_time_tools::Timer dg_sleep_timer_;
-
-    /**
-     * @brief dg_timer_ is the timer measuring the duration time of the dynamic
-     * graph loop.
-     */
-    real_time_tools::Timer dg_timer_;
-
-    /**
      * @brief active_timer is measuring the active time of the hardware
      * communication loop
      */
@@ -479,8 +448,7 @@ protected:
      * @brief User command mutex.
      */
     std::mutex user_cmd_mutex_;
+
 };
 
 }  // namespace dynamic_graph_manager
-
-#endif  // DYNAMIC_GRAPH_MANAGER_HH
