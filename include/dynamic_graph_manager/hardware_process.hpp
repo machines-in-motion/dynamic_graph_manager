@@ -104,6 +104,11 @@ public:
     void run();
 
     /**
+     * @brief spin_ros() Spins ros.
+     */
+    void spin_ros();
+
+    /**
      * @brief wait_stop_hardware_communication put the current thread to sleep
      * until the user stop the hardware communication.
      */

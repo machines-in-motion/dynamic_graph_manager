@@ -173,16 +173,11 @@ void HardwareProcess::initialize(std::string yaml_file_path)
 
 void HardwareProcess::run()
 {
-
     pid_t pid_hardware_communication_process_ = getpid();
     std::cout << "pid of hardware communication process: "
                 << pid_hardware_communication_process_ << std::endl;
 
     initialize_drivers();
-
-    // From here on this process is a ros node.
-    get_ros_node(com_ros_node_name_);
-    ros_add_node_to_executor(com_ros_node_name_);
 
     cond_var_.reset(
         new shared_memory::LockedConditionVariable(cond_var_name_, true));
@@ -200,7 +195,14 @@ void HardwareProcess::run()
     thread_hardware_communication_->create_realtime_thread(
         &HardwareProcess::hardware_communication_real_time_loop_helper,
         this);
-    printf("hardware communication loop started\n");
+    printf("HARDWARE: communication loop started\n");
+}
+
+void HardwareProcess::spin_ros()
+{
+    // From here on this process is a ros node.
+    get_ros_node(com_ros_node_name_);
+    ros_add_node_to_executor(com_ros_node_name_);
 
     std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
     // Start ros-spin till shutdown.
