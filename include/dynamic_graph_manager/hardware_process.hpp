@@ -146,7 +146,7 @@ public:
      *
      * @todo implement heart beat check.
      */
-    virtual bool is_in_safety_mode() = 0;
+    virtual bool is_in_safety_mode();
 
     /**
      * @brief compute_safety_controls computes safety controls very fast in case
@@ -448,6 +448,18 @@ protected:
      * @brief User command mutex.
      */
     std::mutex user_cmd_mutex_;
+
+    /**
+     * @brief Indicator if the user was notified about the hardware going
+     * into safe mode already.
+     */
+    bool once_safe_mode_msg_;
+
+    /**
+     * @brief Indicator if the user was notified about the limit of control
+     * packages exceeding desird limit already.
+     */
+    bool once_too_much_missed_control_msg_;
 
 };
 

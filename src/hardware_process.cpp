@@ -28,7 +28,6 @@ const std::string HardwareProcess::motor_controls_map_name_ =
 
 HardwareProcess::HardwareProcess()
 {
-    // Upon construction the graph is inactive
     params_.reset();
 
     sensors_map_.clear();
@@ -45,6 +44,8 @@ HardwareProcess::HardwareProcess()
     active_timer_file_ = "/tmp/active_timer.dat";
     sleep_timer_file_ = "/tmp/sleep_timer.dat";
     timer_file_ = "/tmp/timer.dat";
+
+    once_safe_mode_msg_ = false;
 }
 
 HardwareProcess::~HardwareProcess()
@@ -54,10 +55,6 @@ HardwareProcess::~HardwareProcess()
 
     // wait for the hardware communication thread to stop
     stop();
-    if (cond_var_)
-    {
-        cond_var_->notify_all();
-    }
     wait_stop_hardware_communication();
 
     // clean the shared memory
@@ -81,9 +78,6 @@ void HardwareProcess::initialize(std::string yaml_file_path)
     shared_memory::clear_shared_memory("dgm_shm_name");
     shared_memory::set<std::string>(
         "dgm_shm_name", "shared_memory_name", shared_memory_name_);
-
-    // clean the shared memory
-    shared_memory::clear_shared_memory(shared_memory_name_);
 
     // Upon initialization the graph and the hardware com are inactive
     stop();
@@ -168,7 +162,7 @@ void HardwareProcess::initialize(std::string yaml_file_path)
     sleep_timer_.set_memory_size(debug_timer_history_length);
     timer_.set_memory_size(debug_timer_history_length);
 
-    std::cout << "Log will be saved in : \"" << log_dir_ << "\"" << std::endl;
+    std::cout << "HARDWARE: Timer logs will be saved in: \"" << log_dir_ << "\"" << std::endl;
 
     // we create and destroy the condition variable to free the shared memory
     // and therefore the associated mutex which must be lockable at this state.
@@ -190,16 +184,19 @@ void HardwareProcess::run()
     get_ros_node(com_ros_node_name_);
     ros_add_node_to_executor(com_ros_node_name_);
 
-    // we build the condition variables after the fork (seems safer this way).
     cond_var_.reset(
         new shared_memory::LockedConditionVariable(cond_var_name_, true));
 
     // Allow the hardware thread to run.
     start();
 
+    int cpu_id;
+    YAML::ReadParameter(
+        params_["hardware_communication"], "cpu_id", cpu_id);
+
     // Launch the real time thread.
     thread_hardware_communication_.reset(new real_time_tools::RealTimeThread());
-    thread_hardware_communication_->parameters_.cpu_id_.push_back(2);  // cpu 2
+    thread_hardware_communication_->parameters_.cpu_id_.push_back(cpu_id);
     thread_hardware_communication_->create_realtime_thread(
         &HardwareProcess::hardware_communication_real_time_loop_helper,
         this);
@@ -220,7 +217,6 @@ void HardwareProcess::wait_stop_hardware_communication()
     stop();
     if (thread_hardware_communication_)
     {
-        cond_var_->notify_all();
         thread_hardware_communication_->join();
     }
 }
@@ -323,11 +319,10 @@ void* HardwareProcess::hardware_communication_real_time_loop()
 
         if (is_in_safety_mode())
         {
-            static bool once = false;
-            if (!once)
+            if (!once_safe_mode_msg_)
             {
                 rt_printf("HARDWARE: Warning enter into safe_mode\n");
-                once = true;
+                once_safe_mode_msg_ = true;
             }
             compute_safety_controls();
             // we write the safety command in the shared memory in order to
@@ -366,6 +361,32 @@ void* HardwareProcess::hardware_communication_real_time_loop()
     rt_printf("HARDWARE: Stop loop \n");
 
     return THREAD_FUNCTION_RETURN_VALUE;
+}
+
+bool HardwareProcess::is_in_safety_mode()
+{
+    bool too_much_missed_control =
+        (missed_control_count_ >= max_missed_control_);
+    if (too_much_missed_control && !once_too_much_missed_control_msg_)
+    {
+        rt_printf(
+            "HARDWARE: Too much missed control (%d/%d), going in safe "
+            "mode\n",
+            missed_control_count_,
+            max_missed_control_);
+        once_too_much_missed_control_msg_ = true;
+    }
+
+    // TODO: Check for heart beat here.
+    // bool dg_died = has_dynamic_graph_process_died();
+    // static bool once_hdgd = false;
+    // if (dg_died && !once_hdgd)
+    // {
+    //     rt_printf(
+    //         "HARDWARE: Dynamic Graph process died, going in safe mode\n");
+    //     once_hdgd = true;
+    // }
+    return too_much_missed_control; // || dg_died;
 }
 
 void HardwareProcess::add_user_command(std::function<void(void)> func)
