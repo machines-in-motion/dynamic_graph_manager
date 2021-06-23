@@ -265,15 +265,13 @@ void* HardwareProcess::hardware_communication_real_time_loop()
             shared_memory::set(
                 shared_memory_name_, sensors_map_name_, sensors_map_);
 
-            // If running on the real hardware, unlock the mutex such that the
-            // task process can acquire it right away after calling
-            // `notify_all()`. In simulation, the mutex is released by the call
-            // to `wait` further below.
+            // Unlock the mutex such that the task process can acquire it right
+            // away after calling `notify_all()`.
             cond_var_->unlock();
 
-            // Notify the dynamic graph process that it can compute the graph.
-            // If running on the real hardware, this notify_all also acts as
-            // time-synchronization between the task and motor process.
+            // Notify the control process that it can compute the graph.
+            // This notify_all also acts as time-synchronization between the
+            // task and motor process.
             cond_var_->notify_all();
         }
 
