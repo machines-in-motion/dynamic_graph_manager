@@ -99,14 +99,10 @@ public:
 
     /**
      * @brief run() Initializes the hardware_communication drivers, spawns
-     * a realtime thread for the communication and starts the thread.
+     * a realtime thread for the communication, starts the thread and spins
+     * ros in a non-blocking fashion.
      */
     void run();
-
-    /**
-     * @brief spin_ros() Spins ros.
-     */
-    void spin_ros();
 
     /**
      * @brief wait_stop_hardware_communication put the current thread to sleep

@@ -196,18 +196,12 @@ void HardwareProcess::run()
         &HardwareProcess::hardware_communication_real_time_loop_helper,
         this);
     printf("HARDWARE: communication loop started\n");
-}
 
-void HardwareProcess::spin_ros()
-{
     // From here on this process is a ros node.
     get_ros_node(com_ros_node_name_);
     ros_add_node_to_executor(com_ros_node_name_);
 
-    std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
-    // Start ros-spin till shutdown.
-    ros_spin();
-    ros_shutdown();
+    ros_spin_non_blocking();
 }
 
 void HardwareProcess::wait_stop_hardware_communication()
