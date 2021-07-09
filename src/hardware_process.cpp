@@ -11,8 +11,13 @@
 #include <real_time_tools/iostream.hpp>
 // use to set cpu latency.
 #include <real_time_tools/process_manager.hpp>
-// use the ROS singleton to initialize and use ROS
-#include <dynamic_graph_manager/ros.hpp>
+
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
+    // use the ROS singleton to initialize and use ROS
+    #include <dynamic_graph_manager/ros.hpp>
+#endif
+
+
 // this file defines the class in this header
 #include <dynamic_graph_manager/hardware_process.hpp>
 // in order to throw hand made exception
@@ -50,8 +55,10 @@ HardwareProcess::HardwareProcess()
 
 HardwareProcess::~HardwareProcess()
 {
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
     // kill all ros related stuff
     ros_shutdown();
+#endif
 
     // wait for the hardware communication thread to stop
     stop();
@@ -198,6 +205,7 @@ void HardwareProcess::run()
     printf("HARDWARE: communication loop started\n");
 }
 
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
 void HardwareProcess::spin_ros()
 {
     // From here on this process is a ros node.
@@ -209,6 +217,7 @@ void HardwareProcess::spin_ros()
     ros_spin();
     ros_shutdown();
 }
+#endif
 
 void HardwareProcess::wait_stop_hardware_communication()
 {
@@ -230,8 +239,11 @@ void* HardwareProcess::hardware_communication_real_time_loop()
 
     // Some basic checks.
     assert(!is_hardware_communication_stopped_ && "The loop is started");
+
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
     get_ros_node(com_ros_node_name_);
     assert(ros_ok() && "Ros has to be initialized");
+#endif
 
     // Initialize the motor_controls_map with zeros.
     for (VectorDGMap::iterator ctrl = motor_controls_map_.begin();
@@ -250,10 +262,18 @@ void* HardwareProcess::hardware_communication_real_time_loop()
 
     // we start the main loop
     rt_printf("HARDWARE: Start main realtime control loop.\n");
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
     while (!is_hardware_communication_stopped() && ros_ok())
+#else
+    while (!is_hardware_communication_stopped())
+#endif
     {
         // rt_printf("HARDWARE: Call the sensors. \n");
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
         if (!is_hardware_communication_stopped() && ros_ok())
+#else
+        if (!is_hardware_communication_stopped())
+#endif
         {
             get_sensors_to_map(sensors_map_);
         }
@@ -341,7 +361,11 @@ void* HardwareProcess::hardware_communication_real_time_loop()
         }
 
         // we do not send the command if the thread is asked to stopped
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
         if (!is_hardware_communication_stopped() && ros_ok())
+#else
+        if (!is_hardware_communication_stopped())
+#endif
         {
             // send the command to the motors
             set_motor_controls_from_map(motor_controls_map_);

@@ -7,8 +7,6 @@
  * @date 2019-05-22
  */
 
-#include <dynamic-graph/linear-algebra.h>
-
 #include "yaml_utils/yaml_cpp_fwd.hpp"
 
 #ifndef TOOLS_HH
