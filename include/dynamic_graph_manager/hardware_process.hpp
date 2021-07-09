@@ -44,14 +44,8 @@
 // used to deal with shared memory
 #include "shared_memory/locked_condition_variable.hpp"
 
-// import the python interpreter ros binding
-#include "dynamic_graph_manager/ros_python_interpreter_server.hpp"
-
 // some useful tools like the yaml parsing
 #include "dynamic_graph_manager/tools.hpp"
-
-// the device of the dynamic-graph
-#include "dynamic_graph_manager/device.hpp"
 
 namespace dynamic_graph_manager
 {
@@ -191,11 +185,13 @@ public:
      */
     bool is_control_process_alive();
 
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
     /**
      * @brief com_ros_node_name_ this is the ros node name of the harware
      * communication process
      */
     std::string com_ros_node_name_;
+#endif
 
     /**
      * @brief shared_memory_name is the name of the shared memory segment to be
@@ -428,11 +424,14 @@ protected:
      * Attribute shared with the daughter class
      */
 protected:
+
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
     /**
      * @brief This is the list of the ros user commands. The class inheriting
      * from this one can add services for the hardware communication process.
      */
     std::vector<ServiceBasePtr> ros_user_commands_;
+#endif
 
     /**
      * @brief control_period_sec_ this is the control period in Seconds
