@@ -79,8 +79,10 @@ void HardwareProcess::initialize(std::string yaml_file_path)
         params_["hardware_communication"], "shared_memory_name", shared_memory_name_);
     cond_var_name_ = shared_memory_name_ + "_cond_var";
 
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
     YAML::ReadParameter(
         params_["hardware_communication"], "ros_node_name", com_ros_node_name_);
+#endif
 
     shared_memory::clear_shared_memory("dgm_shm_name");
     shared_memory::set<std::string>(
