@@ -115,7 +115,7 @@ endif()
 #
 # manage the unit tests
 #
-if(BUILD_TESTING)
+if (BUILD_ROS_DYNAMIC_GRAPH AND BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 #
