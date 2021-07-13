@@ -17,7 +17,8 @@ if (BUILD_ROS_DYNAMIC_GRAPH)
     exception/exception-dynamic.cpp
     exception/exception-feature.cpp
     exception/exception-task.cpp
-    exception/exception-yaml-cpp.cpp)
+    exception/exception-yaml-cpp.cpp
+  )
   # Add the include dependencies.
   target_include_directories(
     device PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -117,6 +118,13 @@ else()
     hardware_process.cpp
     # The DG head code implementation.
     dgm_head.cpp
+
+    # Expctions.
+    exception/exception-abstract.cpp
+    exception/exception-yaml-cpp.cpp
+
+    # Tools.
+    tools.cpp
     )
   # Includes
   target_include_directories(
