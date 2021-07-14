@@ -9,12 +9,14 @@
 
 #include <pybind11/pybind11.h>
 
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
 /**
  * @brief Bindings for the RosPythonInterpreterClient class.
  *
  * @param module
  */
 void bind_ros_python_interpreter_client(pybind11::module &module);
+#endif
 
 /**
  * @brief Bindings for the DGMHead class.
@@ -37,6 +39,8 @@ PYBIND11_MODULE(dynamic_graph_manager_cpp_bindings, m)
            subtract
     )pbdoc";
     // List of all the bindings.
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
     bind_ros_python_interpreter_client(m);
+#endif
     bind_dgm_head(m);
 }

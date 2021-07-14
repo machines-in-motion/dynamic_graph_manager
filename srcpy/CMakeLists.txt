@@ -1,9 +1,16 @@
 #
 # Python wrapper #
 #
-add_library(${PROJECT_NAME}_cpp_bindings MODULE
-            dynamic_graph_manager.cpp ros_python_interpreter_client.cpp
-            dgm_head.cpp)
+if (BUILD_ROS_DYNAMIC_GRAPH)
+  add_library(${PROJECT_NAME}_cpp_bindings MODULE
+              dynamic_graph_manager.cpp ros_python_interpreter_client.cpp
+              dgm_head.cpp)
+  target_compile_definitions(${PROJECT_NAME}_cpp_bindings
+              PUBLIC BUILD_WITH_ROS_DYNAMIC_GRAPH="true")
+else()
+  add_library(${PROJECT_NAME}_cpp_bindings MODULE
+              dynamic_graph_manager.cpp dgm_head.cpp)
+endif()
 # Link to the messages
 target_link_libraries(${PROJECT_NAME}_cpp_bindings pybind11::module)
 target_link_libraries(${PROJECT_NAME}_cpp_bindings ${PYTHON_LIBRARIES})

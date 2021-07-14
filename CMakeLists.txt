@@ -98,12 +98,10 @@ endif()
 #
 add_subdirectory(src)
 
-if (BUILD_ROS_DYNAMIC_GRAPH)
-    #
-    # manage python bindings
-    #
-    add_subdirectory(srcpy)
-endif()
+#
+# manage python bindings
+#
+add_subdirectory(srcpy)
 
 if (BUILD_ROS_DYNAMIC_GRAPH)
     #
