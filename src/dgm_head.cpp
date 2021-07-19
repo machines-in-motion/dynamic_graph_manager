@@ -16,14 +16,17 @@ namespace dynamic_graph_manager
 {
 const std::string sensors_map_name_ = "sensors_map";
 const std::string motor_controls_map_name_ = "motor_controls_map";
-const std::string shared_memory_name_ = "DGM_ShM";
-const std::string cond_var_name_ = "cond_var";
+
 
 DGMHead::DGMHead(std::string& yaml_file) : is_alive_(true)
 {
     std::cout << "Loading parameters from " << yaml_file << std::endl;
     YAML::Node param = YAML::LoadFile(yaml_file);
     parse_yaml_node(param["device"], sensors_map_, motor_controls_map_);
+
+    YAML::ReadParameter(
+        param["hardware_communication"], "shared_memory_name", shared_memory_name_);
+    cond_var_name_ = shared_memory_name_ + "_cond_var";
 
     std::cout << "Seting up cond_var" << std::endl;
     // we build the condition variables after the fork (seems safer this way)

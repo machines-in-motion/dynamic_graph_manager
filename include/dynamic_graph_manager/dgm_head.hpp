@@ -125,6 +125,16 @@ protected:
      * @brief If the processing thread should be alive or not.
      */
     bool is_alive_;
+
+    /**
+     * @brief Name of the shared memory.
+     */
+    std::string shared_memory_name_;
+
+    /**
+     * @brief Name of the cond variable in shared memory.
+     */
+    std::string cond_var_name_;
 };
 
 }  // namespace dynamic_graph_manager

@@ -44,6 +44,8 @@ install(
 add_library(
   ${PROJECT_NAME} SHARED
   dynamic_graph_manager.cpp dgm_head.cpp ros.cpp
+  # The hardware process implementation.
+  hardware_process.cpp
   ros_python_interpreter_server.cpp ros_python_interpreter_client.cpp)
 # Includes
 target_include_directories(
