@@ -44,6 +44,11 @@
 // used to deal with shared memory
 #include "shared_memory/locked_condition_variable.hpp"
 
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
+// import the python interpreter ros binding
+#include "dynamic_graph_manager/ros_python_interpreter_server.hpp"
+#endif
+
 // some useful tools like the yaml parsing
 #include "dynamic_graph_manager/tools.hpp"
 
