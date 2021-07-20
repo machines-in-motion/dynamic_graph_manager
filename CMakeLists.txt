@@ -103,17 +103,15 @@ add_subdirectory(src)
 #
 add_subdirectory(srcpy)
 
-if (BUILD_ROS_DYNAMIC_GRAPH)
-    #
-    # manage the demos
-    #
-    add_subdirectory(demos)
-endif()
+#
+# manage the demos
+#
+add_subdirectory(demos)
 
 #
 # manage the unit tests
 #
-if (BUILD_ROS_DYNAMIC_GRAPH AND BUILD_TESTING)
+if (BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 #

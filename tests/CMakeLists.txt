@@ -32,16 +32,18 @@ endmacro(create_dgm_unittest test_name)
 # Add unittest
 #
 
-# C++ unit-tests.
-find_package(ament_cmake_gtest)
-create_dgm_unittest(device device)
-# create_dgm_unittest(cpp_features "")
-create_dgm_unittest(dgm_control dynamic_graph_manager)
-create_dgm_unittest(dgm_hardware dynamic_graph_manager)
-create_dgm_unittest(dgm_common dynamic_graph_manager)
-create_dgm_unittest(ros_init dynamic_graph_manager)
-create_dgm_unittest(ros_interpreter dynamic_graph_manager)
+if (BUILD_ROS_DYNAMIC_GRAPH)
+  # C++ unit-tests.
+  find_package(ament_cmake_gtest)
+  create_dgm_unittest(device device)
+  # create_dgm_unittest(cpp_features "")
+  create_dgm_unittest(dgm_control dynamic_graph_manager)
+  create_dgm_unittest(dgm_hardware dynamic_graph_manager)
+  create_dgm_unittest(dgm_common dynamic_graph_manager)
+  create_dgm_unittest(ros_init dynamic_graph_manager)
+  create_dgm_unittest(ros_interpreter dynamic_graph_manager)
 
-# Python unit-tests.
-find_package(ament_cmake_nose REQUIRED)
-ament_add_nose_test(test_python_${PROJECT_NAME} .)
+  # Python unit-tests.
+  find_package(ament_cmake_nose REQUIRED)
+  ament_add_nose_test(test_python_${PROJECT_NAME} .)
+endif(BUILD_ROS_DYNAMIC_GRAPH)
