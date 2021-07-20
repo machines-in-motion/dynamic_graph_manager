@@ -7,12 +7,21 @@
  * @date 2019-05-22
  */
 
-#include <dynamic-graph/linear-algebra.h>
-
 #include "yaml_utils/yaml_cpp_fwd.hpp"
 
 #ifndef TOOLS_HH
 #define TOOLS_HH
+
+#pragma GCC diagnostic push
+#pragma GCC system_header
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#pragma GCC diagnostic pop
+
+namespace dynamicgraph {
+    typedef Eigen::MatrixXd Matrix;
+    typedef Eigen::VectorXd Vector;
+} // namespace dynamicgraph
 
 namespace dynamic_graph_manager
 {

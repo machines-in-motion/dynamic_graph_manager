@@ -7,7 +7,9 @@
  * @date 2019-05-22
  */
 
+#ifdef BUILD_WITH_ROS_DYNAMIC_GRAPH
 #include <dynamic-graph/debug.h>
+#endif
 
 #include <dynamic_graph_manager/exception/exception-abstract.hpp>
 
