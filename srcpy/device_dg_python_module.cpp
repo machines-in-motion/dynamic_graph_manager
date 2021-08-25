@@ -72,7 +72,7 @@ BOOST_PYTHON_MODULE(device)
         .add_property("after",
                       bp::make_function(&Device::get_periodic_call_after,
                                         reference_existing_object()))
-        .def_readonly("before",
+        .add_property("before",
                       bp::make_function(&Device::get_periodic_call_before,
                                         reference_existing_object()))
         .def("initialize",
