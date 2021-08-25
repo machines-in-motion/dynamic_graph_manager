@@ -37,7 +37,7 @@ make
 
 ## Usage:
 
-Inherite from the class DynamicGraphManager and overload the three functions
+Inherit from the class DynamicGraphManager and overload the three functions
 responsible for the hardware:
 
 	 `virtual void initialize_hardware_communication_process()`
@@ -53,4 +53,4 @@ and
 See demo and unit tests for more information on the API.
 Doxygen informations are available by calling:
 
-	`colcon build --ament-cmake -DGENERATE_DOCUMENTATION=ON`
+	`colcon build --cmake-args -DGENERATE_DOCUMENTATION=ON`
