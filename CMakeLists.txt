@@ -57,6 +57,7 @@ if (BUILD_ROS_DYNAMIC_GRAPH)
         mim_msgs
         std_srvs
         geometry_msgs
+        rclcpp
         dynamic-graph
         dynamic-graph-python
         Eigen3
