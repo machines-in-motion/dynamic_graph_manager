@@ -22,9 +22,12 @@ target_include_directories(
   PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
          $<INSTALL_INTERFACE:include> SYSTEM
   PUBLIC ${PYTHON_INCLUDE_DIRS})
-_ament_cmake_python_get_python_install_dir()
+get_python_install_dir(PYTHON_INSTALL_DIR)
+# _ament_cmake_python_get_python_install_dir()
 get_dynamic_graph_plugin_install_path(dg_plugin_install_path)
 install(TARGETS ${PROJECT_NAME}_cpp_bindings DESTINATION ${PYTHON_INSTALL_DIR})
+install(FILES __init__.py
+        DESTINATION ${PYTHON_INSTALL_DIR}/${PROJECT_NAME})
 set_target_properties(
   ${PROJECT_NAME}_cpp_bindings
   PROPERTIES
