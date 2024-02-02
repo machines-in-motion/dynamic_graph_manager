@@ -48,7 +48,7 @@ static GlobalListOfRosNodeType GLOBAL_LIST_OF_ROS_NODE;
 class Executor
 {
 public:
-    Executor() : ros_executor_(rclcpp::executor::ExecutorArgs(), 4)
+    Executor() : ros_executor_(rclcpp::ExecutorOptions(), 4)
     {
         is_thread_running_ = false;
         is_spinning_ = false;
@@ -217,7 +217,7 @@ std::string executable_name()
  */
 void ros_init()
 {
-    if (!rclcpp::is_initialized())
+    if (!rclcpp::ok())
     {
         /** call rclcpp::init */
         int argc = 1;
@@ -310,7 +310,7 @@ void ros_clean()
 
 bool ros_ok()
 {
-    return rclcpp::ok() && rclcpp::is_initialized();
+    return rclcpp::ok();
 }
 
 void ros_spin()

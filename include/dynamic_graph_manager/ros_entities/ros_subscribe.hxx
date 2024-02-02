@@ -10,7 +10,6 @@
 #pragma once
 
 #include <message_filters/message_traits.h>
-
 #include "dynamic_graph_manager/ros_entities/dg_ros_mapping.hpp"
 
 namespace dynamic_graph_manager

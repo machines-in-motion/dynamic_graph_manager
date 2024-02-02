@@ -59,6 +59,7 @@ if (BUILD_ROS_DYNAMIC_GRAPH)
                           $<INSTALL_INTERFACE:include>)
   # Dependencies
   ament_target_dependencies(${PROJECT_NAME} rclcpp)
+  ament_target_dependencies(${PROJECT_NAME} message_filters)
   ament_target_dependencies(${PROJECT_NAME} std_srvs)
   ament_target_dependencies(${PROJECT_NAME} std_msgs)
   ament_target_dependencies(${PROJECT_NAME} geometry_msgs)

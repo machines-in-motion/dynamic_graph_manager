@@ -24,7 +24,7 @@ OPTION(BUILD_ROS_DYNAMIC_GRAPH "Build with ROS and DynamicGraph" ON)
 #
 # Dependencies
 #
-set(Python_ADDITIONAL_VERSIONS 3.6)
+# set(Python_ADDITIONAL_VERSIONS 3.6)
 
 # depend on ament macros
 find_package(ament_cmake REQUIRED)
@@ -46,6 +46,7 @@ if (BUILD_ROS_DYNAMIC_GRAPH)
     find_package(std_srvs REQUIRED)
     find_package(geometry_msgs REQUIRED)
     find_package(rclcpp REQUIRED)
+    find_package(message_filters REQUIRED)
     find_package(mim_msgs REQUIRED)
 
     # Dynamic graph dependencies.
@@ -58,6 +59,7 @@ if (BUILD_ROS_DYNAMIC_GRAPH)
         std_srvs
         geometry_msgs
         rclcpp
+        message_filters
         dynamic-graph
         dynamic-graph-python
         Eigen3

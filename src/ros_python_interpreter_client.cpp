@@ -63,7 +63,7 @@ std::string RosPythonInterpreterClient::run_python_command(
         while (rclcpp::ok() &&
                rclcpp::spin_until_future_complete(
                    ros_node_, response, std::chrono::seconds(1)) !=
-                   rclcpp::executor::FutureReturnCode::SUCCESS)
+                   rclcpp::FutureReturnCode::SUCCESS)
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
                          "Error while parsing command, retrying...");
@@ -126,7 +126,7 @@ std::string RosPythonInterpreterClient::run_python_script(
         auto response = script_client_->async_send_request(run_file_request_);
 
         if (rclcpp::spin_until_future_complete(ros_node_, response) ==
-            rclcpp::executor::FutureReturnCode::SUCCESS)
+            rclcpp::FutureReturnCode::SUCCESS)
         {
             // Get the error.
             return_string += response.get()->standard_error;
